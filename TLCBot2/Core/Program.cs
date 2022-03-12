@@ -1,5 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using TLCBot2.Commands;
+using TLCBot2.Cookies;
 using TLCBot2.Core.CommandLine;
 using TLCBot2.Utilities;
 
@@ -47,13 +49,16 @@ public class Program
         Console.WriteLine(msg);
         return Task.CompletedTask;
     }
-    private static Task Initialize()
+    private static async Task Initialize()
     {
         TlcAllCommands.Initialize();
         LocateFilePath();
+
+        await TestCommands.Initialize();
+        await CommercialCommands.Initialize();
+        await Constants.Guilds.Lares!.BulkOverwriteApplicationCommandAsync(InitApplicationCommandProperties.ToArray());
         
-        
-        return Task.CompletedTask;
+        CookieManager.Initialize();
     }
 
     private static void LocateFilePath()

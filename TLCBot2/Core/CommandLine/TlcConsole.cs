@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 using Discord.WebSocket;
-using TLC_Beta.Utilities;
+using TLCBot2.Utilities;
 
-namespace TLC_Beta.Core.CommandLine;
+namespace TLCBot2.Core.CommandLine;
 
 public static class TlcConsole
 {
@@ -26,7 +26,7 @@ public static class TlcConsole
     {
         try
         {
-            command = Regex.Replace(command, @"\/\*.*?\*\/|\/\/[^\n]*", "");
+            command = Regex.Replace(command, @"\/\*.*?\*\/|\/\/[^\n]*", "", RegexOptions.Singleline);
             if (command.Length == 0) return true;
             
             var split = command.Split(' ');
@@ -38,7 +38,7 @@ public static class TlcConsole
                 return false;
             var cmd = ListCommand.First(Condition);
 
-            if (cmd.Args > 0)
+            if (cmd.Args != -1 && cmd.Args > 0)
             {
                 var idx = cmd.Args - 1;
                 var finale = string.Join(" ", split[idx..]);

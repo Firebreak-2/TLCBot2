@@ -1,4 +1,4 @@
-﻿namespace TLC_Beta.Core.CommandLine;
+﻿namespace TLCBot2.Core.CommandLine;
 
 public class TlcCommand
 {

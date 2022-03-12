@@ -1,22 +1,41 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using TLCBot2.Core.CommandLine;
+using TLCBot2.Utilities;
 
-namespace TLCBot2;
+namespace TLCBot2.Core;
 
 public class Program
 {
     public static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
-    public static DiscordSocketClient Client;
+    public static DiscordSocketClient Client = null!;
+    public static string FileAssetsPath = "";
+    public static List<ApplicationCommandProperties> InitApplicationCommandProperties = new();
     public static async Task MainAsync()
     {
         Client = new DiscordSocketClient(new DiscordSocketConfig { MessageCacheSize = 120 });
         Client.Log += Log;
         Client.Ready += Initialize;
+        Client.MessageReceived += TlcConsole.OnMessageRecieved;
 
-        #region the token
-        const string token = "OTQ1NjY0MjA0MDEzMjA3NjMy.YhTcaw.DwkNK9ZeZbXLNH46ucvP9kodje4";
+        #region Token retrieval
+        const string path = "token.txt";
+        string token;
+        if (File.Exists(path))
+        {
+            token = await File.ReadAllTextAsync(path);
+        }
+        else if (File.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\{path}"))
+        {
+            token = await File.ReadAllTextAsync($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\{path}");
+        }
+        else
+        {
+            Console.WriteLine("No token has been found. Shutting down...");
+            return;
+        }
         #endregion
-
+        
         await Client.LoginAsync(TokenType.Bot, token);
         await Client.StartAsync();
             
@@ -30,7 +49,29 @@ public class Program
     }
     private static Task Initialize()
     {
-            
+        TlcAllCommands.Initialize();
+        LocateFilePath();
+        
+        
         return Task.CompletedTask;
+    }
+
+    private static void LocateFilePath()
+    {
+        FileAssetsPath = Directory.GetCurrentDirectory();
+        var found = false;
+        while (!found && FileAssetsPath.Contains('\\'))
+        {
+            foreach (var file in Directory.GetDirectories(FileAssetsPath))
+            {
+                if (!file.EndsWith("TLC_Files")) continue;
+                FileAssetsPath = file;
+                found = true;
+                break;
+            }
+
+            if (!found)
+                FileAssetsPath = Helper.GoBackDirectory(FileAssetsPath);
+        }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Discord.WebSocket;
-using TLC_Beta.Core;
+using TLCBot2.Core;
 
-namespace TLC_Beta.Utilities;
+namespace TLCBot2.Utilities;
 
 public static class Constants
 {

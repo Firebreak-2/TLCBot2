@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using TLCBot2.ApplicationComponents;
 using TLCBot2.Commands;
 using TLCBot2.Cookies;
 using TLCBot2.Core.CommandLine;
@@ -59,6 +60,8 @@ public class Program
         await Constants.Guilds.Lares!.BulkOverwriteApplicationCommandAsync(InitApplicationCommandProperties.ToArray());
         
         CookieManager.Initialize();
+        ModalHandler.Initialize();
+        MessageComponentHandler.Initialize();
     }
 
     private static void LocateFilePath()

@@ -3,6 +3,11 @@ using System.Text.RegularExpressions;
 using Discord;
 using TLCBot2.Cookies;
 using TLCBot2.Utilities;
+using Color = Discord.Color;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace TLCBot2.Core.CommandLine;
 
@@ -126,6 +131,32 @@ public static class TlcAllCommands
         {
             TlcConsole.Print($"{args[0]}");
         }, 1, "Repeats the input"));
+        
+        AddCommand(new TlcCommand("test", _ =>
+        {
+            string colorHex = "0099ff";
+            
+            var color = Helper.HexCodeToColor(colorHex).DiscordColorToArgb32();
+            var inverseColor = color.Invert();
+                
+            const string endName = "TLC_Watermark.png";
+            string path = Program.FileAssetsPath + '\\' + endName;
+            using Image<Argb32> image = Image.Load<Argb32>(path);
+                
+            image.FillColor((_, _, pixel) => pixel != new Argb32(255, 255, 0, 255)
+                ? color
+                : inverseColor);
+            
+            using var stream = image.ToStream();
+            string text = $"`{color}`";
+                
+            var embed = new EmbedBuilder()
+                .WithColor(color.Argb32ToDiscordColor())
+                .WithImageUrl(Helper.GetFileUrl(stream, Constants.Channels.Lares.Coloore, text))
+                .WithTitle(text);
+                
+            Constants.Channels.Lares.TLCBetaCommandLine.SendMessageAsync(embed: embed.Build());
+        }));
     }
 
     public static void AddCommand(TlcCommand command) => TlcConsole.ListCommand.Add(command);

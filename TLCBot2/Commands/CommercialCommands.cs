@@ -13,71 +13,6 @@ namespace TLCBot2.Commands
         {
             var guild = Constants.Guilds.Lares!;
         
-            // #region Color Command
-            // await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
-            //         .WithName("color")
-            //         .WithDescription("Displays the specified HEX color.")
-            //         .AddOption("color-hex", ApplicationCommandOptionType.String, "the color to show", true),
-            //     cmd =>
-            //     {
-            //         var colorHex = (string)cmd.Data.Options.First().Value;
-            //
-            //         var color = Helper.HexCodeToColor(colorHex);
-            //         var inverseColor = color.Invert();
-            //     
-            //         const string endName = "TLC_Watermark.png";
-            //         var bmp = new Bitmap(Program.FileAssetsPath + '\\' + endName);
-            //     
-            //         bmp.FillColor((x, y) => bmp.GetPixel(x, y) != Color.FromArgb(255, 255, 0, 255)
-            //             ? Color.FromArgb(255, color.R, color.G, color.B)
-            //             : Color.FromArgb(255, inverseColor.R, inverseColor.G, inverseColor.B));
-            //
-            //         var stream = bmp.ToStream(ImageFormat.Png);
-            //         var text = $"`{color}`";
-            //     
-            //         var embedBuilder = new EmbedBuilder()
-            //             .WithColor(color)
-            //             .WithImageUrl(Helper.GetFileUrl(stream, Constants.Channels.Lares.Coloore, text))
-            //             .WithTitle(text);
-            //     
-            //         cmd.RespondAsync(embed: embedBuilder.Build());
-            //     
-            //         stream.Dispose();
-            //         bmp.Dispose();
-            //     }), guild);
-            // #endregion
-        
-            // #region Random Color Command
-            // await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
-            //         .WithName("random-color")
-            //         .WithDescription("Displays a random color."),
-            //     cmd =>
-            //     {
-            //         var color = new Discord.Color(Helper.RandomInt(0, 255),Helper.RandomInt(0, 255),Helper.RandomInt(0, 255));
-            //         var inverseColor = color.Invert();
-            //     
-            //         const string endName = "TLC_Watermark.png";
-            //         var bmp = new Bitmap(Program.FileAssetsPath + '\\' + endName);
-            //     
-            //         bmp.FillColor((x, y) => bmp.GetPixel(x, y) != Color.FromArgb(255, 255, 0, 255)
-            //             ? Color.FromArgb(255, color.R, color.G, color.B)
-            //             : Color.FromArgb(255, inverseColor.R, inverseColor.G, inverseColor.B));
-            //
-            //         var stream = bmp.ToStream(ImageFormat.Png);
-            //         var text = $"`{color}`";
-            //     
-            //         var embedBuilder = new EmbedBuilder()
-            //             .WithColor(color)
-            //             .WithImageUrl(Helper.GetFileUrl(stream, Constants.Channels.Lares.Coloore, text))
-            //             .WithTitle(text);
-            //     
-            //         cmd.RespondAsync(embed: embedBuilder.Build());
-            //     
-            //         stream.Dispose();
-            //         bmp.Dispose();
-            //     }), guild);
-            // #endregion
-        
             #region Random Prompt Command
             await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
                 .WithName("prompt")
@@ -105,40 +40,6 @@ namespace TLCBot2.Commands
                 cmd.RespondAsync(embed: embed.Build());
             }), guild);
             #endregion
-        
-            // #region Scheme Command
-            // await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
-            //         .WithName("scheme")
-            //         .WithDescription("Generate a color scheme to be used with a base color.")
-            //         .AddOption("base-color", ApplicationCommandOptionType.String, "The color to base the scheme off of.", true),
-            //     cmd =>
-            //     {
-            //         var hexcode = (string)cmd.Data.Options.First();
-            //         var color = Helper.HexCodeToColor(hexcode);
-            //
-            //         using var client = new WebClient();
-            //         string result = client.DownloadString($"https://www.thecolorapi.com/scheme?hex={color.ToString().Remove(0,1)}");
-            //
-            //         var matches = Regex.Matches(result, "(?<=\"hex\":{\"value\":\"#).{6}(?=\")");
-            //         var colors = matches.Select(x => Helper.HexCodeToColor(x.Value)).ToArray();
-            //
-            //         string outp = string.Join("\n", colors.Select(col => $"{col}"));
-            //
-            //         var bmp = new Bitmap(100, 250);
-            //         bmp.FillColor((_, y) => colors[y / 50].DiscordColorToSystemDrawingColor());
-            //         var url = Helper.GetFileUrl(bmp.ToStream(ImageFormat.Png), Constants.Channels.Lares.Coloore, $"```\n{outp}\n```");
-            //
-            //         var embed = new EmbedBuilder()
-            //             .WithTitle($"Scheme for {cmd.User.Username}")
-            //             .WithImageUrl(url)
-            //             .WithColor(color)
-            //             .WithFooter(outp);
-            //
-            //         cmd.RespondAsync(embed:embed.Build());
-            //     
-            //         bmp.Dispose();
-            //     }), guild);
-            // #endregion
         
             #region Clear Command
             await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
@@ -186,88 +87,6 @@ namespace TLCBot2.Commands
                     .WithDescription("Responds with \"pong!\" to indicate that the bot is online."), 
                 cmd => cmd.RespondAsync("pong!")), guild);
             #endregion
-        
-            // #region Bingo Command
-            // await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
-            //         .WithName("bingo")
-            //         .WithDescription("Generates a bingo board to draw from. More info on help command")
-            //         .AddOption("tile-count", ApplicationCommandOptionType.Integer, "the grid size",minValue:3,maxValue:9),
-            //     cmd =>
-            //     {
-            //         var bmp = new Bitmap(1000, 1000);
-            //         int tilesPerRow = cmd.Data.Options.Count > 0 ? Convert.ToInt32(cmd.Data.Options.First().Value) : 5;
-            //         var bingoPrompts = File.ReadAllLines($"{Program.FileAssetsPath}\\bingoPrompts.cfg").ToHashSet();
-            //
-            //         // if (tilesPerRow % 2 == 0)
-            //         // {
-            //         //     cmd.RespondAsync("Tiles per row must be an odd number.",ephemeral:true);   
-            //         //     return;
-            //         // }
-            //         // if (tilesPerRow >= 11)
-            //         // {
-            //         //     cmd.RespondAsync("Tiles cannot exceed 9x9 due to long board loading times", ephemeral: true);
-            //         //     return;
-            //         // }
-            //
-            //         const int gridLineWidth = 5;
-            //         int tileWidth = bmp.Width / tilesPerRow;
-            //         int tileHeight = bmp.Height / tilesPerRow;
-            //
-            //         bmp.FillColor((x, y) =>
-            //         {
-            //             for (int i = 0; i < gridLineWidth; i++)
-            //             {
-            //                 for (int j = 0; j < tilesPerRow; j++)
-            //                 {
-            //                     var val = i + bmp.Width / tilesPerRow * j;
-            //                     if (val <= gridLineWidth) continue;
-            //             
-            //                     if (x == val || y == val) return Color.Black;
-            //                 }
-            //             }
-            //             return Color.White;
-            //         });
-            //
-            //         var centerPos = PointF.Empty;
-            //         for (var y = 0; y < tilesPerRow; y++)
-            //         {
-            //             for (var x = 0; x < tilesPerRow; x++)
-            //             {
-            //                 var yPos = y * bmp.Height / tilesPerRow;
-            //                 var xPos = x * bmp.Width  / tilesPerRow;
-            //
-            //                 if (x == y && x == tilesPerRow / 2)
-            //                 {
-            //                     centerPos = new PointF(xPos, yPos);
-            //                     continue;
-            //                 }
-            //
-            //                 var prompt = bingoPrompts.RandomChoice();
-            //                 bingoPrompts.Remove(prompt);
-            //                 bmp.DrawCenteredString(prompt, new Font("Arial",  prompt.Length > 8 ? 20 : 30), 
-            //                     sourceRectangle:new RectangleF(
-            //                         xPos, yPos,
-            //                         tileWidth, tileHeight));
-            //             }
-            //         }
-            //
-            //         var imgToBeDrawn = (Bitmap)Image.FromFile($"{Program.FileAssetsPath}\\TLC_Logo.png");
-            //         imgToBeDrawn = new Bitmap(imgToBeDrawn, tileWidth, tileHeight);
-            //         bmp.DrawImageOnImage(imgToBeDrawn, new PointF(centerPos.X+gridLineWidth,centerPos.Y));
-            //
-            //         var embed = new EmbedBuilder()
-            //             .WithTitle($"TLC bingo card for {cmd.User.Username}")
-            //             .WithDescription(
-            //                 "Draw an image that would score a bingo on the following sheet. Don't forget to shout bingo and share your finished drawing!")
-            //             .WithImageUrl(Helper.GetFileUrl(bmp.ToStream(ImageFormat.Png), Constants.Channels.Lares.DefaultFileDump))
-            //             .WithColor(Discord.Color.Blue);
-            //
-            //         cmd.RespondAsync(embed:embed.Build());
-            //
-            //         // bmp.Dispose();
-            //         // imgToBeDrawn.Dispose();
-            //     }), guild);
-            // #endregion
         
             #region Cookies Command
             await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()

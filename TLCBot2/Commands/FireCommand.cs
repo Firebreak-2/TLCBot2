@@ -12,6 +12,7 @@ public class FireCommand
     public SlashCommandProperties Slashie;
     public Action<SocketSlashCommand> OnExecute;
     public bool DevOnly;
+    public SocketGuild? Guild = null;
     public FireCommand(SlashCommandBuilder slashie, Action<SocketSlashCommand> onExecute, bool devOnly = false)
     {
         Slashie = slashie.Build();
@@ -23,22 +24,24 @@ public class FireCommand
     {
         await command.Create(guild);
     }
-    public async Task Create(SocketGuild? guild)
+    public Task Create(SocketGuild? guild)
     {
+        Guild = guild;
         CommandHandler.AllCommands.Add(this);
-        try
-        {
-            if (guild != null)
-            {
-                Program.InitApplicationCommandProperties.Add(Slashie);
-            }
-            else
-                await Constants.Guilds.Lares!.CreateApplicationCommandAsync(Slashie);
-        }
-        catch (HttpException exception)
-        {
-            var json = JsonConvert.SerializeObject(exception.Errors, Formatting.Indented);
-            Console.WriteLine(json);
-        }
+        return Task.CompletedTask;
+        // try
+        // {
+        //     if (guild != null)
+        //     {
+        //         Program.InitApplicationCommandProperties.Add(Slashie);
+        //     }
+        //     else
+        //         await Constants.Guilds.Lares!.CreateApplicationCommandAsync(Slashie);
+        // }
+        // catch (HttpException exception)
+        // {
+        //     string json = JsonConvert.SerializeObject(exception.Errors, Formatting.Indented);
+        //     Console.WriteLine(json);
+        // }
     }
 }

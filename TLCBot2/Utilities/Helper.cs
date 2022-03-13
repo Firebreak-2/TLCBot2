@@ -2,6 +2,8 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Discord.WebSocket;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using TLCBot2.Core;
 
 namespace TLCBot2.Utilities;
@@ -22,9 +24,33 @@ public static class Helper
             .SendFileAsync(stream, "ImageSend.png", text)
             ?.Result.Attachments.First().Url ?? "null";
     }
+    public static Stream ToStream(this Image image) 
+    {
+        var stream = new MemoryStream();
+        image.SaveAsPng(stream);
+        stream.Position = 0;
+        return stream;
+    }
+    public static void FillColor(this Image<Argb32> img, Argb32 color) => img.FillColor((_,_)=>color);
+    public static void FillColor(this Image<Argb32> img, Func<int, int, Argb32> color) => img.FillColor((x, y, _) => color(x, y));
+    public static void FillColor(this Image<Argb32> img, Func<int, int, Argb32, Argb32> color)
+    {
+        img.ProcessPixelRows(pixelAccessor =>
+        {
+            for (int y = 0; y < img.Height; y++)
+            {
+                Span<Argb32> pixelRow = pixelAccessor.GetRowSpan(y);
+                for (int x = 0; x < img.Width; x++)
+                {
+                    var prevCol = pixelRow[x];
+                    pixelRow[x] = color(x, y, prevCol);
+                }
+            }
+        });
+    }
     public static Discord.Color HexCodeToColor(string hexcode)
     {
-        return new Discord.Color(uint.Parse(Regex.Replace(hexcode.ToUpper(), @"[^\dA-F]", ""),
+        return new Discord.Color(uint.Parse(Regex.Replace(hexcode.ToUpper()[..6], @"[^\dA-F]", ""),
             NumberStyles.HexNumber));
     }
 
@@ -32,6 +58,13 @@ public static class Helper
     {
         return new Discord.Color(255 - color.R, 255 - color.G, 255 - color.B);
     }
+
+    public static Argb32 Invert(this Argb32 color)
+    {
+        return color.Argb32ToDiscordColor().Invert().DiscordColorToArgb32();
+    }
+    public static Discord.Color Argb32ToDiscordColor(this Argb32 color) => new(color.R, color.G, color.B);
+    public static Argb32 DiscordColorToArgb32(this Discord.Color color) => new(color.R, color.G, color.B, 255);
     public static int RandomInt(int min, int max) => _rand.Next(min, max + 1);
 
     public static T RandomChoice<T>(this IEnumerable<T> collection) =>

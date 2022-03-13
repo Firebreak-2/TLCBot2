@@ -39,7 +39,7 @@ public static class TestCommands
                         .WithDescription("desc-2")
                 }, maxValues: 1), null, selectMenu =>
             {
-                var text = string.Join(", ", selectMenu.Data.Values);
+                string text = string.Join(", ", selectMenu.Data.Values);
         
                 Constants.Channels.Lares.DefaultFileDump
                     .SendMessageAsync($"`{selectMenu.User.Username}` selected `{text}`.\nSelected on: <{selectMenu.Message.GetJumpUrl()}>");

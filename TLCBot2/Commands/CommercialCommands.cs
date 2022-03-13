@@ -62,28 +62,40 @@ namespace TLCBot2.Commands
                         .WithDescription("Displays a random color."),
                     cmd =>
                     {
-                        var color = new Color(Helper.RandomInt(0, 255),Helper.RandomInt(0, 255),Helper.RandomInt(0, 255))
-                            .DiscordColorToArgb32();
-                        var inverseColor = color.Invert();
+                        Embed GetColorEmbed()
+                        {
+                            var color = new Color(Helper.RandomInt(0, 255),Helper.RandomInt(0, 255),Helper.RandomInt(0, 255))
+                                .DiscordColorToArgb32();
+                            var inverseColor = color.Invert();
                     
-                        const string endName = "TLC_Watermark.png";
-                        string path = Program.FileAssetsPath + '\\' + endName;
-                        using Image<Argb32> image = Image.Load<Argb32>(path);
+                            const string endName = "TLC_Watermark.png";
+                            string path = Program.FileAssetsPath + '\\' + endName;
+                            using Image<Argb32> image = Image.Load<Argb32>(path);
     
-                        var magenta = new Argb32(255, 0, 255);
-                        image.FillColor((_, _, pixel) => pixel != magenta
-                            ? color
-                            : inverseColor);
+                            var magenta = new Argb32(255, 0, 255);
+                            image.FillColor((_, _, pixel) => pixel != magenta
+                                ? color
+                                : inverseColor);
                 
-                        using var stream = image.ToStream();
-                        string text = $"`{color}`\n`{color.Argb32ToDiscordColor()}`";
+                            using var stream = image.ToStream();
+                            string text = $"`{color}`\n`{color.Argb32ToDiscordColor()}`";
                     
-                        var embedBuilder = new EmbedBuilder()
-                            .WithColor(color.Argb32ToDiscordColor())
-                            .WithImageUrl(Helper.GetFileUrl(stream, Constants.Channels.Lares.Coloore, text))
-                            .WithTitle(text);
+                            return new EmbedBuilder()
+                                .WithColor(color.Argb32ToDiscordColor())
+                                .WithImageUrl(Helper.GetFileUrl(stream, Constants.Channels.Lares.Coloore, text))
+                                .WithTitle(text)
+                                .Build();
+                        }
+                        var embedBuilder = GetColorEmbed();
+
+                        var fmc = FireMessageComponent.CreateNew(new FireMessageComponent(new ComponentBuilder()
+                            .WithButton("Reroll", $"reroll-randcol-{Helper.RandomInt(0, 1000)}"), button =>
+                        {
+                            button.Message.ModifyAsync(props => props.Embed = GetColorEmbed());
+                            button.RespondAsync();
+                        }, null));
                     
-                        cmd.RespondAsync(embed: embedBuilder.Build()); 
+                        cmd.RespondAsync(embed: embedBuilder, components:fmc); 
                 }), guild);
             #endregion
                 
@@ -94,30 +106,35 @@ namespace TLCBot2.Commands
                         .AddOption("base-color", ApplicationCommandOptionType.String, "The color to base the scheme off of.", true),
                     cmd =>
                     {
-                        string hexcode = (string)cmd.Data.Options.First()!;
-                        var color = Helper.HexCodeToColor(hexcode);
-                
-                        using var client = new WebClient();
-                        string result = client.DownloadString($"https://www.thecolorapi.com/scheme?hex={color.ToString().Remove(0,1)}");
-                
-                        var matches = Regex.Matches(result, "(?<=\"hex\":{\"value\":\"#).{6}(?=\")");
-                        var colors = matches.Select(x => Helper.HexCodeToColor(x.Value).DiscordColorToArgb32()).ToArray();
-                
-                        string outp = string.Join("\n", colors.Select(col => $"{col.Argb32ToDiscordColor()}"));
-                
-                        var image = new Image<Argb32>(100, 250);
-                        image.FillColor((_, y) => colors[y / 50]);
-                        string url = Helper.GetFileUrl(image.ToStream(), Constants.Channels.Lares.Coloore, $"```\n{outp}\n```");
-                
-                        var embed = new EmbedBuilder()
-                            .WithTitle($"Scheme for {cmd.User.Username}")
-                            .WithImageUrl(url)
-                            .WithColor(color)
-                            .WithFooter(outp);
-                
-                        cmd.RespondAsync(embed:embed.Build());
-                    
-                        image.Dispose();
+                        Embed GetSchemeEmbed()
+                        {
+                            string hexcode = (string) cmd.Data.Options.First()!;
+                            var color = Helper.HexCodeToColor(hexcode);
+
+                            using var client = new WebClient();
+                            string result =
+                                client.DownloadString(
+                                    $"https://www.thecolorapi.com/scheme?hex={color.ToString().Remove(0, 1)}");
+
+                            var matches = Regex.Matches(result, "(?<=\"hex\":{\"value\":\"#).{6}(?=\")");
+                            var colors = matches.Select(x => Helper.HexCodeToColor(x.Value).DiscordColorToArgb32())
+                                .ToArray();
+
+                            string outp = string.Join("\n", colors.Select(col => $"{col.Argb32ToDiscordColor()}"));
+
+                            using var image = new Image<Argb32>(100, 250);
+                            image.FillColor((_, y) => colors[y / 50]);
+                            string url = Helper.GetFileUrl(image.ToStream(), Constants.Channels.Lares.Coloore,
+                                $"```\n{outp}\n```");
+
+                            return new EmbedBuilder()
+                                .WithTitle($"Scheme for {cmd.User.Username}")
+                                .WithImageUrl(url)
+                                .WithColor(color)
+                                .WithFooter(outp)
+                                .Build();
+                        }
+                        cmd.RespondAsync(embed:GetSchemeEmbed());
                 }), guild);
             #endregion
                 
@@ -128,79 +145,93 @@ namespace TLCBot2.Commands
                     .AddOption("tile-count", ApplicationCommandOptionType.Integer, "the grid size",minValue:3,maxValue:11),
                 cmd =>
                 {
-                    using var image = new Image<Argb32>(1000, 1000);
-                    int tilesPerRow = cmd.Data.Options.Count > 0 ? Convert.ToInt32(cmd.Data.Options.First().Value) : 5;
-                    var bingoPrompts = 
-                        File.ReadAllLines($"{Program.FileAssetsPath}\\bingoPrompts.cfg")
-                            .Select(x => x.Replace(' ', '\n')).ToHashSet();
-                    
-                    const int gridLineWidth = 5;
-                    int tileWidth = image.Width / tilesPerRow;
-                    int tileHeight = image.Height / tilesPerRow;
-                    
-                    image.FillColor((x, y) =>
+                    Embed GetBingoEmbed()
                     {
-                        for (int i = 0; i < gridLineWidth; i++)
+                        using var image = new Image<Argb32>(1000, 1000);
+                        int tilesPerRow = cmd.Data.Options.Count > 0
+                            ? Convert.ToInt32(cmd.Data.Options.First().Value)
+                            : 5;
+                        var bingoPrompts =
+                            File.ReadAllLines($"{Program.FileAssetsPath}\\bingoPrompts.cfg")
+                                .Select(x => x.Replace(' ', '\n')).ToHashSet();
+
+                        const int gridLineWidth = 5;
+                        int tileWidth = image.Width / tilesPerRow;
+                        int tileHeight = image.Height / tilesPerRow;
+
+                        image.FillColor((x, y) =>
                         {
-                            for (int j = 0; j < tilesPerRow; j++)
+                            for (int i = 0; i < gridLineWidth; i++)
                             {
-                                int val = i + image.Width / tilesPerRow * j;
-                                if (val <= gridLineWidth) continue;
-                        
-                                if (x == val || y == val) return new Argb32(0, 0, 0);
+                                for (int j = 0; j < tilesPerRow; j++)
+                                {
+                                    int val = i + image.Width / tilesPerRow * j;
+                                    if (val <= gridLineWidth) continue;
+
+                                    if (x == val || y == val) return new Argb32(0, 0, 0);
+                                }
                             }
-                        }
-                        return new Argb32(255, 255, 255);
-                    });
-        
-                    var centerPos = Point.Empty;
-                    for (int y = 0; y < tilesPerRow; y++)
-                    {
-                        for (int x = 0; x < tilesPerRow; x++)
+
+                            return new Argb32(255, 255, 255);
+                        });
+
+                        var centerPos = Point.Empty;
+                        for (int y = 0; y < tilesPerRow; y++)
                         {
-                            int yPos = y * image.Height / tilesPerRow;
-                            int xPos = x * image.Width  / tilesPerRow;
-        
-                            if (x == y && x == tilesPerRow / 2)
+                            for (int x = 0; x < tilesPerRow; x++)
                             {
-                                centerPos = new Point(xPos, yPos);
-                                continue;
-                            }
-            
-                            string prompt = bingoPrompts.RandomChoice();
-                            bingoPrompts.Remove(prompt);
-                            var font = SystemFonts.CreateFont("Arial", prompt.Length > 8 ? 35 : 42);
-                            var options = new TextOptions(font)
-                            {
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                                Origin = new PointF(xPos + tileWidth / 2, yPos + tileHeight / 2),
-                                WordBreaking = WordBreaking.BreakAll,
-                                WrappingLength = tileWidth
-                            };
-                            image.Mutate(img =>
-                                img.DrawText(
-                                    options,
-                                    prompt,
-                                    SixLabors.ImageSharp.Color.Black
+                                int yPos = y * image.Height / tilesPerRow;
+                                int xPos = x * image.Width / tilesPerRow;
+
+                                if (x == y && x == tilesPerRow / 2)
+                                {
+                                    centerPos = new Point(xPos, yPos);
+                                    continue;
+                                }
+
+                                string prompt = bingoPrompts.RandomChoice();
+                                bingoPrompts.Remove(prompt);
+                                var font = SystemFonts.CreateFont("Arial", prompt.Length > 8 ? 35 : 42);
+                                var options = new TextOptions(font)
+                                {
+                                    HorizontalAlignment = HorizontalAlignment.Center,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    Origin = new PointF(xPos + tileWidth / 2, yPos + tileHeight / 2),
+                                    WordBreaking = WordBreaking.BreakAll,
+                                    WrappingLength = tileWidth
+                                };
+                                image.Mutate(img =>
+                                    img.DrawText(
+                                        options,
+                                        prompt,
+                                        SixLabors.ImageSharp.Color.Black
                                     ));
+                            }
                         }
+
+                        using var imgToBeDrawn = Image.Load<Argb32>($"{Program.FileAssetsPath}\\TLC_Logo.png");
+                        imgToBeDrawn.Mutate(img =>
+                            img.Resize(tileWidth, tileHeight));
+                        image.Mutate(img =>
+                            img.DrawImage(imgToBeDrawn, centerPos, 1));
+
+                        return new EmbedBuilder()
+                            .WithTitle($"TLC bingo card for {"Firebreak"}")
+                            .WithDescription(
+                                "Draw an image that would score a bingo on the following sheet. Don't forget to shout bingo and share your finished drawing!")
+                            .WithImageUrl(Helper.GetFileUrl(image.ToStream(), Constants.Channels.Lares.DefaultFileDump))
+                            .WithColor(Color.Blue)
+                            .Build();
                     }
-            
-                    using var imgToBeDrawn = Image.Load<Argb32>($"{Program.FileAssetsPath}\\TLC_Logo.png");
-                    imgToBeDrawn.Mutate(img =>
-                        img.Resize(tileWidth, tileHeight));
-                    image.Mutate(img =>
-                        img.DrawImage(imgToBeDrawn, centerPos, 1));
-            
-                    var embed = new EmbedBuilder()
-                        .WithTitle($"TLC bingo card for {"Firebreak"}")
-                        .WithDescription(
-                            "Draw an image that would score a bingo on the following sheet. Don't forget to shout bingo and share your finished drawing!")
-                        .WithImageUrl(Helper.GetFileUrl(image.ToStream(), Constants.Channels.Lares.DefaultFileDump))
-                        .WithColor(Color.Blue);
                     
-                            cmd.RespondAsync(embed:embed.Build());
+                    var fmc = FireMessageComponent.CreateNew(new FireMessageComponent(new ComponentBuilder()
+                        .WithButton("Reroll", $"reroll-bingo-{Helper.RandomInt(0, 1000)}"), button =>
+                    {
+                        button.Message.ModifyAsync(props => props.Embed = GetBingoEmbed());
+                        button.RespondAsync();
+                    }, null));
+
+                    cmd.RespondAsync(embed:GetBingoEmbed(),components:fmc);
                     }), guild);
         #endregion
         
@@ -216,19 +247,32 @@ namespace TLCBot2.Commands
                 string[] promptColors =       File.ReadAllLines($"{Program.FileAssetsPath}\\artToysPrompts\\colors.cfg");
                 string[] promptScenery =      File.ReadAllLines($"{Program.FileAssetsPath}\\artToysPrompts\\scenery.cfg");
                 string[] promptSceneryprops = File.ReadAllLines($"{Program.FileAssetsPath}\\artToysPrompts\\sceneryProps.cfg");
-        
-                if (Helper.RandomInt(1, 20) == 1) // 1/20 chance to omit charProp
-                    prompt =
-                        $"{promptChars.RandomChoice()} {Regex.Replace(promptScenery.RandomChoice(), @"{.+?}", promptSceneryprops.RandomChoice())}";
-                else
-                    prompt =
-                        $"{promptChars.RandomChoice()} {promptCharprops.RandomChoice().NamedFormat("color", promptColors.RandomChoice())} {promptScenery.RandomChoice().NamedFormat("sceneryprop",promptSceneryprops.RandomChoice())}";
-        
-                var embed = new EmbedBuilder()
-                    .WithTitle($"Art prompt for {cmd.User.Username}")
-                    .WithDescription(prompt)
-                    .WithColor(Discord.Color.Blue);
-                cmd.RespondAsync(embed: embed.Build());
+
+                Embed GetRandomPromptEmbed()
+                {
+
+                    if (Helper.RandomInt(1, 20) == 1) // 1/20 chance to omit charProp
+                        prompt =
+                            $"{promptChars.RandomChoice()} {Regex.Replace(promptScenery.RandomChoice(), @"{.+?}", promptSceneryprops.RandomChoice())}";
+                    else
+                        prompt =
+                            $"{promptChars.RandomChoice()} {promptCharprops.RandomChoice().NamedFormat("color", promptColors.RandomChoice())} {promptScenery.RandomChoice().NamedFormat("sceneryprop", promptSceneryprops.RandomChoice())}";
+
+                    return new EmbedBuilder()
+                        .WithTitle($"Art prompt for {cmd.User.Username}")
+                        .WithDescription($"{prompt[0].ToString().ToUpper()}{prompt[1..]}.")
+                        .WithColor(Color.Blue)
+                        .Build();
+                }
+                
+                var fmc = FireMessageComponent.CreateNew(new FireMessageComponent(new ComponentBuilder()
+                    .WithButton("Reroll", $"reroll-prompt-{Helper.RandomInt(0, 1000)}"), button =>
+                {
+                    button.Message.ModifyAsync(props => props.Embed = GetRandomPromptEmbed());
+                    button.RespondAsync();
+                }, null));
+
+                cmd.RespondAsync(embed:GetRandomPromptEmbed(),components:fmc);
             }), guild);
             #endregion
         

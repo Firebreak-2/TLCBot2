@@ -280,7 +280,7 @@ namespace TLCBot2.Commands
             await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
                     .WithName("clear")
                     .WithDescription("Deletes the number of messages specified")
-                    .AddOption("amount", ApplicationCommandOptionType.Integer, "The specified amount"), 
+                    .AddOption("amount", ApplicationCommandOptionType.Integer, "The specified amount", true), 
                 cmd =>
                 {
                     long count = (long) cmd.Data.Options.First().Value;
@@ -313,7 +313,7 @@ namespace TLCBot2.Commands
                     }
         
                     cmd.RespondAsync($"`{count}` messages deleted.", ephemeral: true);
-                }), guild);
+                }, true), guild);
             #endregion
         
             #region Ping Command

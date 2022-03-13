@@ -61,7 +61,7 @@ public static class TestCommands
                     var inverseColor = color.Invert();
                 
                     const string endName = "TLC_Watermark.png";
-                    string path = Program.FileAssetsPath + '\\' + endName;
+                    string path = $"{Program.FileAssetsPath}{(OperatingSystem.IsWindows() ? "\\" : "/")}{endName}";
                     using Image<Argb32> image = Image.Load<Argb32>(path);
 
                     var magenta = new Argb32(255, 0, 255);

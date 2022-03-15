@@ -2,8 +2,9 @@
 using Discord.WebSocket;
 using TLCBot2.ApplicationComponents;
 using TLCBot2.Commands;
-using TLCBot2.Cookies;
 using TLCBot2.Core.CommandLine;
+using TLCBot2.DataManagement;
+using TLCBot2.Listeners;
 using TLCBot2.Utilities;
 
 namespace TLCBot2.Core;
@@ -25,6 +26,8 @@ public class Program
         Client.MessageCommandExecuted += ContextCommandHandler.OnMessageCommandExecuted;
         Client.UserCommandExecuted += ContextCommandHandler.OnUserCommandExecuted;
         Client.ModalSubmitted += ModalHandler.OnModalRecieved;
+        Client.ReactionAdded += StarboardListener.OnReactionAdded;
+        Client.UserJoined += ServerJoinListener.OnMemberJoined;
 
         #region Token retrieval
         const string path = "token.txt";
@@ -71,12 +74,15 @@ public class Program
     }
     private static async Task Initialize()
     {
-        TlcAllCommands.Initialize();
         LocateFilePath();
+        TlcAllCommands.Initialize();
+        RuntimeConfig.Initialize();
 
         await CommandHandler.Initialize();
-        
+        StarboardListener.Initialize();
+        ServerJoinListener.Initialize();
         CookieManager.Initialize();
+        SocialMediaManager.Initialize();
         ModalHandler.Initialize();
         MessageComponentHandler.Initialize();
     }

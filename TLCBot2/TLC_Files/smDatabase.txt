@@ -1,0 +1,16 @@
+[
+  {
+    "UserID": 751535897287327865,
+    "Instagram": "Entry - Instagram",
+    "Twitter": "Entry - Twitter",
+    "Youtube": "Entry - Youtube",
+    "ArtStation": "Entry - ArtStation",
+    "DeviantArt": "Entry - DeviantArt",
+    "TikTok": "Entry - TikTok",
+    "Twitch": "Entry - Twitch",
+    "Reddit": "Entry - Reddit",
+    "Steam": "Entry - Steam",
+    "GitHub": "Entry - GitHub",
+    "PersonalWebsite": "Entry - PersonalWebsite"
+  }
+]

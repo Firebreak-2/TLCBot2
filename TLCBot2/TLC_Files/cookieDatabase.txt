@@ -1,0 +1,12 @@
+[
+  {
+    "UserID": 751535897287327865,
+    "Cookies": 78,
+    "IsBanned": false
+  },
+  {
+    "UserID": 950407804362047498,
+    "Cookies": 65,
+    "IsBanned": false
+  }
+]

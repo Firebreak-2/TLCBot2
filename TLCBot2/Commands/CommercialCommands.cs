@@ -10,8 +10,8 @@ using SixLabors.ImageSharp.Processing;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.Utilities;
 using SkiaSharp;
-using TLCBot2.Cookies;
 using TLCBot2.Core;
+using TLCBot2.DataManagement;
 using Color = Discord.Color;
 using Image = SixLabors.ImageSharp.Image;
 
@@ -216,7 +216,7 @@ namespace TLCBot2.Commands
                             img.DrawImage(imgToBeDrawn, centerPos, 1));
 
                         return new EmbedBuilder()
-                            .WithTitle($"TLC bingo card for {"Firebreak"}")
+                            .WithTitle($"TLC bingo card for {cmd.User.Username}")
                             .WithDescription(
                                 "Draw an image that would score a bingo on the following sheet. Don't forget to shout bingo and share your finished drawing!")
                             .WithImageUrl(Helper.GetFileUrl(image.ToStream(), Constants.Channels.Lares.DefaultFileDump))
@@ -324,20 +324,21 @@ namespace TLCBot2.Commands
             #endregion
         
             #region Cookies Command
-            await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            await FireCommand.CreateNew(new(new SlashCommandBuilder()
                     .WithName("cookies")
                     .WithDescription("Check the amount of 🍪 that you own!")
                     .AddOption("user", ApplicationCommandOptionType.User, "The user to check the cookies of."),
                 cmd =>
                 {
-                    var user = (SocketUser?)(cmd.Data.Options.Any() ? cmd.Data.Options.First().Value : null);
+                    var user = (SocketUser?)(cmd.Data.Options.Any() ? cmd.Data.Options.First().Value : null) ?? cmd.User;
 
-                    if (!CookieManager.GetUserFromDatabase(user?.Id ?? cmd.User.Id, out var cookies, out _))
-                        cookies = 0;
+                    int cookies = 0;
+                    if (CookieManager.GetUser(user.Id, out var entry))
+                        cookies = entry.Cookies;
 
                     var embed = new EmbedBuilder()
-                        .WithColor(Discord.Color.Blue)
-                        .WithTitle($"{user?.Username ?? cmd.User.Username}'s balance: {cookies}");
+                        .WithColor(Color.Blue)
+                        .WithTitle($"{user.Username}'s balance: {cookies}");
                 
                     cmd.RespondAsync(embed:embed.Build());
                 }), guild);
@@ -349,48 +350,29 @@ namespace TLCBot2.Commands
                     .WithDescription("Shows the current 🍪 leaderboard."),
                 cmd =>
                 {
-                    int i = 0;
-                    string output = "";
-                    var lines = File.ReadAllLines(CookieManager.CookieDatabasePath)
-                        .OrderByDescending(x => CookieManager.DeformatUserData(x).cookies);
-
-                    if (!lines.Any())
-                    {
-                        cmd.RespondAsync("Leaderboard count is currently 0, cannot function.", ephemeral:true);
-                        return;
-                    }
-                
-                    var g = cmd.Channel.GetGuild();
-
-                    foreach (var line in lines)
-                    {
-                        var (userId, cookies, isBanned) = CookieManager.DeformatUserData(line);
-
-                        if (userId == 0) continue;
-
-                        string rankingPrefix = i switch
+                    string output = "No users registered in leaderboard";
+                    if (CookieManager.CookieUsers.Any())
+                        output = string.Join("\n", CookieManager.CookieUsers
+                            .Where((_, i) => i < 10).Select((user, i) =>
                         {
-                            0 => "🥇",
-                            1 => "🥈",
-                            2 => "🥉",
-                            _ => $"#{i+1}"
-                        };
-
-                        string banDash = isBanned ? "~~" : "";
-                        string userMention = $"<@!{userId}>";
-
-                        output += $"{rankingPrefix}: **{cookies}**🍪  {banDash}{userMention}{banDash}\n";
+                            string rankingPrefix = i switch
+                            {
+                                0 => "🥇",
+                                1 => "🥈",
+                                2 => "🥉",
+                                _ => $"#{i+1}"
+                            };
+                            string banDash = user.IsBanned ? "~~" : "";
+                            string userMention = $"<@!{user.UserID}>";
+                            return $"{rankingPrefix}: **{user.Cookies}**🍪  {banDash}{userMention}{banDash}";
+                        }));
                     
-                        if (++i >= 10) break;
-                    }
-                    output = output[..^1];
-
                     var embed = new EmbedBuilder()
                         .WithTitle("TLC 🍪 Leaderboard")
-                        .WithColor(Discord.Color.Blue)
+                        .WithColor(Color.Blue)
                         .WithDescription(output)
                         .WithCurrentTimestamp();
-                
+                    
                     cmd.RespondAsync(embed:embed.Build());
                 }), guild);
             #endregion
@@ -404,17 +386,17 @@ namespace TLCBot2.Commands
                 cmd =>
                 {
                     var user = (SocketUser)cmd.Data.Options.First().Value;
-                    var count = cmd.Data.Options.Count == 2 ? Convert.ToInt32((long)cmd.Data.Options.Last().Value) : 5;
+                    int count = cmd.Data.Options.Count == 2 ? Convert.ToInt32((long)cmd.Data.Options.Last().Value) : 5;
 
                     CookieManager.TakeOrGiveCookiesToUser(user.Id, count);
-                    CookieManager.GetUserFromDatabase(user.Id, out var cookies, out _);
+                    CookieManager.GetUser(user.Id, out var entry);
 
                     bool isPositive = count >= 0;
             
                     var embed = new EmbedBuilder()
-                        .WithColor(Discord.Color.Blue)
+                        .WithColor(Color.Blue)
                         .WithTitle($"{(isPositive ? "Given" : "Taken")} `{Math.Abs(count)}` 🍪 {(isPositive ? "to" : "from")} {user.Username}.")
-                        .WithDescription($"current balance: {cookies}");
+                        .WithDescription($"current balance: {entry.Cookies}");
             
                     cmd.RespondAsync(embed:embed.Build());
                 }, true), guild);
@@ -425,19 +407,19 @@ namespace TLCBot2.Commands
                     .WithName("set-cookies")
                     .WithDescription("Sets the amount of 🍪 to a specific number for a specific user.")
                     .AddOption("user", ApplicationCommandOptionType.User, "The user to manipulate the 🍪 of",true)
-                    .AddOption("amount", ApplicationCommandOptionType.Integer, "The set number of 🍪."),
+                    .AddOption("amount", ApplicationCommandOptionType.Integer, "The set number of 🍪.", true),
                 cmd =>
                 {
                     var user = (SocketUser)cmd.Data.Options.First().Value;
-                    var count = cmd.Data.Options.Count == 2 ? Convert.ToInt32((long)cmd.Data.Options.Last().Value) : 0;
+                    int count = cmd.Data.Options.Count == 2 ? Convert.ToInt32((long)cmd.Data.Options.Last().Value) : 0;
 
-                    CookieManager.GetUserFromDatabase(user.Id, out var oldCookies, out _);
-                    CookieManager.AddOrEditUserToDatabase(user.Id, count);
+                    CookieManager.GetUser(user.Id, out var entry);
+                    CookieManager.AddOrModifyUser(user.Id, count);
 
                     var embed = new EmbedBuilder()
-                        .WithColor(Discord.Color.Blue)
+                        .WithColor(Color.Blue)
                         .WithTitle($"Changed the 🍪 of {user.Username}.")
-                        .WithDescription($"{oldCookies} → {count}");
+                        .WithDescription($"{entry?.Cookies ?? 0} → {count}");
             
                     cmd.RespondAsync(embed:embed.Build());
                 }, true), guild);

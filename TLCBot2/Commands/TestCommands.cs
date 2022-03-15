@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.RegularExpressions;
 using Discord;
+using Discord.WebSocket;
 using MoreLinq;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -11,6 +12,7 @@ using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.Utilities;
 using SkiaSharp;
 using TLCBot2.Core;
+using TLCBot2.DataManagement;
 using Color = Discord.Color;
 using Image = SixLabors.ImageSharp.Image;
 
@@ -60,7 +62,7 @@ public static class TestCommands
             EmbedBuilder embed = new();
             
             var cb = FireMessageComponent.CreateNew(new FireMessageComponent(new ComponentBuilder()
-                .WithSelectMenu($"poll-answers-{Helper.RandomInt(0, 1000)}", new List<SelectMenuOptionBuilder>
+                .WithSelectMenu($"poll-{Helper.RandomInt(0, 1000)}", new List<SelectMenuOptionBuilder>
                 {
                     new SelectMenuOptionBuilder()
                         .WithLabel("one")
@@ -95,50 +97,46 @@ public static class TestCommands
         }, true), guild);
         #endregion
         
-        #region Color Photo Command
-        // await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
-        //     .WithName("color-photo")
-        //     .WithDescription("Picks out the most prominent colors in a photo")
-        //     .AddOption("image", ApplicationCommandOptionType.Attachment, "The image to check the colors of", true),
-        //     cmd =>
-        //     {
-        //         const int colorsToPick = 3;
-        //         const int tileWidth = 200;
-        //         const int tileHeight = 100;
-        //         using var image = new Image<Argb32>(tileWidth, tileHeight * colorsToPick);
-        //         using var imgInput = Image.Load<Argb32>(((Discord.Attachment) cmd.Data.Options.First().Value).);
-        //         
-        //         var uniqueColors = new Dictionary<Argb32, int>();
-        //         imgInput.FillColor((_, _, pixel) =>
-        //         {
-        //             if (!uniqueColors.TryGetValue(pixel, out int prevCount))
-        //                 uniqueColors.Add(pixel, 1);
-        //             else
-        //             {
-        //                 uniqueColors.Remove(pixel);
-        //                 uniqueColors.Add(pixel, prevCount + 1);
-        //             }
-        //
-        //             return SixLabors.ImageSharp.Color.White;
-        //             
-        //         });
-        //         uniqueColors = uniqueColors.OrderByDescending(x => x.Value).ToDictionary();
-        //         Argb32[] colorsToDisplay;
-        //         colorsToDisplay = uniqueColors.Count > colorsToPick
-        //             ? uniqueColors.Where((_, i) => i <= colorsToPick)
-        //                 .Select(x => x.Key).ToArray()
-        //             : uniqueColors.Select(x => x.Key).ToArray();
-        //         
-        //         image.FillColor((_, y) => colorsToDisplay[y / (tileHeight * colorsToPick / colorsToDisplay.Length)]);
-        //         
-        //         var embed = new EmbedBuilder()
-        //             .WithTitle("Most Prominent Colors")
-        //             .WithDescription("gamer\ngamer\ngamer")
-        //             .WithColor(Color.Blue)
-        //             .WithImageUrl(Helper.GetFileUrl(image.ToStream()));
-        //     
-        //     cmd.RespondAsync(embed:embed.Build());
-        // }), guild);
+        #region Social Media Command
+        await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            .WithName("social-media")
+            .WithDescription("Displays a person's linked social media accounts")
+            .AddOption("user", ApplicationCommandOptionType.User, "The user to check the socials of", true),
+            cmd =>
+            {
+                SocketUser user = (SocketUser) cmd.Data.Options.First().Value;
+                if (!SocialMediaManager.GetUser(user.Id, out var entry))
+                {
+                    cmd.RespondAsync($"{user.Username} has not linked any of their social media profiles.");
+                    return;
+                }
+
+                var embed = new EmbedBuilder()
+                    .WithTitle($"{user.Username}'s Social Media Profiles")
+                    .WithColor(Color.Blue);
+
+                const string noLink = SocialMediaManager.SocialMediaUserEntry.NoLink;
+
+                if (entry.Twitter         != noLink) embed.AddField("Twitter"         , entry.Twitter        );
+                if (entry.Youtube         != noLink) embed.AddField("YouTube"         , entry.Youtube        );
+                if (entry.Twitch          != noLink) embed.AddField("Twitch"          , entry.Twitch         );
+                if (entry.TikTok          != noLink) embed.AddField("TikTok"          , entry.TikTok         );
+                if (entry.Instagram       != noLink) embed.AddField("Instagram"       , entry.Instagram      );
+                if (entry.DeviantArt      != noLink) embed.AddField("DeviantArt"      , entry.DeviantArt     );
+                if (entry.ArtStation      != noLink) embed.AddField("ArtStation"      , entry.ArtStation     );
+                if (entry.Reddit          != noLink) embed.AddField("Reddit"          , entry.Reddit         );
+                if (entry.Steam           != noLink) embed.AddField("Steam"           , entry.Steam          );
+                if (entry.GitHub          != noLink) embed.AddField("GitHub"          , entry.GitHub         );
+                if (entry.PersonalWebsite != noLink) embed.AddField("Personal Website", entry.PersonalWebsite);
+
+                if (!embed.Fields.Any())
+                {
+                    cmd.RespondAsync($"{user.Username} has not linked any of their social media profiles.");
+                    return;
+                }
+
+                cmd.RespondAsync(embed: embed.Build());
+            }), guild);
         #endregion
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Globalization;
+using System.Net;
 using System.Text.RegularExpressions;
 using Discord.WebSocket;
 using SixLabors.ImageSharp;
@@ -82,6 +83,15 @@ public static class Helper
             output = Regex.Replace(output, $"{{{i}}}", replacement[i]);
         }
         return output;
+    }
+
+    public static string GetRandomWord()
+    {
+        using var client = new WebClient();
+        
+        return Regex.Match(
+            client.DownloadString("https://randomword.com/"),
+            "(?<=<div id=\"random_word\">).+(?=</div>)").Value;
     }
     public static SocketGuild GetGuild(this ISocketMessageChannel channel) => Program.Client.Guilds.First(x => x.Channels.Any(y => y.Id == channel.Id));
 }

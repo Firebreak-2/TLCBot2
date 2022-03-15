@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Discord;
+using Newtonsoft.Json;
 using SixLabors.Fonts;
-using TLCBot2.Cookies;
 using TLCBot2.Utilities;
 using Color = Discord.Color;
 using SixLabors.ImageSharp;
@@ -12,6 +13,7 @@ using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using TLCBot2.Commands;
+using TLCBot2.DataManagement;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace TLCBot2.Core.CommandLine;
@@ -56,16 +58,11 @@ public static class TlcAllCommands
                 case "add":
                 case "set":
                 case "edit":
-                    CookieManager.AddOrEditUserToDatabase(
-                        userId:      ulong.Parse(args[1]),
-                        cookieCount: int.Parse(args[2]),
-                        isBanned:    bool.Parse(args[3]));
+                    CookieManager.AddOrModifyUser(
+                        userID:   ulong.Parse(args[1]),
+                        cookies:  int.Parse(args[2]),
+                        isBanned: bool.Parse(args[3]));
                     TlcConsole.Print($"added/edited {args[1]}'s entry");
-                    break;
-                case "remove":
-                    TlcConsole.Print(CookieManager.RemoveUserFromDatabase(ulong.Parse(args[1]))
-                        ? $"removed {args[1]} from the database"
-                        : $"user {args[1]} does not exist");
                     break;
                 case "give":
                     CookieManager.TakeOrGiveCookiesToUser(ulong.Parse(args[1]), int.Parse(args[2]));
@@ -85,8 +82,8 @@ public static class TlcAllCommands
                     break;
                 case "get":
                     TlcConsole.Print(
-                        CookieManager.GetUserFromDatabase(ulong.Parse(args[1]), out var cookies, out var isBanned)
-                            ? $"user: {args[1]}\n  cookies: {cookies}\n  isBanned: {isBanned}"
+                        CookieManager.GetUser(ulong.Parse(args[1]), out var entry)
+                            ? $"user: {args[1]}\n  cookies: {entry.Cookies}\n  isBanned: {entry.IsBanned}"
                             : "user does not exist");
                     break;
                 case "database":
@@ -137,11 +134,34 @@ public static class TlcAllCommands
             TlcConsole.Print($"{args[0]}");
         }, 1, "Repeats the input"));
         
+        AddCommand(new TlcCommand("getfile", args =>
+        {
+            TlcConsole.RunCommand($"post {Program.FileAssetsPath}\\{args[0]}");
+        }, 1));
+        
+        AddCommand(new TlcCommand("setconfig", args =>
+        {
+            TlcConsole.Print(RuntimeConfig.SetSetting(args[0], args[1], out string prop)
+                ? $"changed the value of {prop} to {args[1]}"
+                : $"the property [{args[0]}] does not exist");
+        }, 2));
+        
         AddCommand(new TlcCommand("test", _ =>
         {
-            TlcConsole.Print(string.Join("\n", CommandHandler.AllCommands.Where(x => !x.DevOnly).Select(x => x.Slashie.Name)));
+            SocialMediaManager.AddOrModifyUser(751535897287327865, 
+                "gamer",
+                "gamer",
+                "gamer",
+                "gamer",
+                "gamer",
+                "gamer",
+                "gamer",
+                "gamer",
+                "gamer",
+                "gamer",
+                "gamer"
+            );
         }));
     }
-
     public static void AddCommand(TlcCommand command) => TlcConsole.ListCommand.Add(command);
 }

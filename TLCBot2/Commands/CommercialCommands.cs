@@ -470,6 +470,276 @@ namespace TLCBot2.Commands
                     cmd.RespondAsync(embed:embed.Build());
                 }, true), guild);
             #endregion
+        
+        #region Social Media Command
+        await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            .WithName("social-media")
+            .WithDescription("Displays a person's linked social media accounts")
+            .AddOption("user", ApplicationCommandOptionType.User, "The user to check the socials of", true),
+            cmd =>
+            {
+                SocketUser user = (SocketUser) cmd.Data.Options.First().Value;
+                if (!SocialMediaManager.GetUser(user.Id, out var entry))
+                {
+                    cmd.RespondAsync($"{user.Username} has not linked any of their social media profiles.");
+                    return;
+                }
+
+                var embed = new EmbedBuilder()
+                    .WithTitle($"{user.Username}'s Social Media Profiles")
+                    .WithColor(Color.Blue);
+
+                bool IsValidLink(string link)
+                {
+                    return 
+                        link != SocialMediaManager.SocialMediaUserEntry.NoLink 
+                        && link.Any() 
+                        && Helper.CheckStringIsLink(link);
+                }
+                string GetProfileName(string link)
+                {
+                    link = link.EndsWith("/") ? link[..^1] : link;
+                    return Regex.Match(link, @"(?<=\/)[^\/]+(?=\/)?$").Value;
+                }
+
+                string AsHyperlink(string link)
+                {
+                    return $"[{GetProfileName(link)}]({link})";
+                }
+
+                if (IsValidLink(entry.Twitter        )) embed.AddField("Twitter"         , AsHyperlink(entry.Twitter        ));
+                if (IsValidLink(entry.Youtube        )) embed.AddField("YouTube"         , AsHyperlink(entry.Youtube        ));
+                if (IsValidLink(entry.Twitch         )) embed.AddField("Twitch"          , AsHyperlink(entry.Twitch         ));
+                if (IsValidLink(entry.TikTok         )) embed.AddField("TikTok"          , AsHyperlink(entry.TikTok         ));
+                if (IsValidLink(entry.Instagram      )) embed.AddField("Instagram"       , AsHyperlink(entry.Instagram      ));
+                if (IsValidLink(entry.DeviantArt     )) embed.AddField("DeviantArt"      , AsHyperlink(entry.DeviantArt     ));
+                if (IsValidLink(entry.ArtStation     )) embed.AddField("ArtStation"      , AsHyperlink(entry.ArtStation     ));
+                if (IsValidLink(entry.Reddit         )) embed.AddField("Reddit"          , AsHyperlink(entry.Reddit         ));
+                if (IsValidLink(entry.Steam          )) embed.AddField("Steam"           , AsHyperlink(entry.Steam          ));
+                if (IsValidLink(entry.GitHub         )) embed.AddField("GitHub"          , AsHyperlink(entry.GitHub         ));
+                if (IsValidLink(entry.PersonalWebsite)) embed.AddField("Personal Website", AsHyperlink(entry.PersonalWebsite));
+
+                if (!embed.Fields.Any())
+                {
+                    cmd.RespondAsync($"{user.Username} has not linked any of their social media profiles.");
+                    return;
+                }
+
+                cmd.RespondAsync(embed: embed.Build());
+            }), guild);
+        #endregion
+        
+        #region Link Social Media Profile Command
+        await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            .WithName("link")
+            .WithDescription("Links your discord account with a social media profile")
+            .AddOption(new SlashCommandOptionBuilder()
+                .WithName("platform")
+                .WithDescription("The social media platform to be linked to")
+                .WithType(ApplicationCommandOptionType.String)
+                .AddChoice("YouTube", "youtube")
+                .AddChoice("Twitter", "twitter")
+                .AddChoice("DeviantArt", "deviantart")
+                .AddChoice("Instagram", "instagram")
+                .AddChoice("GitHub", "github")
+                .AddChoice("Steam", "steamcommunity")
+                .AddChoice("Reddit", "reddit")
+                .AddChoice("ArtStation", "artstation")
+                .AddChoice("TikTok", "tiktok")
+                .AddChoice("Twitch", "twitch")
+                .AddChoice("Personal Website", "website")
+            )
+            .AddOption("profile-link", ApplicationCommandOptionType.String, "The **link** to your social media profile", true),
+            cmd =>
+            {
+                string profLink = (string) cmd.Data.Options.First(x => x.Name == "profile-link").Value;
+                string platform;
+                if (cmd.Data.Options.Count == 1)
+                {
+                    var matcher = new Regex(@"https?:\/\/(?:www\.)?(.+)\.(?:tv|com)\/?(?:.+)?");
+                    var match = matcher.Match(profLink);
+                    if (!match.Success)
+                    {
+                        cmd.RespondAsync("Input is not a link", ephemeral: true);
+                        return;
+                    }
+                    platform = matcher.Replace(profLink, "$1").ToLower();
+
+                    switch (platform)
+                    {
+                        case "youtube":
+                        case "twitter":
+                        case "deviantart":
+                        case "instagram":
+                        case "github":
+                        case "steamcommunity":
+                        case "reddit":
+                        case "artstation":
+                        case "tiktok":
+                        case "twitch":
+                            break;
+                        default:
+                            platform = "website";
+                            break;
+                    }
+                }
+                else
+                {
+                    platform = (string) cmd.Data.Options.First(x => x.Name == "platform").Value;
+                }
+
+                ulong userId = cmd.User.Id;
+                
+                switch (platform)
+                {
+                    case "youtube":
+                        SocialMediaManager.AddOrModifyUser(userId, Youtube: profLink);
+                        cmd.RespondAsync($"Linked your YouTube profile with the link {profLink}", ephemeral:true);
+                        break;
+                    case "twitter":
+                        SocialMediaManager.AddOrModifyUser(userId, Twitter: profLink);
+                        cmd.RespondAsync($"Linked your Twitter profile with the link {profLink}", ephemeral:true);
+                        break;
+                    case "deviantart":
+                        SocialMediaManager.AddOrModifyUser(userId, DeviantArt: profLink);
+                        cmd.RespondAsync($"Linked your DeviantArt profile with the link {profLink}", ephemeral:true);
+                        break;
+                    case "instagram":
+                        SocialMediaManager.AddOrModifyUser(userId, Instagram: profLink);
+                        cmd.RespondAsync($"Linked your Instagram profile with the link {profLink}", ephemeral:true);
+                        break;
+                    case "github":
+                        SocialMediaManager.AddOrModifyUser(userId, GitHub: profLink);
+                        cmd.RespondAsync($"Linked your GitHub profile with the link {profLink}", ephemeral:true);
+                        break;
+                    case "steamcommunity":
+                        SocialMediaManager.AddOrModifyUser(userId, Steam: profLink);
+                        cmd.RespondAsync($"Linked your Steam profile with the link {profLink}", ephemeral:true);
+                        break;
+                    case "reddit":
+                        SocialMediaManager.AddOrModifyUser(userId, Reddit: profLink);
+                        cmd.RespondAsync($"Linked your Reddit profile with the link {profLink}", ephemeral:true);
+                        break;
+                    case "artstation":
+                        SocialMediaManager.AddOrModifyUser(userId, ArtStation: profLink);
+                        cmd.RespondAsync($"Linked your ArtStation profile with the link {profLink}", ephemeral:true);
+                        break;
+                    case "tiktok":
+                        SocialMediaManager.AddOrModifyUser(userId, TikTok: profLink);
+                        cmd.RespondAsync($"Linked your TikTok profile with the link {profLink}", ephemeral:true);
+                        break;
+                    case "twitch":
+                        SocialMediaManager.AddOrModifyUser(userId, Twitch: profLink);
+                        cmd.RespondAsync($"Linked your Twitch profile with the link {profLink}", ephemeral:true);
+                        break;
+                    case "website":
+                        SocialMediaManager.AddOrModifyUser(userId, PersonalWebsite: profLink);
+                        cmd.RespondAsync($"Linked your Personal Website with the link {profLink}", ephemeral:true);
+                        break;
+                    default:
+                        cmd.RespondAsync("This social media platform is not supported :(", ephemeral:true);
+                        break;
+                }
+            }), guild);
+        #endregion
+
+        #region  Unlink Social Media Profile
+
+        await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+                .WithName("unlink")
+                .WithDescription("Unlinks the selected social media profiles of yours"),
+            cmd =>
+            {
+                cmd.RespondAsync(components: new FireMessageComponent(
+                    new ComponentBuilder()
+                        .WithSelectMenu($"select-menu-{Helper.RandomInt(0, 1000)}", new List<SelectMenuOptionBuilder>
+                        {
+                            new("YouTube", "YouTube"),
+                            new("Twitter", "Twitter"),
+                            new("Deviantart", "Deviantart"),
+                            new("Instagram", "Instagram"),
+                            new("GitHub", "GitHub"),
+                            new("Steam", "Steam"),
+                            new("Reddit", "Reddit"),
+                            new("ArtStation", "ArtStation"),
+                            new("TikTok", "TikTok"),
+                            new("Twitch", "Twitch"),
+                            new("Personal Website", "Personal Website")
+                        }, maxValues:11), null, selectMenu =>
+                    {
+                        SocialMediaManager.GetUser(cmd.User.Id, out var entry);
+                        bool CheckValidity(string platform) =>
+                            platform != SocialMediaManager.SocialMediaUserEntry.NoLink;
+                        List<string> linkedProfiles = new();
+                        
+                        if (CheckValidity(entry.Youtube)) linkedProfiles.Add("YouTube");
+                        if (CheckValidity(entry.Twitter)) linkedProfiles.Add("Twitter");
+                        if (CheckValidity(entry.DeviantArt)) linkedProfiles.Add("Deviantart");
+                        if (CheckValidity(entry.Instagram)) linkedProfiles.Add("Instagram");
+                        if (CheckValidity(entry.GitHub)) linkedProfiles.Add("GitHub");
+                        if (CheckValidity(entry.Steam)) linkedProfiles.Add("Steam");
+                        if (CheckValidity(entry.Reddit)) linkedProfiles.Add("Reddit");
+                        if (CheckValidity(entry.ArtStation)) linkedProfiles.Add("ArtStation");
+                        if (CheckValidity(entry.TikTok)) linkedProfiles.Add("TikTok");
+                        if (CheckValidity(entry.Twitch)) linkedProfiles.Add("Twitch");
+                        if (CheckValidity(entry.PersonalWebsite)) linkedProfiles.Add("Personal Website");
+
+                        string[] values = selectMenu.Data.Values.Where(linkedProfiles.Contains).ToArray();
+                        if (values.Length == 0)
+                        {
+                            selectMenu.RespondAsync("Cannot unlink profiles that have not been linked", ephemeral: true);
+                            selectMenu.Message.DeleteAsync();
+                            return;
+                        }
+                        
+                        string okButtonID = $"button-{Helper.RandomInt(0, 1000)}";
+                        string cancelButtonID = $"button-{Helper.RandomInt(0, 1000)}";
+                        selectMenu.RespondAsync(components:FireMessageComponent.CreateNew(new FireMessageComponent(
+                            new ComponentBuilder()
+                                .WithButton("Unlink Selected Profiles", okButtonID,
+                                    ButtonStyle.Danger)
+                                .WithButton("Cancel", cancelButtonID, ButtonStyle.Secondary),
+                            button =>
+                            {
+                                string buttonID = button.Data.CustomId;
+                                if (buttonID == okButtonID)
+                                {
+
+                                    HashSet<string> unlinkees = new();
+
+                                    string? DoReplace(string platform)
+                                    {
+                                        const string replacement = SocialMediaManager.SocialMediaUserEntry.NoLink;
+
+                                        if (!values.Contains(platform)) return null;
+                                        unlinkees.Add(platform);
+
+                                        return replacement;
+                                    }
+
+                                    button.RespondAsync(ephemeral: true, text: SocialMediaManager.ModifyUser(
+                                        cmd.User.Id,
+                                        Youtube: DoReplace("YouTube"),
+                                        Twitter: DoReplace("Twitter"),
+                                        DeviantArt: DoReplace("Deviantart"),
+                                        Instagram: DoReplace("Instagram"),
+                                        GitHub: DoReplace("GitHub"),
+                                        Steam: DoReplace("Steam"),
+                                        Reddit: DoReplace("Reddit"),
+                                        ArtStation: DoReplace("ArtStation"),
+                                        TikTok: DoReplace("TikTok"),
+                                        Twitch: DoReplace("Twitch"),
+                                        PersonalWebsite: DoReplace("Personal Website"))
+                                        ? $"Unlinked {string.Join(", ", unlinkees)}"
+                                        : "The user does not exist in the database");
+                                }
+                                button.Message.DeleteAsync();
+                                selectMenu.Message.DeleteAsync();
+                            }, null)), text:"Are you sure you want to unlink the selected profiles?");
+                    }).Create());
+            }), guild);
+
+        #endregion
         }
     }
 }

@@ -47,9 +47,9 @@ public static class SocialMediaManager
         if (DeviantArt is not null     ) user.DeviantArt = DeviantArt;
         if (TikTok is not null         ) user.TikTok = TikTok;
         if (Twitch is not null         ) user.Twitch = Twitch;
-        if (Reddit is not null     ) user.DeviantArt = Reddit;
-        if (GitHub is not null         ) user.TikTok = GitHub;
-        if (Steam is not null         ) user.Twitch = Steam;
+        if (Reddit is not null         ) user.Reddit = Reddit;
+        if (GitHub is not null         ) user.GitHub = GitHub;
+        if (Steam is not null          ) user.Steam = Steam;
         if (PersonalWebsite is not null) user.PersonalWebsite = PersonalWebsite;
         SaveSMUsersToDatabase();
         return true;

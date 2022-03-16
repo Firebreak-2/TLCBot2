@@ -18,7 +18,14 @@ public static class Helper
     {
         return Regex.Replace(path, @"\\[^\\]+$", "");
     }
+    public static string GetFileNameFromPath(string path)
+    {
+        return Regex.Match(path, @"\\[^\\]+$").Value;
+    }
 
+    public static bool CheckStringIsLink(string link) =>
+        Regex.IsMatch(link,
+            @"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
     public static string GetFileUrl(Stream stream, SocketTextChannel? channel = null, string text = "text")
     {
         return (channel ?? Constants.Channels.Lares.DefaultFileDump)

@@ -26,17 +26,63 @@ namespace TLCBot2.Commands
             #region Color Command
                 await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
                         .WithName("color")
-                        .WithDescription("Displays the specified HEX color.")
-                        .AddOption("color-hex", ApplicationCommandOptionType.String, "the color to show", true),
+                        .WithDescription("Displays the specified color.")
+                        .AddOption(new SlashCommandOptionBuilder()
+                            .WithName("hex")
+                            .WithDescription("The hexadecimal value to interpret the color")
+                            .WithType(ApplicationCommandOptionType.SubCommand)
+                            .AddOption("value", ApplicationCommandOptionType.String, "the hex value", true))
+                        .AddOption(new SlashCommandOptionBuilder()
+                            .WithName("rgb")
+                            .WithDescription("The RGB value to interpret the color")
+                            .WithType(ApplicationCommandOptionType.SubCommand)
+                            .AddOption(new SlashCommandOptionBuilder()
+                                .WithName("red")
+                                .WithDescription("The red color value")
+                                .WithType(ApplicationCommandOptionType.Integer)
+                                .WithRequired(true)
+                                .WithMinValue(0)
+                                .WithMaxValue(255))
+                            .AddOption(new SlashCommandOptionBuilder()
+                                .WithName("green")
+                                .WithDescription("The green color value")
+                                .WithType(ApplicationCommandOptionType.Integer)
+                                .WithRequired(true)
+                                .WithMinValue(0)
+                                .WithMaxValue(255))
+                            .AddOption(new SlashCommandOptionBuilder()
+                                .WithName("blue")
+                                .WithDescription("The blue color value")
+                                .WithType(ApplicationCommandOptionType.Integer)
+                                .WithRequired(true)
+                                .WithMinValue(0)
+                                .WithMaxValue(255)
+                            )),
+                        // .AddOption("color-hex", ApplicationCommandOptionType.String, "the color to show", true),
                     cmd =>
                     {
-                        string colorHex = (string)cmd.Data.Options.First().Value;
+                        var colorType = (SocketSlashCommandDataOption)cmd.Data.Options.First();
                 
-                        var color = Helper.HexCodeToColor(colorHex).DiscordColorToArgb32();
+                        Argb32 color;
+                        switch (colorType.Name)
+                        {
+                            case "hex":
+                                string colorHex = (string) colorType.Options.First().Value;
+                                color = Helper.HexCodeToColor(colorHex).DiscordColorToArgb32();
+                                break;
+                            case "rgb":
+                                byte colorR = Convert.ToByte((long) colorType.Options.ToArray()[0].Value);
+                                byte colorG = Convert.ToByte((long) colorType.Options.ToArray()[1].Value);
+                                byte colorB = Convert.ToByte((long) colorType.Options.ToArray()[2].Value);
+                                color = new Color(colorR, colorG, colorB).DiscordColorToArgb32();
+                                break;
+                            default:
+                                throw new Exception("how??!?!");
+                        }
                         var inverseColor = color.Invert();
                     
                         const string endName = "TLC_Watermark.png";
-                        string path = $"{Program.FileAssetsPath}{(OperatingSystem.IsWindows() ? "\\" : "/")}{endName}";
+                        string path = $"{Program.FileAssetsPath}\\{endName}";
                         using Image<Argb32> image = Image.Load<Argb32>(path);
     
                         var magenta = new Argb32(255, 0, 255);

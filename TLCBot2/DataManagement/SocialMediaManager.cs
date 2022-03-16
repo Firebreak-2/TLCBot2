@@ -6,7 +6,7 @@ namespace TLCBot2.DataManagement;
 
 public static class SocialMediaManager
 {
-    public static string DatabasePath => $"{Program.FileAssetsPath}\\smDatabase.txt";
+    public static string DatabasePath => $"{Program.FileAssetsPath}\\smDatabase.json";
     public static List<SocialMediaUserEntry> SMUsers = new();
     public static void Initialize()
     {

@@ -1,4 +1,6 @@
 ﻿using Discord;
+using Discord.Interactions;
+using Discord.Interactions.Builders;
 using Discord.WebSocket;
 using TLCBot2.ApplicationComponents;
 using TLCBot2.Commands;

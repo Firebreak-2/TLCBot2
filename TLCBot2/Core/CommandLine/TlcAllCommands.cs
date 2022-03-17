@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Discord;
+using MoreLinq;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using TLCBot2.Utilities;
@@ -146,22 +147,33 @@ public static class TlcAllCommands
                 : $"the property [{args[0]}] does not exist");
         }, 2));
         
-        AddCommand(new TlcCommand("test", _ =>
+        AddCommand(new TlcCommand("forceunlink", args =>
         {
-            SocialMediaManager.AddOrModifyUser(751535897287327865, 
-                "gamer",
-                "gamer",
-                "gamer",
-                "gamer",
-                "gamer",
-                "gamer",
-                "gamer",
-                "gamer",
-                "gamer",
-                "gamer",
-                "gamer"
-            );
-        }));
+            string[] unlinkees = args[1].Split(',').Select(x => x.ToLower().Replace(" ", "")).ToArray();
+
+            string? DoReplace(string platform)
+            {
+                const string replacement = SocialMediaManager.SocialMediaUserEntry.NoLink;
+
+                return !unlinkees.Contains(platform.ToLower().Replace(" ", "")) ? null : replacement;
+            }
+
+            Constants.Channels.Lares.TLCBetaCommandLine.SendMessageAsync(SocialMediaManager.ModifyUser(
+                ulong.Parse(args[0]),
+                Youtube: DoReplace("YouTube"),
+                Twitter: DoReplace("Twitter"),
+                DeviantArt: DoReplace("Deviantart"),
+                Instagram: DoReplace("Instagram"),
+                GitHub: DoReplace("GitHub"),
+                Steam: DoReplace("Steam"),
+                Reddit: DoReplace("Reddit"),
+                ArtStation: DoReplace("ArtStation"),
+                TikTok: DoReplace("TikTok"),
+                Twitch: DoReplace("Twitch"),
+                PersonalWebsite: DoReplace("Personal Website"))
+                ? $"Unlinked {string.Join(", ", unlinkees)}"
+                : "The user does not exist in the database");
+        }, 2, "forcefully unlinks the selected social media platforms from a user"));
     }
     public static void AddCommand(TlcCommand command) => TlcConsole.ListCommand.Add(command);
 }

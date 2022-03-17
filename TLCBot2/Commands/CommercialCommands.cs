@@ -408,9 +408,10 @@ namespace TLCBot2.Commands
                                 2 => "🥉",
                                 _ => $"#{i+1}"
                             };
+                            string highlightUnderline = user.UserID == cmd.User.Id ? "__" : "";
                             string banDash = user.IsBanned ? "~~" : "";
                             string userMention = $"<@!{user.UserID}>";
-                            return $"{rankingPrefix}: **{user.Cookies}**🍪  {banDash}{userMention}{banDash}";
+                            return $"{highlightUnderline}{rankingPrefix}: **{user.Cookies}**🍪  {banDash}{userMention}{banDash}{highlightUnderline}";
                         }));
                     
                     var embed = new EmbedBuilder()
@@ -428,13 +429,15 @@ namespace TLCBot2.Commands
                     .WithName("give-cookie")
                     .WithDescription("Adds or removes(using negatives) 🍪 from a user.")
                     .AddOption("user", ApplicationCommandOptionType.User, "The user to manipulate the 🍪 of",true)
-                    .AddOption("count", ApplicationCommandOptionType.Integer, "The amount of 🍪 to give to the person."),
+                    .AddOption("count", ApplicationCommandOptionType.Integer, "The amount of 🍪 to give to the person.")
+                    .AddOption("reason", ApplicationCommandOptionType.String, "The reason for giving the 🍪s."),
                 cmd =>
                 {
-                    var user = (SocketUser)cmd.Data.Options.First().Value;
-                    int count = cmd.Data.Options.Count == 2 ? Convert.ToInt32((long)cmd.Data.Options.Last().Value) : 5;
-
-                    CookieManager.TakeOrGiveCookiesToUser(user.Id, count);
+                    SocketUser user = (SocketUser)cmd.Data.Options.First(x => x.Name == "user").Value;
+                    int count = cmd.Data.Options.Count == 2 ? Convert.ToInt32((long)cmd.Data.Options.First(x => x.Name == "count").Value) : 5;
+                    string? reason = (string) cmd.Data.Options.FirstOrDefault(x => x.Name == "reason")!.Value;
+                    
+                    CookieManager.TakeOrGiveCookiesToUser(user.Id, count, reason);
                     CookieManager.GetUser(user.Id, out var entry);
 
                     bool isPositive = count >= 0;
@@ -453,21 +456,23 @@ namespace TLCBot2.Commands
                     .WithName("set-cookies")
                     .WithDescription("Sets the amount of 🍪 to a specific number for a specific user.")
                     .AddOption("user", ApplicationCommandOptionType.User, "The user to manipulate the 🍪 of",true)
-                    .AddOption("amount", ApplicationCommandOptionType.Integer, "The set number of 🍪.", true),
+                    .AddOption("amount", ApplicationCommandOptionType.Integer, "The set number of 🍪.", true)
+                    .AddOption("reason", ApplicationCommandOptionType.String, "The reason for giving the 🍪s."),
                 cmd =>
                 {
-                    var user = (SocketUser)cmd.Data.Options.First().Value;
-                    int count = cmd.Data.Options.Count == 2 ? Convert.ToInt32((long)cmd.Data.Options.Last().Value) : 0;
-
+                    SocketUser user = (SocketUser)cmd.Data.Options.First(x => x.Name == "user").Value;
+                    int count = cmd.Data.Options.Count == 2 ? Convert.ToInt32((long)cmd.Data.Options.First(x => x.Name == "amount").Value) : 5;
+                    string? reason = (string) cmd.Data.Options.FirstOrDefault(x => x.Name == "reason")!.Value;
+                    
                     CookieManager.GetUser(user.Id, out var entry);
-                    CookieManager.AddOrModifyUser(user.Id, count);
+                    CookieManager.AddOrModifyUser(user.Id, count, reason: reason);
 
                     var embed = new EmbedBuilder()
                         .WithColor(Color.Blue)
                         .WithTitle($"Changed the 🍪 of {user.Username}.")
                         .WithDescription($"{entry?.Cookies ?? 0} → {count}");
             
-                    cmd.RespondAsync(embed:embed.Build());
+                    cmd.RespondAsync(embed:embed.Build(), ephemeral: true);
                 }, true), guild);
             #endregion
         

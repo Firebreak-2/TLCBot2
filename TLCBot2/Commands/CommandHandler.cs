@@ -27,7 +27,7 @@ public static class CommandHandler
     {
         await TestCommands.Initialize();
         await CommercialCommands.Initialize();
-        
+
         await Constants.Guilds.Lares!.BulkOverwriteApplicationCommandAsync(AllCommands
             .Where(x => x.Guild != null).Select(x => x.Slashie).ToArray());
         

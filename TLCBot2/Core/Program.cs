@@ -18,7 +18,12 @@ public class Program
     public static string FileAssetsPath = "";
     public static async Task MainAsync()
     {
-        Client = new DiscordSocketClient(new DiscordSocketConfig { MessageCacheSize = 100, LogGatewayIntentWarnings = false });
+        Client = new DiscordSocketClient(new DiscordSocketConfig
+        {
+            MessageCacheSize = 100, 
+            LogGatewayIntentWarnings = true,
+            GatewayIntents = GatewayIntents.All
+        });
         Client.Log += Log;
         Client.Ready += Initialize;
         Client.MessageReceived += TlcConsole.OnMessageRecieved;
@@ -30,6 +35,9 @@ public class Program
         Client.ModalSubmitted += ModalHandler.OnModalRecieved;
         Client.ReactionAdded += StarboardListener.OnReactionAdded;
         Client.UserJoined += ServerJoinListener.OnMemberJoined;
+        Client.UserJoined += ServerStatsListener.OnMemberJoined;
+        Client.UserLeft += ServerStatsListener.OnMemberLeft;
+        Client.InviteCreated += ServerJoinListener.OnInviteCreated;
 
         #region Token retrieval
         const string path = "token.txt";
@@ -87,8 +95,8 @@ public class Program
         SocialMediaManager.Initialize();
         ModalHandler.Initialize();
         MessageComponentHandler.Initialize();
+        ServerStatsListener.Initialize();
     }
-
     private static void LocateFilePath()
     {
         FileAssetsPath = Directory.GetCurrentDirectory();

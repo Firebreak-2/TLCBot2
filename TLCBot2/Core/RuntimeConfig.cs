@@ -42,6 +42,50 @@ public static class RuntimeConfig
         }
         set => SetSetting("AdminRole", $"{value.Guild.Id}/{value.Id}");
     }
+    public static SocketGuildChannel CookieLogChannel
+    {
+        get
+        {
+            string x = UnsafeGetSetting<string>("CookieLogChannel")!;
+            string[] split = x.Split('/');
+            return Program.Client.GetGuild(ulong.Parse(split[0]))
+                .GetChannel(ulong.Parse(x.Split('/')[1]));
+        }
+        set => SetSetting("CookieLogChannel", $"{value.Guild.Id}/{value.Id}");
+    }
+    public static SocketGuildChannel StatMembersVC
+    {
+        get
+        {
+            string x = UnsafeGetSetting<string>("StatMembersVC")!;
+            string[] split = x.Split('/');
+            return Program.Client.GetGuild(ulong.Parse(split[0]))
+                .GetChannel(ulong.Parse(x.Split('/')[1]));
+        }
+        set => SetSetting("StatMembersVC", $"{value.Guild.Id}/{value.Id}");
+    }
+    public static SocketGuildChannel StatDaysActiveVC
+    {
+        get
+        {
+            string x = UnsafeGetSetting<string>("StatDaysActiveVC")!;
+            string[] split = x.Split('/');
+            return Program.Client.GetGuild(ulong.Parse(split[0]))
+                .GetChannel(ulong.Parse(x.Split('/')[1]));
+        }
+        set => SetSetting("StatDaysActiveVC", $"{value.Guild.Id}/{value.Id}");
+    }
+    public static SocketGuildChannel GeneralChat
+    {
+        get
+        {
+            string x = UnsafeGetSetting<string>("GeneralChat")!;
+            string[] split = x.Split('/');
+            return Program.Client.GetGuild(ulong.Parse(split[0]))
+                .GetChannel(ulong.Parse(x.Split('/')[1]));
+        }
+        set => SetSetting("GeneralChat", $"{value.Guild.Id}/{value.Id}");
+    }
     public static void Initialize()
     {
         string[] props = GetRuntimeProps();

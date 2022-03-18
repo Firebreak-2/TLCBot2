@@ -34,7 +34,8 @@ public static class ServerJoinListener
             string invitation = $"<@!{item.Inviter.Id}> Thanks for inviting <@!{user.Id}> to the server.";
             if (File.ReadAllLines(PreviousInvites).Any(x => x == invitation)) break;
             
-            CookieManager.TakeOrGiveCookiesToUser(item.Inviter.Id, 3, $"Invited [{user.Username}] to server");
+            CookieManager.TakeOrGiveCookiesToUser(item.Inviter.Id, 3, 
+                $"Invited [{user.Username}] to server\nInviter: {item.Inviter.Mention} | {item.Inviter.Username}#{item.Inviter.Discriminator} | {item.Inviter.Id}\nInvited: {user.Mention} | {user.Username}#{user.Discriminator} | {user.Id}");
             ((SocketTextChannel)RuntimeConfig.GeneralChat).SendMessageAsync(invitation + " Have 3 🍪");
             File.AppendAllText(PreviousInvites, invitation);
             break;

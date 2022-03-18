@@ -3,7 +3,6 @@ using Discord.Interactions;
 using Discord.Interactions.Builders;
 using Discord.WebSocket;
 using TLCBot2.ApplicationComponents;
-using TLCBot2.Commands;
 using TLCBot2.Core.CommandLine;
 using TLCBot2.DataManagement;
 using TLCBot2.Listeners;
@@ -27,12 +26,12 @@ public class Program
         Client.Log += Log;
         Client.Ready += Initialize;
         Client.MessageReceived += TlcConsole.OnMessageRecieved;
-        Client.SlashCommandExecuted += CommandHandler.OnCommand;
-        Client.ButtonExecuted += MessageComponentHandler.OnButtonExecuted;
-        Client.SelectMenuExecuted += MessageComponentHandler.OnSelectionMenuExecuted;
+        Client.SlashCommandExecuted += SlashCommandHandler.OnCommand;
         Client.MessageCommandExecuted += ContextCommandHandler.OnMessageCommandExecuted;
         Client.UserCommandExecuted += ContextCommandHandler.OnUserCommandExecuted;
-        Client.ModalSubmitted += ModalHandler.OnModalRecieved;
+        Client.ButtonExecuted += MessageComponentHandler.OnButtonExecuted;
+        Client.SelectMenuExecuted += MessageComponentHandler.OnSelectionMenuExecuted;
+        Client.ModalSubmitted += ModalHandler.OnModalSubmitted;
         Client.ReactionAdded += StarboardListener.OnReactionAdded;
         Client.UserJoined += ServerJoinListener.OnMemberJoined;
         Client.UserJoined += ServerStatsListener.OnMemberJoined;
@@ -88,7 +87,7 @@ public class Program
         TlcAllCommands.Initialize();
         RuntimeConfig.Initialize();
 
-        await CommandHandler.Initialize();
+        await ApplicationCommandHandler.Initialize();
         StarboardListener.Initialize();
         ServerJoinListener.Initialize();
         CookieManager.Initialize();

@@ -13,7 +13,6 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using TLCBot2.Commands;
 using TLCBot2.DataManagement;
 using Image = SixLabors.ImageSharp.Image;
 

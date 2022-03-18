@@ -2,10 +2,12 @@
 using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
+using Discord;
 using Discord.WebSocket;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TLCBot2.Core;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace TLCBot2.Utilities;
 

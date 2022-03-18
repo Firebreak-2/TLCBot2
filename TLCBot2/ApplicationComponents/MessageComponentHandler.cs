@@ -22,13 +22,6 @@ public static class MessageComponentHandler
     }
     public static Task OnSelectionMenuExecuted(SocketMessageComponent selectionMenu)
     {
-        // foreach (var component in AllComponents
-        //              .Where(component => component.Component.Components.First()
-        //                  .Components.Any(x => x.CustomId == selectionMenu.Data.CustomId)))
-        // {
-        //     component.OnExecuteSelectMenu?.Invoke(selectionMenu);
-        // }
-
         for (int i = 0; i < AllComponents.Count; i++)
         {
             if (AllComponents[i].Component.Components.First()

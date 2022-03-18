@@ -8,23 +8,22 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using TLCBot2.ApplicationComponents.Core;
-using TLCBot2.Utilities;
-using SkiaSharp;
 using TLCBot2.Core;
 using TLCBot2.DataManagement;
+using TLCBot2.Utilities;
 using Color = Discord.Color;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace TLCBot2.Commands
+namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
 {
-    public static class CommercialCommands
+    public static class CommercialSlashCommands
     {
         public static async Task Initialize()
         {
             var guild = Constants.Guilds.Lares!;
         
             #region Color Command
-                await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+                await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                         .WithName("color")
                         .WithDescription("Displays the specified color.")
                         .AddOption(new SlashCommandOptionBuilder()
@@ -103,7 +102,7 @@ namespace TLCBot2.Commands
             #endregion
             
             #region Random Color Command
-                await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+                await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                         .WithName("random-color")
                         .WithDescription("Displays a random color."),
                     cmd =>
@@ -146,7 +145,7 @@ namespace TLCBot2.Commands
             #endregion
             
             #region Scheme Command
-                await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+                await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                         .WithName("scheme")
                         .WithDescription("Generate a color scheme to be used with a base color.")
                         .AddOption("base-color", ApplicationCommandOptionType.String, "The color to base the scheme off of.", true),
@@ -185,7 +184,7 @@ namespace TLCBot2.Commands
             #endregion
             
             #region Bingo Command
-            await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                     .WithName("bingo")
                     .WithDescription("Generates a bingo board to draw from. More info on help command")
                     .AddOption("tile-count", ApplicationCommandOptionType.Integer, "the grid size",minValue:3,maxValue:11),
@@ -282,7 +281,7 @@ namespace TLCBot2.Commands
         #endregion
         
             #region Random Prompt Command
-            await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                 .WithName("prompt")
                 .WithDescription("Generates a random prompt for you to draw!"), cmd =>
             {
@@ -323,7 +322,7 @@ namespace TLCBot2.Commands
             #endregion
         
             #region Clear Command
-            await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                     .WithName("clear")
                     .WithDescription("Deletes the number of messages specified")
                     .AddOption("amount", ApplicationCommandOptionType.Integer, "The specified amount", true), 
@@ -363,14 +362,14 @@ namespace TLCBot2.Commands
             #endregion
         
             #region Ping Command
-            await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                     .WithName("ping")
                     .WithDescription("Responds with \"pong!\" to indicate that the bot is online."), 
                 cmd => cmd.RespondAsync("pong!")), guild);
             #endregion
         
             #region Cookies Command
-            await FireCommand.CreateNew(new(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new(new SlashCommandBuilder()
                     .WithName("cookies")
                     .WithDescription("Check the amount of 🍪 that you own!")
                     .AddOption("user", ApplicationCommandOptionType.User, "The user to check the cookies of."),
@@ -391,7 +390,7 @@ namespace TLCBot2.Commands
             #endregion
         
             #region Cookie Leaderboard Command
-            await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                     .WithName("leaderboard")
                     .WithDescription("Shows the current 🍪 leaderboard."),
                 cmd =>
@@ -425,7 +424,7 @@ namespace TLCBot2.Commands
             #endregion
         
             #region Give Cookie Command
-            await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                     .WithName("give-cookie")
                     .WithDescription("Adds or removes(using negatives) 🍪 from a user.")
                     .AddOption("user", ApplicationCommandOptionType.User, "The user to manipulate the 🍪 of",true)
@@ -452,7 +451,7 @@ namespace TLCBot2.Commands
             #endregion
         
             #region Set Cookie Command
-            await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                     .WithName("set-cookies")
                     .WithDescription("Sets the amount of 🍪 to a specific number for a specific user.")
                     .AddOption("user", ApplicationCommandOptionType.User, "The user to manipulate the 🍪 of",true)
@@ -477,13 +476,13 @@ namespace TLCBot2.Commands
             #endregion
         
             #region Social Media Command
-            await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                 .WithName("social-media")
                 .WithDescription("Displays a person's linked social media accounts")
-                .AddOption("user", ApplicationCommandOptionType.User, "The user to check the socials of", true),
+                .AddOption("user", ApplicationCommandOptionType.User, "The user to check the socials of"),
                 cmd =>
                 {
-                    SocketUser user = (SocketUser) cmd.Data.Options.First().Value;
+                    SocketUser user =  (cmd.Data.Options.Count == 1 ? (SocketUser) cmd.Data.Options.First().Value : cmd.User);
                     if (!SocialMediaManager.GetUser(user.Id, out var entry))
                     {
                         cmd.RespondAsync($"{user.Username} has not linked any of their social media profiles.");
@@ -535,7 +534,7 @@ namespace TLCBot2.Commands
             #endregion
             
             #region Link Social Media Profile Command
-            await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                 .WithName("link")
                 .WithDescription("Links your discord account with a social media profile")
                 .AddOption(new SlashCommandOptionBuilder()
@@ -650,7 +649,7 @@ namespace TLCBot2.Commands
        
             #region  Unlink Social Media Profile
 
-        await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
+        await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                 .WithName("unlink")
                 .WithDescription("Unlinks the selected social media profiles of yours"),
             cmd =>

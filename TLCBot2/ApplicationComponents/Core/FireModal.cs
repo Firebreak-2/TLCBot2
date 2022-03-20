@@ -6,12 +6,14 @@ namespace TLCBot2.ApplicationComponents.Core;
 public class FireModal
 {
     public Modal Modal;
+    public ModalBuilder Builder;
     public Action<SocketModal>? OnSubmitted;
 
     public FireModal(
         ModalBuilder modal,
         Action<SocketModal> onSubmitted)
     {
+        Builder = modal;
         Modal = modal.Build();
         OnSubmitted = onSubmitted;
     }

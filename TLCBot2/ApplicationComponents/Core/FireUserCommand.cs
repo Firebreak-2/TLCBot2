@@ -6,6 +6,7 @@ namespace TLCBot2.ApplicationComponents.Core;
 public class FireUserCommand
 {
     public UserCommandProperties Command;
+    public UserCommandBuilder Builder;
     public Action<SocketUserCommand>? OnExecuted;
     public bool DevOnly;
     public SocketGuild? Guild = null;
@@ -14,6 +15,7 @@ public class FireUserCommand
         Action<SocketUserCommand> onExecuted,
         bool devOnly = false)
     {
+        Builder = userCommand;
         Command = userCommand.Build();
         OnExecuted = onExecuted;
         DevOnly = devOnly;
@@ -25,7 +27,7 @@ public class FireUserCommand
     public Task Create(SocketGuild? guild)
     {
         Guild = guild;
-        ApplicationCommandHandler.AllUserCommands.Add(this);
+        ApplicationCommandManager.AllUserCommands.Add(this);
         return Task.CompletedTask;
     }
 }

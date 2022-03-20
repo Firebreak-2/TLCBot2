@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Newtonsoft.Json;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.Core;
 using TLCBot2.Utilities;
@@ -13,6 +14,8 @@ public static class EternalButtons
     public static ButtonBuilder EternalButton2 => new("Feedback", "ETERNAL-BUTTON-2");
     public static ButtonBuilder EternalButton3 => new("Bug Report", "ETERNAL-BUTTON-3");
     public static ButtonBuilder EternalButton4 => new("QOTD Suggestion", "ETERNAL-BUTTON-4");
+    public static ButtonBuilder EternalButton5 => new("Command Catalogue", "ETERNAL-BUTTON-5");
+    public static ButtonBuilder EternalButton6 => new("Role Catalogue", "ETERNAL-BUTTON-6");
     public static void OnExecute(SocketMessageComponent button)
     {
         const string remove = "ETERNAL-BUTTON-";
@@ -129,16 +132,38 @@ public static class EternalButtons
                     .WithCustomId($"modal-{Helper.RandomInt(0, 1000)}")
                     .AddTextInput("Suggest A Question", "textbox-0"),
                     modal =>
-                {
+                    {
+                        var question = modal.Data.Components.First().Value;
                     RuntimeConfig.FeedbackReceptionChannel.SendMessageAsync(embed: new EmbedBuilder()
                         .WithTitle("QOTD Suggestion")
                         .WithColor(Color.Blue)
                         .WithAuthor(modal.User)
                         .AddField("Sent From", modal.User.Mention)
-                        .AddField("What They Suggested", modal.Data.Components.First().Value)
-                        .Build());
+                        .AddField("What They Suggested", question)
+                        .Build(), components: new FireMessageComponent(new ComponentBuilder()
+                        .WithButton("Post to #QOTD", $"button-{Helper.RandomInt(0, 9999)}"), qotdButton =>
+                    {
+                        var msg = RuntimeConfig.QOTDChannel
+                            .SendMessageAsync($"{RuntimeConfig.QOTDRole.Mention} {question}\n\nThanks to {modal.User.Mention} for suggesting this question.").Result;
+                        
+                        qotdButton.RespondAsync(
+                            $"Posted question on {RuntimeConfig.QOTDChannel.Mention}\n\n{msg.GetJumpUrl()}", ephemeral: true);
+
+                        qotdButton.Message.ModifyAsync(props =>
+                        {
+                            props.Components = new ComponentBuilder()
+                                .WithButton("Post to #QOTD", "no-use", ButtonStyle.Secondary, disabled: true).Build();
+                        });
+
+                    }, null){BirthDate = DateTime.Now.AddDays(7)}.Create());
                     modal.RespondAsync("Question Suggested", ephemeral: true);
                 })));
+                break;
+            case 5:
+                button.RespondAsync("fire did not yet implement this button, it exists tho", ephemeral: true);
+                break;
+            case 6:
+                button.RespondAsync("fire did not yet implement this button, it exists tho", ephemeral: true);
                 break;
         }
     }

@@ -6,11 +6,13 @@ namespace TLCBot2.ApplicationComponents.Core;
 public class FireSlashCommand
 {
     public SlashCommandProperties Slashie;
+    public readonly SlashCommandBuilder Builder;
     public Action<SocketSlashCommand> OnExecute;
     public bool DevOnly;
     public SocketGuild? Guild = null;
     public FireSlashCommand(SlashCommandBuilder slashie, Action<SocketSlashCommand> onExecute, bool devOnly = false)
     {
+        Builder = slashie;
         Slashie = slashie.Build();
         OnExecute = onExecute;
         DevOnly = devOnly;
@@ -23,7 +25,7 @@ public class FireSlashCommand
     public Task Create(SocketGuild? guild)
     {
         Guild = guild;
-        ApplicationCommandHandler.AllSlashCommands.Add(this);
+        ApplicationCommandManager.AllSlashCommands.Add(this);
         return Task.CompletedTask;
     }
 }

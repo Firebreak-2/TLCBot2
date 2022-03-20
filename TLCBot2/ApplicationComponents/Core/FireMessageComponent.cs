@@ -7,6 +7,7 @@ namespace TLCBot2.ApplicationComponents.Core;
 public class FireMessageComponent
 {
     public MessageComponent Component;
+    public ComponentBuilder Builder;
     public Action<SocketMessageComponent>? OnExecuteButton;
     public Action<SocketMessageComponent>? OnExecuteSelectMenu;
     public DateTime BirthDate = DateTime.Now;
@@ -15,6 +16,7 @@ public class FireMessageComponent
         Action<SocketMessageComponent>? onExecuteButton,
         Action<SocketMessageComponent>? onExecuteSelectMenu)
     {
+        Builder = component;
         Component = component.Build();
         OnExecuteButton = onExecuteButton;
         OnExecuteSelectMenu = onExecuteSelectMenu;

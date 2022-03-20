@@ -14,10 +14,10 @@ public static class Constants
             public const ulong Tlc = 616111158549544960;
             public const ulong Lares = 915280394117591130;
         }
-        public static SocketGuild TlcBotSupport = Program.BetaClient.GetGuild(Id.TlcBotSupport);
-        public static SocketGuild TlcBetaTesting = Program.BetaClient.GetGuild(Id.TlcBetaTesting);
-        public static SocketGuild Tlc = Program.BetaClient.GetGuild(Id.Tlc);
-        public static SocketGuild? Lares = Program.BetaClient.GetGuild(Id.Lares);
+        public static SocketGuild TlcBotSupport = Program.Client.GetGuild(Id.TlcBotSupport);
+        public static SocketGuild TlcBetaTesting = Program.Client.GetGuild(Id.TlcBetaTesting);
+        public static SocketGuild Tlc = Program.Client.GetGuild(Id.Tlc);
+        public static SocketGuild? Lares = Program.Client.GetGuild(Id.Lares);
     }
     public static class Users
     {
@@ -36,7 +36,6 @@ public static class Constants
             {
                 public const ulong TLCBetaCommandLine = 951848832516358154;
             }
-            public static SocketTextChannel TLCBetaCommandLine = Guilds.Lares.GetTextChannel(Id.TLCBetaCommandLine);
         }
     }
 }

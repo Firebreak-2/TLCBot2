@@ -10,6 +10,7 @@ using SixLabors.ImageSharp.Processing;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.Core;
 using TLCBot2.DataManagement;
+using TLCBot2.DataManagement.Temporary;
 using TLCBot2.Utilities;
 using Color = Discord.Color;
 using Image = SixLabors.ImageSharp.Image;
@@ -21,6 +22,164 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
         public static async Task Initialize()
         {
             var guild = Constants.Guilds.Lares!;
+            const bool devOnly = false;
+
+            #region Dynamic Timestamp Generator Command
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
+                .WithName("generate-timestamp")
+                .WithDescription("Generates a dynamic timestamp to use")
+                .AddOption(
+                    "hour-offset",
+                    ApplicationCommandOptionType.Integer, 
+                    "The UTC time offset from your timezone (yourTimezone = UTC+{offset})",
+                    minValue: -24, maxValue: 24)
+                .AddOption(new SlashCommandOptionBuilder()
+                    .WithName("style")
+                    .WithDescription("The style of the timestamp to be displayed in")
+                    .WithType(ApplicationCommandOptionType.String)
+                    .AddChoice("Short Time", "t")
+                    .AddChoice("Long Time", "T")
+                    .AddChoice("Short Date", "d")
+                    .AddChoice("Long Date", "D")
+                    .AddChoice("Long Date with Short Time", "f")
+                    .AddChoice("Weekday with Long Date with Short Time", "F")
+                    .AddChoice("Relative Time", "R")
+                )
+                .AddOption("year", ApplicationCommandOptionType.Integer, "The specified [year] in the UTC timezone")
+                .AddOption("month", ApplicationCommandOptionType.Integer, "The specified [month] in the UTC timezone")
+                .AddOption("day", ApplicationCommandOptionType.Integer, "The specified [day] in the UTC timezone")
+                .AddOption("hour", ApplicationCommandOptionType.Integer, "The specified [hour] in the UTC timezone")
+                .AddOption("minute", ApplicationCommandOptionType.Integer, "The specified [minute] in the UTC timezone")
+                .AddOption("second", ApplicationCommandOptionType.Integer, "The specified [second] in the UTC timezone")
+                , cmd =>
+                {
+                    var offset = new TimeSpan(Convert.ToInt32(cmd.Data.Options.First(x => x.Name == "hour-offset").Value), 0, 0);
+                    var now = DateTimeOffset.UtcNow + offset;
+            
+                    bool Condition(SocketSlashCommandDataOption x, string x2) => x.Name == x2;
+                    int GetOpt(string name, int defaultValue)
+                    {
+                        return cmd.Data.Options.Any(x => Condition(x, name))
+                            ? Convert.ToInt32(cmd.Data.Options.First(x => Condition(x, name)).Value)
+                            : defaultValue;
+                    }
+            
+                    string style = cmd.Data.Options.Any(x => Condition(x, "style"))
+                        ? (string) cmd.Data.Options.First(x => Condition(x, "style")).Value
+                        : "Long Date with Short Time";
+                    
+                    int year = GetOpt("year", now.Year);
+                    int month = GetOpt("month", now.Month);
+                    int day = GetOpt("day", now.Day);
+                    int hour = GetOpt("hour", now.Hour);
+                    int minute = GetOpt("minute", now.Minute);
+                    int second = GetOpt("second", now.Second);
+                    
+                    string timestamp = $"<t:{new DateTimeOffset(year, month, day, hour, minute, second, 0, offset).ToUnixTimeSeconds()}:{style}>";
+                    cmd.RespondAsync($"`{timestamp}` {timestamp}");
+                }, devOnly), guild);
+            #endregion
+
+            #region Poll Command
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
+                .WithName("poll")
+                .WithDescription("Conducts a poll")
+                .AddOption("title", ApplicationCommandOptionType.String, "The title(question) of the poll", true)
+                .AddOption("options", ApplicationCommandOptionType.Integer, "The amount of options (2-5)", true, minValue:2, maxValue:5)
+                .AddOption("anonymous", ApplicationCommandOptionType.Boolean, "Whether you want to make it public that you made this poll")
+                .AddOption("has-other", ApplicationCommandOptionType.Boolean, "Whether to include an \"other\" option")
+                ,
+                cmd =>
+                {
+                    string title = (string) cmd.Data.Options.First(x => x.Name == "title").Value;
+                    long optionCount = (long) cmd.Data.Options.First(x => x.Name == "options").Value;
+                    bool anonymous = 
+                        cmd.Data.Options.All(x => x.Name != "anonymous") 
+                        || (bool)cmd.Data.Options.First(x => x.Name == "anonymous").Value;
+                    bool hasOther = 
+                        cmd.Data.Options.Any(x => x.Name == "has-other") 
+                        && (bool)cmd.Data.Options.First(x => x.Name == "has-other").Value;
+                    
+                    var modalBuilder = new ModalBuilder()
+                        .WithTitle("Poll Options")
+                        .WithCustomId($"modal-{Helper.RandomInt(0, 1000)}");
+                    
+                    for (int i = 0; i < optionCount; i++)
+                    {
+                        modalBuilder.AddTextInput($"Option {i+1}", $"{i}");
+                    }
+                    
+                    var builtModal = FireModal.CreateNew(new FireModal(modalBuilder, modal =>
+                    {
+                        var options = new PollHandler.PollOption[optionCount + (hasOther ? 1 : 0)];
+                        foreach (var item in modal.Data.Components)
+                        {
+                            int index = int.Parse(item.CustomId);
+                            options[index] = new PollHandler.PollOption(item.Value);
+                        }
+
+                        if (hasOther) options[^1] = new PollHandler.PollOption("Other");
+                        
+                        var poll = new PollHandler.Poll(title, $"poll-{Helper.RandomInt(0, 1000)}", options);
+                        EmbedBuilder GenerateEmbed()
+                        {
+                            var embed = new EmbedBuilder().WithTitle(title).WithColor(Color.Blue);
+                            int allVotes = poll.Options.Sum(opt => opt.Votes);
+                            foreach (var option in poll.Options)
+                            {
+                                const int charCount = 20;
+                                const char w = '#';
+                                const char b = '-';
+                                float votePercent = (allVotes > 0 ? (float)option.Votes / allVotes : option.Votes) * charCount;
+
+                                string whiteBar = $"{(votePercent > 0 ? new string(w, (int)votePercent) : "")}";
+                                string blackBar = $"{new string(b, (int)(charCount - votePercent))}";
+                                string fullBar = $"{whiteBar}{blackBar}";
+                                fullBar = fullBar.Length == charCount - 1 ? fullBar + b : fullBar;
+                                string spacing = new(' ',
+                                    allVotes.ToString().Length - option.Votes.ToString().Length);
+                                embed.AddField(option.Title, $"`{option.Votes + spacing} {fullBar}`");
+                            }
+
+                            embed.WithFooter($"Total votes: {allVotes}");
+
+                            if (!anonymous)
+                                embed.WithAuthor(cmd.User);
+    
+                            return embed;
+                        }
+                    
+                        var cb = FireMessageComponent.CreateNew(new FireMessageComponent(new ComponentBuilder()
+                            .WithSelectMenu(poll.CustomID, poll.Options.Select(option => new SelectMenuOptionBuilder()
+                                .WithLabel(option.Title)
+                                .WithValue(option.Title)).ToList(), maxValues: 1), null, selectMenu =>
+                        {
+                            string stringToCheckIfUserHasVotedBefore = $"{selectMenu.User.Id}";
+                            if (poll.VoteHistory.Contains(stringToCheckIfUserHasVotedBefore))
+                            {
+                                selectMenu.RespondAsync("Cannot vote more than once", ephemeral: true);
+                                return;
+                            }
+                            poll.Options.First(x => x.Title == selectMenu.Data.Values.First()).Votes++;
+                            selectMenu.Message.ModifyAsync(props =>
+                                props.Embed = GenerateEmbed().Build());
+                            poll.VoteHistory.Add(stringToCheckIfUserHasVotedBefore);
+                        
+                            selectMenu.RespondAsync("Response submitted.", ephemeral:true);
+                        }));
+                    
+                        var msg = modal.Channel.SendMessageAsync(embed: GenerateEmbed().Build(), components:cb).Result;
+                        modal.RespondAsync();
+                        if (hasOther)
+                        {
+                            ((SocketTextChannel) msg.Channel)
+                                .CreateThreadAsync(
+                                    "Other Answers", message: msg);
+                        }
+                    }));
+                    cmd.RespondWithModalAsync(builtModal);
+                }, devOnly), guild);
+            #endregion
         
             #region Color Command
                 await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
@@ -98,7 +257,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                             .WithTitle(text);
                     
                         cmd.RespondAsync(embed: embedBuilder.Build());
-                }), guild);
+                }, devOnly), guild);
             #endregion
             
             #region Random Color Command
@@ -141,7 +300,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         }, null));
                     
                         cmd.RespondAsync(embed: embedBuilder, components:fmc); 
-                }), guild);
+                }, devOnly), guild);
             #endregion
             
             #region Scheme Command
@@ -180,7 +339,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                                 .Build();
                         }
                         cmd.RespondAsync(embed:GetSchemeEmbed());
-                }), guild);
+                }, devOnly), guild);
             #endregion
             
             #region Bingo Command
@@ -260,11 +419,12 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         image.Mutate(img =>
                             img.DrawImage(imgToBeDrawn, centerPos, 1));
 
+                        string url = Helper.GetFileUrl(image.ToStream());
                         return new EmbedBuilder()
                             .WithTitle($"TLC bingo card for {cmd.User.Username}")
                             .WithDescription(
                                 "Draw an image that would score a bingo on the following sheet. Don't forget to shout bingo and share your finished drawing!")
-                            .WithImageUrl(Helper.GetFileUrl(image.ToStream(), null))
+                            .WithImageUrl(url)
                             .WithColor(Color.Blue)
                             .Build();
                     }
@@ -277,7 +437,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     }, null));
 
                     cmd.RespondAsync(embed:GetBingoEmbed(),components:fmc);
-                    }), guild);
+                    }, devOnly), guild);
         #endregion
         
             #region Random Prompt Command
@@ -318,54 +478,14 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                 }, null));
 
                 cmd.RespondAsync(embed:GetRandomPromptEmbed(),components:fmc);
-            }), guild);
-            #endregion
-        
-            #region Clear Command
-            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
-                    .WithName("clear")
-                    .WithDescription("Deletes the number of messages specified")
-                    .AddOption("amount", ApplicationCommandOptionType.Integer, "The specified amount", true), 
-                cmd =>
-                {
-                    long count = (long) cmd.Data.Options.First().Value;
-                    switch (count)
-                    {
-                        case <= 0:
-                            cmd.RespondAsync("You cant delete something that doesn't exist??", ephemeral:true);
-                            return;
-                        case > 50:
-                            cmd.RespondAsync("dude.. that's wayyy too many channels. ", ephemeral:true);
-                            return;
-                    }
-        
-                    var messages = cmd.Channel.GetMessagesAsync((int)count, CacheMode.AllowDownload, RequestOptions.Default)
-                        .ToArrayAsync().Result.First().ToArray();
-        
-                    try
-                    {
-                        for (int i = 0; i < count; i++)
-                        {
-                            cmd.Channel.DeleteMessageAsync(messages[i], RequestOptions.Default);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        cmd.RespondAsync("An error has occured. If this problem prevails, contact `Firebreak#3813`.",
-                            ephemeral: true);
-                        return;
-                    }
-        
-                    cmd.RespondAsync($"`{count}` messages deleted.", ephemeral: true);
-                }, true), guild);
+            }, devOnly), guild);
             #endregion
         
             #region Ping Command
             await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                     .WithName("ping")
                     .WithDescription("Responds with \"pong!\" to indicate that the bot is online."), 
-                cmd => cmd.RespondAsync("pong!")), guild);
+                cmd => cmd.RespondAsync("pong!"), devOnly), guild);
             #endregion
         
             #region User Info Command
@@ -390,7 +510,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         .AddField("Is Cookie Banned", entry?.IsBanned ?? false ? "Yes" : "No")
                         .AddField("User ID", user.Id);
                     cmd.RespondAsync(embed:embed.Build(), ephemeral: true);
-                }), guild);
+                }, devOnly), guild);
             #endregion
         
             #region Cookies Command
@@ -411,7 +531,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         .WithTitle($"{user.Username}'s balance: {cookies}");
                 
                     cmd.RespondAsync(embed:embed.Build());
-                }), guild);
+                }, devOnly), guild);
             #endregion
         
             #region Cookie Leaderboard Command
@@ -445,59 +565,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         .WithCurrentTimestamp();
                     
                     cmd.RespondAsync(embed:embed.Build());
-                }), guild);
-            #endregion
-        
-            #region Give Cookie Command
-            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
-                    .WithName("give-cookie")
-                    .WithDescription("Adds or removes(using negatives) 🍪 from a user.")
-                    .AddOption("user", ApplicationCommandOptionType.User, "The user to manipulate the 🍪 of",true)
-                    .AddOption("count", ApplicationCommandOptionType.Integer, "The amount of 🍪 to give to the person.")
-                    .AddOption("reason", ApplicationCommandOptionType.String, "The reason for giving the 🍪s."),
-                cmd =>
-                {
-                    SocketUser user = (SocketUser)cmd.Data.Options.First(x => x.Name == "user").Value;
-                    int count = cmd.Data.Options.Count == 2 ? Convert.ToInt32((long)cmd.Data.Options.First(x => x.Name == "count").Value) : 5;
-                    string? reason = (string) cmd.Data.Options.FirstOrDefault(x => x.Name == "reason")!.Value;
-                    
-                    CookieManager.TakeOrGiveCookiesToUser(user.Id, count, reason);
-                    CookieManager.GetUser(user.Id, out var entry);
-
-                    bool isPositive = count >= 0;
-            
-                    var embed = new EmbedBuilder()
-                        .WithColor(Color.Blue)
-                        .WithTitle($"{(isPositive ? "Given" : "Taken")} `{Math.Abs(count)}` 🍪 {(isPositive ? "to" : "from")} {user.Username}.")
-                        .WithDescription($"current balance: {entry.Cookies}");
-            
-                    cmd.RespondAsync(embed:embed.Build());
-                }, true), guild);
-            #endregion
-        
-            #region Set Cookie Command
-            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
-                    .WithName("set-cookies")
-                    .WithDescription("Sets the amount of 🍪 to a specific number for a specific user.")
-                    .AddOption("user", ApplicationCommandOptionType.User, "The user to manipulate the 🍪 of",true)
-                    .AddOption("amount", ApplicationCommandOptionType.Integer, "The set number of 🍪.", true)
-                    .AddOption("reason", ApplicationCommandOptionType.String, "The reason for giving the 🍪s."),
-                cmd =>
-                {
-                    SocketUser user = (SocketUser)cmd.Data.Options.First(x => x.Name == "user").Value;
-                    int count = cmd.Data.Options.Count == 2 ? Convert.ToInt32((long)cmd.Data.Options.First(x => x.Name == "amount").Value) : 5;
-                    string? reason = (string) cmd.Data.Options.FirstOrDefault(x => x.Name == "reason")!.Value;
-                    
-                    CookieManager.GetUser(user.Id, out var entry);
-                    CookieManager.AddOrModifyUser(user.Id, count, reason: reason);
-
-                    var embed = new EmbedBuilder()
-                        .WithColor(Color.Blue)
-                        .WithTitle($"Changed the 🍪 of {user.Username}.")
-                        .WithDescription($"{entry?.Cookies ?? 0} → {count}");
-            
-                    cmd.RespondAsync(embed:embed.Build(), ephemeral: true);
-                }, true), guild);
+                }, devOnly), guild);
             #endregion
         
             #region Social Media Command
@@ -555,7 +623,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     }
        
                     cmd.RespondAsync(embed: embed.Build());
-                }), guild);
+                }, devOnly), guild);
             #endregion
             
             #region Link Social Media Profile Command
@@ -669,12 +737,12 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                             cmd.RespondAsync("This social media platform is not supported :(", ephemeral:true);
                             break;
                     }
-                }), guild);
+                }, devOnly), guild);
             #endregion
        
             #region  Unlink Social Media Profile
 
-        await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
+            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
                 .WithName("unlink")
                 .WithDescription("Unlinks the selected social media profiles of yours"),
             cmd =>
@@ -766,7 +834,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                                 selectMenu.Message.DeleteAsync();
                             }, null)), text:"Are you sure you want to unlink the selected profiles?");
                     }).Create());
-            }), guild);
+            }, devOnly), guild);
 
         #endregion
         }

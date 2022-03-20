@@ -6,7 +6,7 @@ namespace TLCBot2.Core.CommandLine;
 
 public static class TlcConsole
 {
-    public static ISocketMessageChannel Channel = Constants.Channels.Lares.TLCBetaCommandLine;
+    public static ISocketMessageChannel Channel = RuntimeConfig.TLCBetaCommandLine;
     public static List<TlcCommand> ListCommand = new();
     public static Task OnMessageRecieved(SocketMessage message)
     {

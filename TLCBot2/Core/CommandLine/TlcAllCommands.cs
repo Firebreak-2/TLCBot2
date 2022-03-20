@@ -14,6 +14,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using TLCBot2.ApplicationComponents;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.ApplicationComponents.Eternal;
 using TLCBot2.DataManagement;
@@ -101,7 +102,7 @@ public static class TlcAllCommands
         AddCommand(new TlcCommand("kill", _ =>
         {
             TlcConsole.Print("goodbye world");
-            Program.BetaClient.LogoutAsync();
+            Program.Client.LogoutAsync();
             Process.GetCurrentProcess().Kill();
         }));
         
@@ -112,13 +113,13 @@ public static class TlcAllCommands
         
         AddCommand(new TlcCommand("post", args =>
         {
-            Constants.Channels.Lares.TLCBetaCommandLine
+            RuntimeConfig.TLCBetaCommandLine
                 .SendFileAsync(args[0], null);
         }, 1));
         
         AddCommand(new TlcCommand("makeeternalmessage", args =>
         {
-            var channel = (SocketTextChannel)Program.BetaClient.GetChannel(ulong.Parse(args[1]));
+            var channel = (SocketTextChannel)Program.Client.GetChannel(ulong.Parse(args[1]));
             switch (int.Parse(args[0]))
             {
                 case 0:
@@ -165,6 +166,16 @@ public static class TlcAllCommands
                           "channels and when to use them.",
                            EternalButtons.EternalButton1);
                     
+                    Stuff("Getting confused with what the server's slash commands and message or user commands " +
+                          "do? Give the `Command Catalogue` button! It will explain all there is to know " +
+                          "about all of the server's custom commands.",
+                           EternalButtons.EternalButton5);
+                    
+                    Stuff("Are you curious about what some server roles do or how you earn some of roles? " +
+                          "The `Role Catalogue` button is here to help! It should give you and understanding " +
+                          "of what most of the server's roles do and how you can get your hands on some of them.",
+                           EternalButtons.EternalButton6);
+                    
                     Stuff("Do you think that the server should have something that it currently does not? " +
                           "Feel free to suggest it in the `Feedback` button. Your thoughts and suggestions go " +
                           "directly to the mod team, and we will address your concerns accordingly.",
@@ -186,29 +197,7 @@ public static class TlcAllCommands
 
         AddCommand(new TlcCommand("test", _ =>
         {
-            var channel = RuntimeConfig.DefaultFileDump;
-            // Stuff(EternalSelectMenus.GetColorRoles, "Color");
-            // Stuff(EternalSelectMenus.GetPronounRoles, "Pronoun");
-            // Stuff(EternalSelectMenus.GetPingRoles, "Ping");
-            // Stuff(EternalSelectMenus.GetArtSpecialityRoles, "Art Spec");
-            // Stuff(EternalSelectMenus.GetBotFunRoles, "Bot Fun");
-            // Stuff(EternalSelectMenus.GetMiscRoles, "Misc");
-            void Stuff(Func<SocketTextChannel, IEnumerable<SocketRole>> roleFunc, string prefix)
-            {
-                var roles = roleFunc(channel).ToArray();
-                for (int i = 0; i < roles.Length; i++)
-                {
-                    channel.Guild.GetRole(roles[i].Id).ModifyAsync(props =>
-                    {
-                        props.Name = $"[{prefix}] {roles[i].Name}";
-                    });
-                }
-            }
-
-            // channel.SendMessageAsync(
-            //     string.Join("\n", EternalSelectMenus.GetColorRoles(channel)
-            //         .OrderBy(x => System.Drawing.Color.FromArgb(x.Color.R, x.Color.G, x.Color.B).GetHue())
-            //         .Select(x => x.Mention)));
+            
         }));
         
         AddCommand(new TlcCommand("ls", args =>
@@ -255,7 +244,7 @@ public static class TlcAllCommands
                 return !unlinkees.Contains(platform.ToLower().Replace(" ", "")) ? null : replacement;
             }
 
-            Constants.Channels.Lares.TLCBetaCommandLine.SendMessageAsync(SocialMediaManager.ModifyUser(
+            RuntimeConfig.TLCBetaCommandLine.SendMessageAsync(SocialMediaManager.ModifyUser(
                 ulong.Parse(args[0]),
                 Youtube: DoReplace("YouTube"),
                 Twitter: DoReplace("Twitter"),

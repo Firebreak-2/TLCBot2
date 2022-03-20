@@ -15,7 +15,7 @@ public class Program
 {
     public static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
     public static DiscordSocketClient BetaClient = null!;
-    // public static DiscordSocketClient DeltaClient = null!;
+    public static DiscordSocketClient DeltaClient = null!;
     public static string FileAssetsPath = "";
     public static async Task MainAsync()
     {
@@ -26,7 +26,7 @@ public class Program
             GatewayIntents = GatewayIntents.All
         });
         BetaClient.Log += BetaLog;
-        // DeltaClient.Log += DeltaLog;
+        DeltaClient.Log += DeltaLog;
         BetaClient.Ready += Initialize;
         BetaClient.MessageReceived += TlcConsole.OnMessageRecieved;
         BetaClient.MessageReceived += DoodleOnlyListener.OnMessageRecieved;
@@ -46,11 +46,11 @@ public class Program
         const string path = "token.txt";
         const string path2 = "token2.txt";
         string token;
-        // string token2;
+        string token2;
         if (File.Exists(path))
         {
             token = await File.ReadAllTextAsync(path);
-            // token2 = await File.ReadAllTextAsync(path2);
+            token2 = await File.ReadAllTextAsync(path2);
         }
         else if (File.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\{path}"))
         {
@@ -66,8 +66,8 @@ public class Program
         
         await BetaClient.LoginAsync(TokenType.Bot, token);
         await BetaClient.StartAsync();
-        // await DeltaClient.LoginAsync(TokenType.Bot, token2);
-        // await DeltaClient.StartAsync();
+        await DeltaClient.LoginAsync(TokenType.Bot, token2);
+        await DeltaClient.StartAsync();
             
         // Block this task until the program is closed.
         await Task.Delay(-1);

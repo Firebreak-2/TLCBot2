@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.Interactions.Builders;
 using Discord.WebSocket;
 using TLCBot2.ApplicationComponents;
+using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.Core.CommandLine;
 using TLCBot2.DataManagement;
 using TLCBot2.Listeners;
@@ -13,41 +14,48 @@ namespace TLCBot2.Core;
 public class Program
 {
     public static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
-    public static DiscordSocketClient Client = null!;
+    public static DiscordSocketClient BetaClient = null!;
+    // public static DiscordSocketClient DeltaClient = null!;
     public static string FileAssetsPath = "";
     public static async Task MainAsync()
     {
-        Client = new DiscordSocketClient(new DiscordSocketConfig
+        BetaClient = new DiscordSocketClient(new DiscordSocketConfig
         {
             MessageCacheSize = 100, 
             LogGatewayIntentWarnings = true,
             GatewayIntents = GatewayIntents.All
         });
-        Client.Log += Log;
-        Client.Ready += Initialize;
-        Client.MessageReceived += TlcConsole.OnMessageRecieved;
-        Client.SlashCommandExecuted += SlashCommandHandler.OnCommand;
-        Client.MessageCommandExecuted += ContextCommandHandler.OnMessageCommandExecuted;
-        Client.UserCommandExecuted += ContextCommandHandler.OnUserCommandExecuted;
-        Client.ButtonExecuted += MessageComponentHandler.OnButtonExecuted;
-        Client.SelectMenuExecuted += MessageComponentHandler.OnSelectionMenuExecuted;
-        Client.ModalSubmitted += ModalHandler.OnModalSubmitted;
-        Client.ReactionAdded += StarboardListener.OnReactionAdded;
-        Client.UserJoined += ServerJoinListener.OnMemberJoined;
-        Client.UserJoined += ServerStatsListener.OnMemberJoined;
-        Client.UserLeft += ServerStatsListener.OnMemberLeft;
-        Client.InviteCreated += ServerJoinListener.OnInviteCreated;
+        BetaClient.Log += BetaLog;
+        // DeltaClient.Log += DeltaLog;
+        BetaClient.Ready += Initialize;
+        BetaClient.MessageReceived += TlcConsole.OnMessageRecieved;
+        BetaClient.MessageReceived += DoodleOnlyListener.OnMessageRecieved;
+        BetaClient.SlashCommandExecuted += SlashCommandHandler.OnCommand;
+        BetaClient.MessageCommandExecuted += ContextCommandHandler.OnMessageCommandExecuted;
+        BetaClient.UserCommandExecuted += ContextCommandHandler.OnUserCommandExecuted;
+        BetaClient.ButtonExecuted += MessageComponentHandler.OnButtonExecuted;
+        BetaClient.SelectMenuExecuted += MessageComponentHandler.OnSelectionMenuExecuted;
+        BetaClient.ModalSubmitted += ModalHandler.OnModalSubmitted;
+        BetaClient.ReactionAdded += StarboardListener.OnReactionAdded;
+        BetaClient.UserJoined += ServerJoinListener.OnMemberJoined;
+        BetaClient.UserJoined += ServerStatsListener.OnMemberJoined;
+        BetaClient.UserLeft += ServerStatsListener.OnMemberLeft;
+        BetaClient.InviteCreated += ServerJoinListener.OnInviteCreated;
 
         #region Token retrieval
         const string path = "token.txt";
+        const string path2 = "token2.txt";
         string token;
+        // string token2;
         if (File.Exists(path))
         {
             token = await File.ReadAllTextAsync(path);
+            // token2 = await File.ReadAllTextAsync(path2);
         }
         else if (File.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\{path}"))
         {
             token = await File.ReadAllTextAsync($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\{path}");
+            token2 = await File.ReadAllTextAsync($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\{path2}");
         }
         else
         {
@@ -56,16 +64,19 @@ public class Program
         }
         #endregion
         
-        await Client.LoginAsync(TokenType.Bot, token);
-        await Client.StartAsync();
+        await BetaClient.LoginAsync(TokenType.Bot, token);
+        await BetaClient.StartAsync();
+        // await DeltaClient.LoginAsync(TokenType.Bot, token2);
+        // await DeltaClient.StartAsync();
             
         // Block this task until the program is closed.
         await Task.Delay(-1);
     }
-    private static Task Log(LogMessage msg)
+    private static Task BetaLog(LogMessage msg) => Log(msg, "Beta");
+    private static Task DeltaLog(LogMessage msg) => Log(msg, "Delta");
+    private static Task Log(LogMessage msg, string botName)
     {
-        var prevCol = Console.ForegroundColor;
-        Console.Write($"[{DateTime.Now.ToLongTimeString()}] [{msg.Source}]  ");
+        Console.Write($"[{botName}] [{DateTime.Now.ToLongTimeString()}] [{msg.Source}]  ");
         Console.ForegroundColor = msg.Severity switch
         {
             LogSeverity.Critical => ConsoleColor.Yellow,
@@ -78,7 +89,7 @@ public class Program
         Console.WriteLine(msg.Message);
         if (msg.Exception != null)
             Console.WriteLine(msg.Exception);
-        Console.ForegroundColor = prevCol;
+        Console.ForegroundColor = ConsoleColor.White;
         return Task.CompletedTask;
     }
     private static async Task Initialize()
@@ -92,9 +103,18 @@ public class Program
         ServerJoinListener.Initialize();
         CookieManager.Initialize();
         SocialMediaManager.Initialize();
-        ModalHandler.Initialize();
-        MessageComponentHandler.Initialize();
         ServerStatsListener.Initialize();
+
+        // Update += () =>
+        // {
+        //     for (int i = 0; i < MessageComponentHandler.AllComponents.Count; i++)
+        //     {
+        //         if (DateTime.Now <= MessageComponentHandler.AllComponents[i].BirthDate.AddSeconds(5)) continue;
+        //         
+        //         MessageComponentHandler.AllComponents.Remove(MessageComponentHandler.AllComponents[i]);
+        //         break;
+        //     }
+        // };
     }
     private static void LocateFilePath()
     {

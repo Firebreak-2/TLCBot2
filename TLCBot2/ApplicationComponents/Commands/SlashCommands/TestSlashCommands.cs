@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.WebSocket;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.DataManagement.Temporary;
 using TLCBot2.Utilities;
@@ -11,6 +12,62 @@ public static class TestSlashCommands
     public static async Task Initialize()
     {
         var guild = Constants.Guilds.Lares;
+
+        #region Dynamic Timestamp Generator Command
+        await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
+            .WithName("generate-timestamp")
+            .WithDescription("Generates a dynamic timestamp to use")
+            .AddOption(
+                "hour-offset",
+                ApplicationCommandOptionType.Integer, 
+                "The UTC time offset from your timezone (yourTimezone = UTC+{offset})",
+                minValue: -24, maxValue: 24)
+            .AddOption(new SlashCommandOptionBuilder()
+                .WithName("style")
+                .WithDescription("The style of the timestamp to be displayed in")
+                .WithType(ApplicationCommandOptionType.String)
+                .AddChoice("Short Time", "t")
+                .AddChoice("Long Time", "T")
+                .AddChoice("Short Date", "d")
+                .AddChoice("Long Date", "D")
+                .AddChoice("Long Date with Short Time", "f")
+                .AddChoice("Weekday with Long Date with Short Time", "F")
+                .AddChoice("Relative Time", "R")
+            )
+            .AddOption("year", ApplicationCommandOptionType.Integer, "The specified [year] in the UTC timezone")
+            .AddOption("month", ApplicationCommandOptionType.Integer, "The specified [month] in the UTC timezone")
+            .AddOption("day", ApplicationCommandOptionType.Integer, "The specified [day] in the UTC timezone")
+            .AddOption("hour", ApplicationCommandOptionType.Integer, "The specified [hour] in the UTC timezone")
+            .AddOption("minute", ApplicationCommandOptionType.Integer, "The specified [minute] in the UTC timezone")
+            .AddOption("second", ApplicationCommandOptionType.Integer, "The specified [second] in the UTC timezone")
+            , cmd =>
+            {
+                var offset = new TimeSpan(Convert.ToInt32(cmd.Data.Options.First(x => x.Name == "hour-offset").Value), 0, 0);
+                var now = DateTimeOffset.UtcNow + offset;
+        
+                bool Condition(SocketSlashCommandDataOption x, string x2) => x.Name == x2;
+                int GetOpt(string name, int defaultValue)
+                {
+                    return cmd.Data.Options.Any(x => Condition(x, name))
+                        ? Convert.ToInt32(cmd.Data.Options.First(x => Condition(x, name)).Value)
+                        : defaultValue;
+                }
+        
+                string style = cmd.Data.Options.Any(x => Condition(x, "style"))
+                    ? (string) cmd.Data.Options.First(x => Condition(x, "style")).Value
+                    : "Long Date with Short Time";
+                
+                int year = GetOpt("year", now.Year);
+                int month = GetOpt("month", now.Month);
+                int day = GetOpt("day", now.Day);
+                int hour = GetOpt("hour", now.Hour);
+                int minute = GetOpt("minute", now.Minute);
+                int second = GetOpt("second", now.Second);
+                
+                string timestamp = $"<t:{new DateTimeOffset(year, month, day, hour, minute, second, 0, offset).ToUnixTimeSeconds()}:{style}>";
+                cmd.RespondAsync($"`{timestamp}` {timestamp}");
+            }), guild);
+        #endregion
 
         #region Spawn Button Command
         await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
@@ -56,10 +113,24 @@ public static class TestSlashCommands
                     EmbedBuilder GenerateEmbed()
                     {
                         var embed = new EmbedBuilder().WithTitle(title).WithColor(Color.Blue);
+                        int allVotes = poll.Options.Sum(opt => opt.Votes);
                         foreach (var option in poll.Options)
                         {
-                            embed.AddField(option.Title, option.Votes);
+                            const int charCount = 20;
+                            const char w = '#';
+                            const char b = '-';
+                            float votePercent = (allVotes > 0 ? (float)option.Votes / allVotes : option.Votes) * charCount;
+
+                            string whiteBar = $"{(votePercent > 0 ? new string(w, (int)votePercent) : "")}";
+                            string blackBar = $"{new string(b, (int)(charCount - votePercent))}";
+                            string fullBar = $"{whiteBar}{blackBar}";
+                            fullBar = fullBar.Length == charCount - 1 ? fullBar + b : fullBar;
+                            string spacing = new(' ',
+                                allVotes.ToString().Length - option.Votes.ToString().Length);
+                            embed.AddField(option.Title, $"`{option.Votes + spacing} {fullBar}`");
                         }
+
+                        embed.WithFooter($"Total votes: {allVotes}");
 
                         if (!anonymous)
                             embed.WithAuthor(cmd.User);
@@ -70,7 +141,6 @@ public static class TestSlashCommands
                     var cb = FireMessageComponent.CreateNew(new FireMessageComponent(new ComponentBuilder()
                         .WithSelectMenu(poll.CustomID, poll.Options.Select(option => new SelectMenuOptionBuilder()
                             .WithLabel(option.Title)
-                            // .WithDescription(option.Votes.ToString())
                             .WithValue(option.Title)).ToList(), maxValues: 1), null, selectMenu =>
                     {
                         string stringToCheckIfUserHasVotedBefore = $"{selectMenu.User.Id}";
@@ -90,30 +160,7 @@ public static class TestSlashCommands
                     modal.RespondAsync(embed: GenerateEmbed().Build(), components:cb);
                 }));
                 cmd.RespondWithModalAsync(builtModal);
-            }, true), guild);
-        #endregion
-        
-        #region Color Photo Command
-        // await FireCommand.CreateNew(new FireCommand(new SlashCommandBuilder()
-        //         .WithName("color-photo")
-        //         .WithDescription("Displays the most prominent colors in an image")
-        //         .AddOption("image", ApplicationCommandOptionType.Attachment, "The image to be checked", true),
-        //     cmd =>
-        //     {
-        //         var attachment = (Attachment) cmd.Data.Options.First().Value;
-        //         if (!attachment.ContentType.StartsWith("image"))
-        //         {
-        //             cmd.RespondAsync("File uploaded must be an image.", ephemeral: true);
-        //         }
-        //         Console.WriteLine($"Filename    | {attachment.Filename}");
-        //         Console.WriteLine($"Description | {attachment.Description}");
-        //         Console.WriteLine($"ContentType | {attachment.ContentType}");
-        //         Console.WriteLine($"ProxyUrl    | {attachment.ProxyUrl}");
-        //         Console.WriteLine($"Id          | {attachment.Id}");
-        //         Console.WriteLine($"Size        | {attachment.Width}x{attachment.Height}");
-        //
-        //         cmd.RespondAsync("a", ephemeral: true);
-        //     }), guild);
+            }), guild);
         #endregion
     }
 }

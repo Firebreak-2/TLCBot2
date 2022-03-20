@@ -10,18 +10,22 @@ public static class Constants
         public static class Id
         {
             public const ulong TlcBotSupport = 725116205081428070;
+            public const ulong TlcBetaTesting = 954086398787469382;
             public const ulong Tlc = 616111158549544960;
             public const ulong Lares = 915280394117591130;
         }
-        public static SocketGuild TlcBotSupport = Program.Client.GetGuild(Id.TlcBotSupport);
-        public static SocketGuild Tlc = Program.Client.GetGuild(Id.Tlc);
-        public static SocketGuild? Lares = Program.Client.GetGuild(Id.Lares);
+        public static SocketGuild TlcBotSupport = Program.BetaClient.GetGuild(Id.TlcBotSupport);
+        public static SocketGuild TlcBetaTesting = Program.BetaClient.GetGuild(Id.TlcBetaTesting);
+        public static SocketGuild Tlc = Program.BetaClient.GetGuild(Id.Tlc);
+        public static SocketGuild? Lares = Program.BetaClient.GetGuild(Id.Lares);
     }
     public static class Users
     {
         public const ulong Firebreak = 751535897287327865;
-        public static bool IsDev(ulong userId) => userId == Firebreak;
-        public static bool IsDev(SocketUser user) => IsDev(user.Id);
+        public static bool IsDev(SocketUser user) => 
+            user.MutualGuilds.Any(x => x.Id == RuntimeConfig.AdminRole.Guild.Id) 
+            && RuntimeConfig.AdminRole.Guild.GetUser(user.Id).Roles
+                .Any(x => x.Id == RuntimeConfig.AdminRole.Id);
     }
 
     public static class Channels
@@ -30,12 +34,8 @@ public static class Constants
         {
             public static class Id
             {
-                public const ulong Coloore = 950723898591285268;
-                public const ulong DefaultFileDump = 950771941264982083;
                 public const ulong TLCBetaCommandLine = 951848832516358154;
             }
-            public static SocketTextChannel Coloore = Guilds.Lares.GetTextChannel(Id.Coloore);
-            public static SocketTextChannel DefaultFileDump = Guilds.Lares.GetTextChannel(Id.DefaultFileDump);
             public static SocketTextChannel TLCBetaCommandLine = Guilds.Lares.GetTextChannel(Id.TLCBetaCommandLine);
         }
     }

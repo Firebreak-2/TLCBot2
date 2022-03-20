@@ -11,10 +11,12 @@ public class FireMessageCommand
     public SocketGuild? Guild = null;
     public FireMessageCommand(
         MessageCommandBuilder MessageCommand,
-        Action<SocketMessageCommand> onExecuted)
+        Action<SocketMessageCommand> onExecuted,
+        bool devOnly = false)
     {
         Command = MessageCommand.Build();
         OnExecuted = onExecuted;
+        DevOnly = devOnly;
     }
     public static async Task CreateNew(FireMessageCommand command, SocketGuild? guild)
     {

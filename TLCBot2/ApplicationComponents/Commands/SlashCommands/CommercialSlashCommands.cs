@@ -94,7 +94,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     
                         var embedBuilder = new EmbedBuilder()
                             .WithColor(color.Argb32ToDiscordColor())
-                            .WithImageUrl(Helper.GetFileUrl(stream, Constants.Channels.Lares.Coloore, text))
+                            .WithImageUrl(Helper.GetFileUrl(stream, null, text))
                             .WithTitle(text);
                     
                         cmd.RespondAsync(embed: embedBuilder.Build());
@@ -127,7 +127,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     
                             return new EmbedBuilder()
                                 .WithColor(color.Argb32ToDiscordColor())
-                                .WithImageUrl(Helper.GetFileUrl(stream, Constants.Channels.Lares.Coloore, text))
+                                .WithImageUrl(Helper.GetFileUrl(stream, null, text))
                                 .WithTitle(text)
                                 .Build();
                         }
@@ -169,7 +169,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
 
                             using var image = new Image<Argb32>(100, 250);
                             image.FillColor((_, y) => colors[y / 50]);
-                            string url = Helper.GetFileUrl(image.ToStream(), Constants.Channels.Lares.Coloore,
+                            string url = Helper.GetFileUrl(image.ToStream(), null,
                                 $"```\n{outp}\n```");
 
                             return new EmbedBuilder()
@@ -264,7 +264,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                             .WithTitle($"TLC bingo card for {cmd.User.Username}")
                             .WithDescription(
                                 "Draw an image that would score a bingo on the following sheet. Don't forget to shout bingo and share your finished drawing!")
-                            .WithImageUrl(Helper.GetFileUrl(image.ToStream(), Constants.Channels.Lares.DefaultFileDump))
+                            .WithImageUrl(Helper.GetFileUrl(image.ToStream(), null))
                             .WithColor(Color.Blue)
                             .Build();
                     }
@@ -366,6 +366,31 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     .WithName("ping")
                     .WithDescription("Responds with \"pong!\" to indicate that the bot is online."), 
                 cmd => cmd.RespondAsync("pong!")), guild);
+            #endregion
+        
+            #region User Info Command
+            await FireSlashCommand.CreateNew(new(new SlashCommandBuilder()
+                    .WithName("user-info")
+                    .WithDescription("Peek into the user's details!")
+                    .AddOption("user", ApplicationCommandOptionType.User, "The user to check the details of."),
+                cmd =>
+                {
+                    var user = cmd.Channel.GetGuild().GetUser(((SocketUser?)(cmd.Data.Options.Any() ? cmd.Data.Options.First().Value : null) ?? cmd.User).Id);
+
+                    int cookies = 0;
+                    if (CookieManager.GetUser(user.Id, out var entry))
+                        cookies = entry.Cookies;
+
+                    var embed = new EmbedBuilder()
+                        .WithColor(Color.Blue)
+                        .WithAuthor(user)
+                        .AddField("Server Join Date", $"<t:{user.JoinedAt!.Value.ToUnixTimeSeconds()}>")
+                        .AddField("Account Creation Date", $"<t:{user.CreatedAt.ToUnixTimeSeconds()}>")
+                        .AddField("Cookies", cookies)
+                        .AddField("Is Cookie Banned", entry?.IsBanned ?? false ? "Yes" : "No")
+                        .AddField("User ID", user.Id);
+                    cmd.RespondAsync(embed:embed.Build(), ephemeral: true);
+                }), guild);
             #endregion
         
             #region Cookies Command

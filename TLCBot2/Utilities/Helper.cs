@@ -30,7 +30,7 @@ public static class Helper
             @"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
     public static string GetFileUrl(Stream stream, SocketTextChannel? channel = null, string text = "text")
     {
-        return (channel ?? Constants.Channels.Lares.DefaultFileDump)
+        return (channel ?? RuntimeConfig.DefaultFileDump)
             .SendFileAsync(stream, "ImageSend.png", text)
             ?.Result.Attachments.First().Url ?? "null";
     }
@@ -102,5 +102,5 @@ public static class Helper
             client.DownloadString("https://randomword.com/"),
             "(?<=<div id=\"random_word\">).+(?=</div>)").Value;
     }
-    public static SocketGuild GetGuild(this ISocketMessageChannel channel) => Program.Client.Guilds.First(x => x.Channels.Any(y => y.Id == channel.Id));
+    public static SocketGuild GetGuild(this ISocketMessageChannel channel) => Program.BetaClient.Guilds.First(x => x.Channels.Any(y => y.Id == channel.Id));
 }

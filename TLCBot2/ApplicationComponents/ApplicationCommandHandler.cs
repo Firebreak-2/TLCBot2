@@ -17,10 +17,10 @@ public static class ApplicationCommandHandler
     public static async Task Initialize()
     {
         await TestSlashCommands.Initialize();
-        await CommercialSlashCommands.Initialize();
         await TestUserCommands.Initialize();
+        await TestMessageCommands.Initialize();
+        await CommercialSlashCommands.Initialize();
         // await CommercialUserCommands.Initialize();
-        // await TestMessageCommands.Initialize();
         // await CommercialMessageCommands.Initialize();
 
         var allCommands = AllSlashCommands
@@ -30,7 +30,7 @@ public static class ApplicationCommandHandler
             .Union(AllMessageCommands
                 .Select(x => x.Command));
 
-        await Constants.Guilds.Lares!.BulkOverwriteApplicationCommandAsync(allCommands.ToArray());
+        await Constants.Guilds.TlcBetaTesting!.BulkOverwriteApplicationCommandAsync(allCommands.ToArray());
         
         // if (allCommands.Any(x => x.Guild == null))
         //     await Program.Client.BulkOverwriteGlobalApplicationCommandsAsync(allCommands

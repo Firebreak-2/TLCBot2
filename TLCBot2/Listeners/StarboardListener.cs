@@ -31,7 +31,7 @@ public static class StarboardListener
             else if (msg.Attachments.Any())
                 embed.WithImageUrl(msg.Attachments.First().Url);
 
-            ((SocketTextChannel) RuntimeConfig.StarboardChannel).SendMessageAsync(embed:embed.Build());
+            RuntimeConfig.StarboardChannel.SendMessageAsync(embed:embed.Build());
             File.AppendAllText(PostHistoryPath, $"{msg.Id}");
         }
 

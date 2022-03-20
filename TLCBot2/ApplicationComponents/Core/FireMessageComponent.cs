@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using TLCBot2.Core;
 
 namespace TLCBot2.ApplicationComponents.Core;
 
@@ -8,7 +9,7 @@ public class FireMessageComponent
     public MessageComponent Component;
     public Action<SocketMessageComponent>? OnExecuteButton;
     public Action<SocketMessageComponent>? OnExecuteSelectMenu;
-
+    public DateTime BirthDate = DateTime.Now;
     public FireMessageComponent(
         ComponentBuilder component,
         Action<SocketMessageComponent>? onExecuteButton,

@@ -33,7 +33,7 @@ public static class CookieManager
         bool Condition(CookieUserEntry x) => x.UserID == userID;
         if (!CookieUsers.Any(Condition)) return false;
         var user = CookieUsers.First(Condition);
-        var userProfile = Program.Client.GetUser(user.UserID);
+        var userProfile = Program.BetaClient.GetUser(user.UserID);
 
         var oldCookies = user.Cookies;
         var oldBanned = user.IsBanned;
@@ -41,11 +41,11 @@ public static class CookieManager
         if (cookies .HasValue) user.Cookies = cookies.Value;
         if (isBanned.HasValue) user.IsBanned = isBanned.Value;
         SaveCookieUsersToDatabase();
-        ((SocketTextChannel) RuntimeConfig.CookieLogChannel).SendMessageAsync(embed: new EmbedBuilder()
+        RuntimeConfig.CookieLogChannel.SendMessageAsync(embed: new EmbedBuilder()
             .WithTitle($"Modified User [{userProfile.Username}]")
             .AddField("Cookies", $"{oldCookies} → {user.Cookies}")
             .AddField("Ban Status", $"{oldBanned} → {user.IsBanned}")
-            .AddField("Reason", $"{reason ?? "No reason provided"}")
+            .AddField("Reason", $"{(string.IsNullOrEmpty(reason) ? "No reason provided" : reason)}")
             .WithColor(Color.Blue)
             .WithAuthor(userProfile)
             .Build());
@@ -60,7 +60,7 @@ public static class CookieManager
             return CookieUsers.First(x => x.UserID == userID);
 
         var newUser = new CookieUserEntry(userID, cookies ?? default, isBanned ?? default);
-        var userProfile = Program.Client.GetUser(newUser.UserID);
+        var userProfile = Program.BetaClient.GetUser(newUser.UserID);
         CookieUsers.Add(newUser);
         SaveCookieUsersToDatabase();
         ((SocketTextChannel) RuntimeConfig.CookieLogChannel).SendMessageAsync(embed: new EmbedBuilder()

@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Discord;
+using Discord.WebSocket;
 using MoreLinq;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
@@ -13,6 +14,8 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using TLCBot2.ApplicationComponents.Core;
+using TLCBot2.ApplicationComponents.Eternal;
 using TLCBot2.DataManagement;
 using Image = SixLabors.ImageSharp.Image;
 
@@ -98,7 +101,7 @@ public static class TlcAllCommands
         AddCommand(new TlcCommand("kill", _ =>
         {
             TlcConsole.Print("goodbye world");
-            Program.Client.LogoutAsync();
+            Program.BetaClient.LogoutAsync();
             Process.GetCurrentProcess().Kill();
         }));
         
@@ -112,6 +115,101 @@ public static class TlcAllCommands
             Constants.Channels.Lares.TLCBetaCommandLine
                 .SendFileAsync(args[0], null);
         }, 1));
+        
+        AddCommand(new TlcCommand("makeeternalmessage", args =>
+        {
+            var channel = (SocketTextChannel)Program.BetaClient.GetChannel(ulong.Parse(args[1]));
+            switch (int.Parse(args[0]))
+            {
+                case 0:
+                {
+                    void Stuff(
+                        string name,
+                        Func<SocketTextChannel, IEnumerable<SocketRole>> roles,
+                        Func<SocketTextChannel, SelectMenuBuilder> eternalMenu,
+                        bool canSelectMultiple = false)
+                    {
+                        var categoricalRoles = roles(channel);
+                        channel.SendMessageAsync($"**{name}**\n" + string.Join("\n",
+                                categoricalRoles.Select(x => x.Mention)),
+                            components: FireMessageComponent.CreateNew(
+                                new FireMessageComponent(new ComponentBuilder()
+                                        .WithSelectMenu(eternalMenu(channel)
+                                            .AddOption("Remove All", "rmv")
+                                            .WithMaxValues(canSelectMultiple ? categoricalRoles.Count() : 1)),
+                                    null, null)));
+                        Thread.Sleep(1000);
+                    }
+
+                    Stuff("Color Roles", EternalSelectMenus.GetColorRoles, EternalSelectMenus.EternalSelectMenu0);
+                    Stuff("Pronoun Roles", EternalSelectMenus.GetPronounRoles, EternalSelectMenus.EternalSelectMenu1);
+                    Stuff("Ping Roles", EternalSelectMenus.GetPingRoles, EternalSelectMenus.EternalSelectMenu2, true);
+                    Stuff("Bot Fun Roles", EternalSelectMenus.GetBotFunRoles, EternalSelectMenus.EternalSelectMenu3,
+                        true);
+                    Stuff("Art Specialty Roles", EternalSelectMenus.GetArtSpecialityRoles,
+                        EternalSelectMenus.EternalSelectMenu4, true);
+                    Stuff("Misc Roles", EternalSelectMenus.GetMiscRoles, EternalSelectMenus.EternalSelectMenu5, true);
+                }
+                    break;
+                case 1:
+                {
+                    void Stuff(string messageText, ButtonBuilder eternalButton)
+                    {
+                        channel.SendMessageAsync(messageText, 
+                            components: new FireMessageComponent(new ComponentBuilder()
+                            .WithButton(eternalButton), null, null).Create());
+                        Thread.Sleep(1000);
+                    }
+                    Stuff("Are you lost in the sea of channels and cant find your way through them? " +
+                          "Check out the `Server Directory` button. It provides information on all the " +
+                          "channels and when to use them.",
+                           EternalButtons.EternalButton1);
+                    
+                    Stuff("Do you think that the server should have something that it currently does not? " +
+                          "Feel free to suggest it in the `Feedback` button. Your thoughts and suggestions go " +
+                          "directly to the mod team, and we will address your concerns accordingly.",
+                           EternalButtons.EternalButton2);
+                    
+                    Stuff("Feel like something's off with the bot? like it's doing something it shouldn't? " +
+                          "Try reporting the issue using the `Bug Report` button. Bug reports are highly " +
+                          "appreciated by the developer team, and it helps make everyone's experience better",
+                           EternalButtons.EternalButton3);
+                    
+                    Stuff("Did you think of a great question but have no place to ask it? Suggest it using the " +
+                          "`QOTD Suggestion` button! All suggestions go directly to the mod team, and if they think " +
+                          "that it's a good question, it'll be featured in the server's next Question of the Day!",
+                           EternalButtons.EternalButton4);
+                } 
+                    break;
+            }
+        }, 2));
+
+        AddCommand(new TlcCommand("test", _ =>
+        {
+            var channel = RuntimeConfig.DefaultFileDump;
+            // Stuff(EternalSelectMenus.GetColorRoles, "Color");
+            // Stuff(EternalSelectMenus.GetPronounRoles, "Pronoun");
+            // Stuff(EternalSelectMenus.GetPingRoles, "Ping");
+            // Stuff(EternalSelectMenus.GetArtSpecialityRoles, "Art Spec");
+            // Stuff(EternalSelectMenus.GetBotFunRoles, "Bot Fun");
+            // Stuff(EternalSelectMenus.GetMiscRoles, "Misc");
+            void Stuff(Func<SocketTextChannel, IEnumerable<SocketRole>> roleFunc, string prefix)
+            {
+                var roles = roleFunc(channel).ToArray();
+                for (int i = 0; i < roles.Length; i++)
+                {
+                    channel.Guild.GetRole(roles[i].Id).ModifyAsync(props =>
+                    {
+                        props.Name = $"[{prefix}] {roles[i].Name}";
+                    });
+                }
+            }
+
+            // channel.SendMessageAsync(
+            //     string.Join("\n", EternalSelectMenus.GetColorRoles(channel)
+            //         .OrderBy(x => System.Drawing.Color.FromArgb(x.Color.R, x.Color.G, x.Color.B).GetHue())
+            //         .Select(x => x.Mention)));
+        }));
         
         AddCommand(new TlcCommand("ls", args =>
         {

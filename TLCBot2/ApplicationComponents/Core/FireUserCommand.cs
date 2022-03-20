@@ -11,10 +11,12 @@ public class FireUserCommand
     public SocketGuild? Guild = null;
     public FireUserCommand(
         UserCommandBuilder userCommand,
-        Action<SocketUserCommand> onExecuted)
+        Action<SocketUserCommand> onExecuted,
+        bool devOnly = false)
     {
         Command = userCommand.Build();
         OnExecuted = onExecuted;
+        DevOnly = devOnly;
     }
     public static async Task CreateNew(FireUserCommand command, SocketGuild? guild)
     {

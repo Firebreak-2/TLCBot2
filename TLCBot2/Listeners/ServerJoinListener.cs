@@ -29,14 +29,15 @@ public static class ServerJoinListener
         var oldInvites = OldInvites;
         foreach (var item in user.Guild.GetInvitesAsync().Result)
         {
-            if (item.Uses <= oldInvites.First(x => x.Id == item.Id).Uses && !item.Inviter.IsBot) continue;
+            bool Condition(InviteData x) => x.Id == item!.Id;
+            if (oldInvites.Any(Condition) && item.Uses <= oldInvites.First(Condition).Uses && !item.Inviter.IsBot) continue;
             
             string invitation = $"<@!{item.Inviter.Id}> Thanks for inviting <@!{user.Id}> to the server.";
             if (File.ReadAllLines(PreviousInvites).Any(x => x == invitation)) break;
             
             CookieManager.TakeOrGiveCookiesToUser(item.Inviter.Id, 3, 
                 $"Invited [{user.Username}] to server\nInviter: {item.Inviter.Mention} | {item.Inviter.Username}#{item.Inviter.Discriminator} | {item.Inviter.Id}\nInvited: {user.Mention} | {user.Username}#{user.Discriminator} | {user.Id}");
-            ((SocketTextChannel)RuntimeConfig.GeneralChat).SendMessageAsync(invitation + " Have 3 🍪");
+            RuntimeConfig.GeneralChat.SendMessageAsync(invitation + " Have 3 🍪");
             File.AppendAllText(PreviousInvites, invitation);
             break;
         }

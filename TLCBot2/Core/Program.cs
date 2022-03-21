@@ -55,7 +55,7 @@ public class Program
         }
         else
         {
-            Console.WriteLine("No token has been found. Shutting down...");
+            Console.WriteLine($"No token has been found. Shutting down...\nCurrent Directory: {Directory.GetCurrentDirectory()}");
             return;
         }
         #endregion

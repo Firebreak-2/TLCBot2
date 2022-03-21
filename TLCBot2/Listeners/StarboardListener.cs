@@ -7,7 +7,7 @@ namespace TLCBot2.Listeners;
 public static class StarboardListener
 {
     public const int MinReactionsToPost = 6;
-    public static string PostHistoryPath => $"{Program.FileAssetsPath}\\starboardPostHistory.txt";
+    public static string PostHistoryPath => $"{Program.FileAssetsPath}/starboardPostHistory.txt";
 
     public static void Initialize()
     {

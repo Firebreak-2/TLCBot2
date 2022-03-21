@@ -240,7 +240,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         var inverseColor = color.Invert();
                     
                         const string endName = "TLC_Watermark.png";
-                        string path = $"{Program.FileAssetsPath}\\{endName}";
+                        string path = $"{Program.FileAssetsPath}/{endName}";
                         using Image<Argb32> image = Image.Load<Argb32>(path);
     
                         var magenta = new Argb32(255, 0, 255);
@@ -273,7 +273,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                             var inverseColor = color.Invert();
                     
                             const string endName = "TLC_Watermark.png";
-                            string path = Program.FileAssetsPath + '\\' + endName;
+                            string path = Program.FileAssetsPath + '/' + endName;
                             using Image<Argb32> image = Image.Load<Argb32>(path);
     
                             var magenta = new Argb32(255, 0, 255);
@@ -356,7 +356,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                             ? Convert.ToInt32(cmd.Data.Options.First().Value)
                             : 5;
                         var bingoPrompts =
-                            File.ReadAllLines($"{Program.FileAssetsPath}\\bingoPrompts.cfg")
+                            File.ReadAllLines($"{Program.FileAssetsPath}/bingoPrompts.cfg")
                                 .Select(x => x.Replace(' ', '\n')).ToHashSet();
 
                         const int gridLineWidth = 5;
@@ -413,7 +413,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                             }
                         }
 
-                        using var imgToBeDrawn = Image.Load<Argb32>($"{Program.FileAssetsPath}\\TLC_Logo.png");
+                        using var imgToBeDrawn = Image.Load<Argb32>($"{Program.FileAssetsPath}/TLC_Logo.png");
                         imgToBeDrawn.Mutate(img =>
                             img.Resize(tileWidth, tileHeight));
                         image.Mutate(img =>
@@ -447,11 +447,11 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
             {
                 string prompt;
             
-                string[] promptCharprops =    File.ReadAllLines($"{Program.FileAssetsPath}\\artToysPrompts\\charProps.cfg");
-                string[] promptChars =        File.ReadAllLines($"{Program.FileAssetsPath}\\artToysPrompts\\chars.cfg");
-                string[] promptColors =       File.ReadAllLines($"{Program.FileAssetsPath}\\artToysPrompts\\colors.cfg");
-                string[] promptScenery =      File.ReadAllLines($"{Program.FileAssetsPath}\\artToysPrompts\\scenery.cfg");
-                string[] promptSceneryprops = File.ReadAllLines($"{Program.FileAssetsPath}\\artToysPrompts\\sceneryProps.cfg");
+                string[] promptCharprops =    File.ReadAllLines($"{Program.FileAssetsPath}/artToysPrompts/charProps.cfg");
+                string[] promptChars =        File.ReadAllLines($"{Program.FileAssetsPath}/artToysPrompts/chars.cfg");
+                string[] promptColors =       File.ReadAllLines($"{Program.FileAssetsPath}/artToysPrompts/colors.cfg");
+                string[] promptScenery =      File.ReadAllLines($"{Program.FileAssetsPath}/artToysPrompts/scenery.cfg");
+                string[] promptSceneryprops = File.ReadAllLines($"{Program.FileAssetsPath}/artToysPrompts/sceneryProps.cfg");
 
                 Embed GetRandomPromptEmbed()
                 {

@@ -8,7 +8,7 @@ namespace TLCBot2.DataManagement;
 
 public static class CookieManager
 {
-    public static string CookieDatabasePath => $"{Program.FileAssetsPath}\\cookieDatabase.json";
+    public static string CookieDatabasePath => $"{Program.FileAssetsPath}/cookieDatabase.json";
     public static List<CookieUserEntry> CookieUsers = new();
     public static void Initialize()
     {

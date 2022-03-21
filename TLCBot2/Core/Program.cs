@@ -44,18 +44,22 @@ public class Program
 
         #region Token retrieval
         const string path = "token.txt";
+        const string fileAssetsPath = "files_path.txt";
         string token;
         if (File.Exists(path))
         {
             token = await File.ReadAllTextAsync(path);
+            FileAssetsPath = await File.ReadAllTextAsync(fileAssetsPath);
         }
-        else if (File.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\{path}"))
+        else if (File.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{path}"))
         {
-            token = await File.ReadAllTextAsync($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\{path}");
+            token = await File.ReadAllTextAsync($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{path}");
+            FileAssetsPath = await File.ReadAllTextAsync($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{fileAssetsPath}");
         }
         else
         {
-            Console.WriteLine($"No token has been found. Shutting down...\nCurrent Directory: {Directory.GetCurrentDirectory()}");
+            Console.WriteLine($"No token has been found. Shutting down...\n" +
+                              $"Current Directory: {Directory.GetCurrentDirectory()}");
             return;
         }
         #endregion
@@ -88,7 +92,7 @@ public class Program
 
     private static void PreInitialize()
     {
-        LocateFilePath();
+        // LocateFilePath();
         RuntimeConfig.Initialize();
         TlcAllCommands.Initialize();
     }
@@ -118,7 +122,7 @@ public class Program
     {
         FileAssetsPath = Directory.GetCurrentDirectory();
         bool found = false;
-        while (!found && FileAssetsPath.Contains('\\'))
+        while (!found && FileAssetsPath.Contains('/'))
         {
             foreach (string file in Directory.GetDirectories(FileAssetsPath))
             {

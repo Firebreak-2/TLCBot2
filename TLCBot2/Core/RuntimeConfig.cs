@@ -7,7 +7,7 @@ namespace TLCBot2.Core;
 
 public static class RuntimeConfig
 {
-    public static string ConfigPath => $"{Program.FileAssetsPath}\\config.txt";
+    public static string ConfigPath => $"{Program.FileAssetsPath}/config.txt";
     public static string[] GetRuntimeProps() => typeof(RuntimeConfig).GetProperties()
         .Where(x => x.Name != "ConfigPath")
         .Select(x => x.Name)

@@ -91,7 +91,7 @@ public static class TlcAllCommands
                             : "user does not exist");
                     break;
                 case "database":
-                    TlcConsole.Print(File.ReadAllText($"{Program.FileAssetsPath}\\database.cookie"));
+                    TlcConsole.Print(File.ReadAllText($"{Program.FileAssetsPath}/database.cookie"));
                     break;
                 default:
                     TlcConsole.Print($"option not found: {args[0]}");
@@ -223,7 +223,7 @@ public static class TlcAllCommands
         
         AddCommand(new TlcCommand("getfile", args =>
         {
-            TlcConsole.RunCommand($"post {Program.FileAssetsPath}\\{args[0]}");
+            TlcConsole.RunCommand($"post {Program.FileAssetsPath}/{args[0]}");
         }, 1));
         
         AddCommand(new TlcCommand("setconfig", args =>

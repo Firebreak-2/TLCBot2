@@ -10,8 +10,8 @@ namespace TLCBot2.Listeners;
 
 public static class ServerJoinListener
 {
-    public static string JoinHistoryPath => $"{Program.FileAssetsPath}\\serverInvitedHistory.json";
-    public static string PreviousInvites => $"{Program.FileAssetsPath}\\oldInvites.txt";
+    public static string JoinHistoryPath => $"{Program.FileAssetsPath}/serverInvitedHistory.json";
+    public static string PreviousInvites => $"{Program.FileAssetsPath}/oldInvites.txt";
     public static InviteData[] OldInvites
     {
         get => JsonConvert.DeserializeObject<InviteData[]>(File.ReadAllText(JoinHistoryPath))!;

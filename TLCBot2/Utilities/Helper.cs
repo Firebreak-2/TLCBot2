@@ -18,11 +18,11 @@ public static class Helper
     public static string Compute(string input) => _dataTable.Compute(input, null).ToString() ?? "null";
     public static string GoBackDirectory(string path)
     {
-        return Regex.Replace(path, @"\\[^\\]+$", "");
+        return Regex.Replace(path, @"/[^/]+$", "");
     }
     public static string GetFileNameFromPath(string path)
     {
-        return Regex.Match(path, @"\\[^\\]+$").Value;
+        return Regex.Match(path, @"/[^/]+$").Value;
     }
 
     public static bool CheckStringIsLink(string link) =>

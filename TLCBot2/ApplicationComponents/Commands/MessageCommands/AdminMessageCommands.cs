@@ -26,7 +26,7 @@ public class AdminMessageCommands
             }
 
             cmd.RespondWithModalAsync(new FireModal(new ModalBuilder("Edit Message", $"modal-{Helper.RandomInt(0, 9999)}")
-                .AddTextInput("New Message", "tb-0", TextInputStyle.Paragraph), modal =>
+                .AddTextInput("New Message", "tb-0", TextInputStyle.Paragraph, value: cmd.Data.Message.Content), modal =>
             {
                 string newContent = modal.Data.Components.First().Value;
                 ((SocketUserMessage) cmd.Data.Message).ModifyAsync(props => props.Content = newContent);

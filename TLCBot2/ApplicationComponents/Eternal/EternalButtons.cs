@@ -141,19 +141,52 @@ public static class EternalButtons
                         .AddField("Sent From", modal.User.Mention)
                         .AddField("What They Suggested", question)
                         .Build(), components: new FireMessageComponent(new ComponentBuilder()
-                        .WithButton("Post to #QOTD", $"button-{Helper.RandomInt(0, 9999)}"), qotdButton =>
+                        .WithButton("Post to #QOTD", $"button-0-{Helper.RandomInt(0, 9999)}")
+                        .WithButton("Edit and post to #QOTD", $"button-1-{Helper.RandomInt(0, 9999)}")
+                        , qotdButton =>
                     {
-                        var msg = RuntimeConfig.QOTDChannel
-                            .SendMessageAsync($"{RuntimeConfig.QOTDRole.Mention} {question}\n\nThanks to {modal.User.Mention} for suggesting this question.").Result;
-                        
-                        qotdButton.RespondAsync(
-                            $"Posted question on {RuntimeConfig.QOTDChannel.Mention}\n\n{msg.GetJumpUrl()}", ephemeral: true);
 
-                        qotdButton.Message.ModifyAsync(props =>
+                        if (qotdButton.Data.CustomId.StartsWith("button-0"))
                         {
-                            props.Components = new ComponentBuilder()
-                                .WithButton("Post to #QOTD", "no-use", ButtonStyle.Secondary, disabled: true).Build();
-                        });
+                            var msg = RuntimeConfig.QOTDChannel
+                                .SendMessageAsync($"{RuntimeConfig.QOTDRole.Mention} {question}\n\n" +
+                                                  $"Thanks to {modal.User.Mention} for suggesting this question.").Result;
+                            
+                            qotdButton.RespondAsync(
+                                $"Posted question on {RuntimeConfig.QOTDChannel.Mention}\n\n{msg.GetJumpUrl()}",
+                                ephemeral: true);
+
+                            qotdButton.Message.ModifyAsync(props =>
+                            {
+                                props.Components = new ComponentBuilder()
+                                    .WithButton("Post to #QOTD", "no-use", ButtonStyle.Secondary, disabled: true)
+                                    .Build();
+                            });
+                        }
+                        else
+                        {
+                            qotdButton.RespondWithModalAsync(new FireModal(
+                                new ModalBuilder("Post question to #QOTD", $"modal-{Helper.RandomInt(0, 9999)}")
+                                    .AddTextInput("Edited Question", "tb-0", TextInputStyle.Paragraph, value: question),
+                                modal =>
+                                {
+                                    var msg = RuntimeConfig.QOTDChannel
+                                        .SendMessageAsync($"{RuntimeConfig.QOTDRole.Mention} {question}\n\n" +
+                                                          $"Thanks to {modal.User.Mention} for suggesting this question.").Result;
+
+                                    modal.RespondAsync(
+                                        $"Posted question on {RuntimeConfig.QOTDChannel.Mention}\n\n{msg.GetJumpUrl()}",
+                                        ephemeral: true);
+
+                                    qotdButton.Message.ModifyAsync(props =>
+                                    {
+                                        props.Components = new ComponentBuilder()
+                                            .WithButton("Post to #QOTD", "no-use", ButtonStyle.Secondary, disabled: true)
+                                            .WithButton("Edit and post to #QOTD", "no-use", ButtonStyle.Secondary, disabled: true)
+                                            .Build();
+                                    });
+                                }).Create());
+                        }
 
                     }, null){BirthDate = DateTime.Now.AddDays(7)}.Create());
                     modal.RespondAsync("Question Suggested", ephemeral: true);

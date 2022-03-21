@@ -48,13 +48,16 @@ public class Program
         string token;
         if (File.Exists(path))
         {
-            token = await File.ReadAllTextAsync(path);
-            FileAssetsPath = await File.ReadAllTextAsync(fileAssetsPath);
+            token = (await File.ReadAllTextAsync(path)).Replace("\n", "");
+            FileAssetsPath = (await File.ReadAllTextAsync(fileAssetsPath)).Replace("\n", "");
         }
         else if (File.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{path}"))
         {
-            token = await File.ReadAllTextAsync($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{path}");
-            FileAssetsPath = await File.ReadAllTextAsync($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{fileAssetsPath}");
+            token = (await File.ReadAllTextAsync(
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{path}")).Replace("\n", "");
+            FileAssetsPath =
+                (await File.ReadAllTextAsync(
+                    $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{fileAssetsPath}")).Replace("\n", "");
         }
         else
         {

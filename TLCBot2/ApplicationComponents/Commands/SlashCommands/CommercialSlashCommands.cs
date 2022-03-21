@@ -111,16 +111,16 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     
                     var builtModal = FireModal.CreateNew(new FireModal(modalBuilder, modal =>
                     {
-                        var options = new PollHandler.PollOption[optionCount + (hasOther ? 1 : 0)];
+                        var options = new Poll.Option[optionCount + (hasOther ? 1 : 0)];
                         foreach (var item in modal.Data.Components)
                         {
                             int index = int.Parse(item.CustomId);
-                            options[index] = new PollHandler.PollOption(item.Value);
+                            options[index] = new Poll.Option(item.Value);
                         }
 
-                        if (hasOther) options[^1] = new PollHandler.PollOption("Other");
+                        if (hasOther) options[^1] = new Poll.Option("Other");
                         
-                        var poll = new PollHandler.Poll(title, $"poll-{Helper.RandomInt(0, 1000)}", options);
+                        var poll = new Poll(title, $"poll-{Helper.RandomInt(0, 1000)}", options);
                         EmbedBuilder GenerateEmbed()
                         {
                             var embed = new EmbedBuilder().WithTitle(title).WithColor(Color.Blue);
@@ -138,7 +138,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                                 fullBar = fullBar.Length == charCount - 1 ? fullBar + b : fullBar;
                                 string spacing = new(' ',
                                     allVotes.ToString().Length - option.Votes.ToString().Length);
-                                embed.AddField(option.Title, $"`{option.Votes + spacing} {fullBar}`");
+                                embed.AddField(option.Title, $"`{option.Votes + spacing} [{fullBar}]`"); 
                             }
 
                             embed.WithFooter($"Total votes: {allVotes}");

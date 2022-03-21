@@ -38,9 +38,9 @@ public class Program
         Client.ModalSubmitted += ModalHandler.OnModalSubmitted;
         Client.ReactionAdded += StarboardListener.OnReactionAdded;
         Client.UserJoined += ServerJoinListener.OnMemberJoined;
+        Client.InviteCreated += ServerJoinListener.OnInviteCreated;
         Client.UserJoined += ServerStatsListener.OnMemberJoined;
         Client.UserLeft += ServerStatsListener.OnMemberLeft;
-        Client.InviteCreated += ServerJoinListener.OnInviteCreated;
 
         #region Token retrieval
         const string path = "token.txt";
@@ -114,7 +114,7 @@ public class Program
         // {
         //     for (int i = 0; i < MessageComponentHandler.AllComponents.Count; i++)
         //     {
-        //         if (DateTime.Now <= MessageComponentHandler.AllComponents[i].BirthDate.AddSeconds(5)) continue;
+        //         if (DateTime.Now <= MessageComponentHandler.AllComponents[i].BirthDate.AddMinutes(5)) continue;
         //         
         //         MessageComponentHandler.AllComponents.Remove(MessageComponentHandler.AllComponents[i]);
         //         break;

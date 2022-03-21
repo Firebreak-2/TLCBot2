@@ -85,49 +85,6 @@ public static class AdminSlashCommands
                 }, devOnly), guild);
 
             #endregion
-
-            #region Clear Command
-
-            await FireSlashCommand.CreateNew(new FireSlashCommand(new SlashCommandBuilder()
-                    .WithName("clear")
-                    .WithDescription("Deletes the number of messages specified")
-                    .AddOption("amount", ApplicationCommandOptionType.Integer, "The specified amount", true),
-                cmd =>
-                {
-                    long count = (long) cmd.Data.Options.First().Value;
-                    switch (count)
-                    {
-                        case <= 0:
-                            cmd.RespondAsync("You cant delete something that doesn't exist??", ephemeral: true);
-                            return;
-                        case > 50:
-                            cmd.RespondAsync("dude.. that's wayyy too many channels. ", ephemeral: true);
-                            return;
-                    }
-
-                    var messages = cmd.Channel
-                        .GetMessagesAsync((int) count, CacheMode.AllowDownload, RequestOptions.Default)
-                        .ToArrayAsync().Result.First().ToArray();
-
-                    try
-                    {
-                        for (int i = 0; i < count; i++)
-                        {
-                            cmd.Channel.DeleteMessageAsync(messages[i], RequestOptions.Default);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        cmd.RespondAsync("An error has occured. If this problem prevails, contact `Firebreak#3813`.",
-                            ephemeral: true);
-                        return;
-                    }
-
-                    cmd.RespondAsync($"`{count}` messages deleted.", ephemeral: true);
-                }, devOnly), guild);
-
-            #endregion
         }
     }
 }

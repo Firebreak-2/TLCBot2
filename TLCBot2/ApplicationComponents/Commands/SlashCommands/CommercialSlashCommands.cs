@@ -32,7 +32,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     "hour-offset",
                     ApplicationCommandOptionType.Integer, 
                     "The UTC time offset from your timezone (yourTimezone = UTC+{offset})",
-                    minValue: -24, maxValue: 24)
+                    minValue: -24, maxValue: 24, isRequired: true)
                 .AddOption(new SlashCommandOptionBuilder()
                     .WithName("style")
                     .WithDescription("The style of the timestamp to be displayed in")
@@ -53,27 +53,16 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                 .AddOption("second", ApplicationCommandOptionType.Integer, "The specified [second] in the UTC timezone")
                 , cmd =>
                 {
-                    var offset = new TimeSpan(Convert.ToInt32(cmd.Data.Options.First(x => x.Name == "hour-offset").Value), 0, 0);
+                    var offset = new TimeSpan(cmd.GetOptionValue("hour-offset", 0), 0, 0);
                     var now = DateTimeOffset.UtcNow + offset;
             
-                    bool Condition(SocketSlashCommandDataOption x, string x2) => x.Name == x2;
-                    int GetOpt(string name, int defaultValue)
-                    {
-                        return cmd.Data.Options.Any(x => Condition(x, name))
-                            ? Convert.ToInt32(cmd.Data.Options.First(x => Condition(x, name)).Value)
-                            : defaultValue;
-                    }
-            
-                    string style = cmd.Data.Options.Any(x => Condition(x, "style"))
-                        ? (string) cmd.Data.Options.First(x => Condition(x, "style")).Value
-                        : "Long Date with Short Time";
-                    
-                    int year = GetOpt("year", now.Year);
-                    int month = GetOpt("month", now.Month);
-                    int day = GetOpt("day", now.Day);
-                    int hour = GetOpt("hour", now.Hour);
-                    int minute = GetOpt("minute", now.Minute);
-                    int second = GetOpt("second", now.Second);
+                    string style = cmd.GetOptionValue("style", "f")!;
+                    int year = cmd.GetOptionValue("year", now.Year);
+                    int month = cmd.GetOptionValue("month", now.Month);
+                    int day = cmd.GetOptionValue("day", now.Day);
+                    int hour = cmd.GetOptionValue("hour", now.Hour);
+                    int minute = cmd.GetOptionValue("minute", now.Minute);
+                    int second = cmd.GetOptionValue("second", now.Second);
                     
                     string timestamp = $"<t:{new DateTimeOffset(year, month, day, hour, minute, second, 0, offset).ToUnixTimeSeconds()}:{style}>";
                     cmd.RespondAsync($"`{timestamp}` {timestamp}");
@@ -91,14 +80,10 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                 ,
                 cmd =>
                 {
-                    string title = (string) cmd.Data.Options.First(x => x.Name == "title").Value;
-                    long optionCount = (long) cmd.Data.Options.First(x => x.Name == "options").Value;
-                    bool anonymous = 
-                        cmd.Data.Options.All(x => x.Name != "anonymous") 
-                        || (bool)cmd.Data.Options.First(x => x.Name == "anonymous").Value;
-                    bool hasOther = 
-                        cmd.Data.Options.Any(x => x.Name == "has-other") 
-                        && (bool)cmd.Data.Options.First(x => x.Name == "has-other").Value;
+                    string title = cmd.GetOptionValue("title", "poll")!;
+                    int optionCount = cmd.GetOptionValue("options", 2);
+                    bool anonymous = cmd.GetOptionValue("anonymous", false);
+                    bool hasOther = cmd.GetOptionValue("has-other", false);
                     
                     var modalBuilder = new ModalBuilder()
                         .WithTitle("Poll Options")

@@ -22,7 +22,7 @@ public static class AdminSlashCommands
                 .WithName("spawn-button")
                 .WithDescription("spawns a button"), cmd =>
             {
-                
+                cmd.RespondAsync("this is a test command with no use", ephemeral: true);
             }, devOnly), guild);
             #endregion
 
@@ -36,11 +36,9 @@ public static class AdminSlashCommands
                     .AddOption("reason", ApplicationCommandOptionType.String, "The reason for giving the 🍪s."),
                 cmd =>
                 {
-                    SocketUser user = (SocketUser) cmd.Data.Options.First(x => x.Name == "user").Value;
-                    int count = cmd.Data.Options.Count == 2
-                        ? Convert.ToInt32((long) cmd.Data.Options.First(x => x.Name == "count").Value)
-                        : 5;
-                    string? reason = (string) cmd.Data.Options.FirstOrDefault(x => x.Name == "reason")!.Value;
+                    var user = cmd.GetOptionValue<SocketUser>("user", null)!;
+                    var count = cmd.GetOptionValue<int>("count", 5)!;
+                    var reason = cmd.GetOptionValue<string>("reason", null);
 
                     CookieManager.TakeOrGiveCookiesToUser(user.Id, count, reason);
                     CookieManager.GetUser(user.Id, out var entry);
@@ -67,11 +65,9 @@ public static class AdminSlashCommands
                     .AddOption("reason", ApplicationCommandOptionType.String, "The reason for giving the 🍪s."),
                 cmd =>
                 {
-                    SocketUser user = (SocketUser) cmd.Data.Options.First(x => x.Name == "user").Value;
-                    int count = cmd.Data.Options.Count == 2
-                        ? Convert.ToInt32((long) cmd.Data.Options.First(x => x.Name == "amount").Value)
-                        : 5;
-                    string? reason = (string) cmd.Data.Options.FirstOrDefault(x => x.Name == "reason")!.Value;
+                    var user = cmd.GetOptionValue<SocketUser>("user", null)!;
+                    var count = cmd.GetOptionValue<int>("amount", 5)!;
+                    var reason = cmd.GetOptionValue<string>("reason", null);
 
                     CookieManager.GetUser(user.Id, out var entry);
                     CookieManager.AddOrModifyUser(user.Id, count, reason: reason);

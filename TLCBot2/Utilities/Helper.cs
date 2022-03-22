@@ -68,13 +68,32 @@ public static class Helper
     {
         return new Discord.Color(255 - color.R, 255 - color.G, 255 - color.B);
     }
-
     public static Argb32 Invert(this Argb32 color)
     {
         return color.Argb32ToDiscordColor().Invert().DiscordColorToArgb32();
     }
     public static Discord.Color Argb32ToDiscordColor(this Argb32 color) => new(color.R, color.G, color.B);
     public static Argb32 DiscordColorToArgb32(this Discord.Color color) => new(color.R, color.G, color.B, 255);
+
+    public static T? GetOptionValue<T>(this SocketSlashCommand cmd, string optionName, T? defaultValue)
+    {
+        if (cmd.Data.Options.Any(x => x.Name == optionName))
+        {
+            object value = cmd.Data.Options.First(x => x.Name == optionName).Value!;
+            return (T)(value is long ? Convert.ToInt32(value) : value);
+        }
+
+        return defaultValue;
+    }
+    public static bool GetOption(this SocketSlashCommand cmd, string optionName, out SocketSlashCommandDataOption option)
+    {
+        option = null!;
+        if (cmd.Data.Options.All(x => x.Name != optionName)) return false;
+        {
+            option = cmd.Data.Options.First(x => x.Name == optionName);
+            return true;
+        }
+    }
     public static int RandomInt(int min, int max) => _rand.Next(min, max + 1);
 
     public static T RandomChoice<T>(this IEnumerable<T> collection) =>

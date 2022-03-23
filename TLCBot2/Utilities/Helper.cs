@@ -75,7 +75,12 @@ public static class Helper
     public static Discord.Color Argb32ToDiscordColor(this Argb32 color) => new(color.R, color.G, color.B);
     public static Argb32 DiscordColorToArgb32(this Discord.Color color) => new(color.R, color.G, color.B, 255);
 
-    public static T? GetOptionValue<T>(this SocketSlashCommand cmd, string optionName, T? defaultValue)
+    public static T GetRequiredValue<T>(this SocketSlashCommand cmd, string optionName)
+    {
+        object value = cmd.Data.Options.First(x => x.Name == optionName).Value!;
+        return (T) (value is long ? Convert.ToInt32(value) : value);
+    }
+    public static T GetOptionalValue<T>(this SocketSlashCommand cmd, string optionName, T defaultValue)
     {
         if (cmd.Data.Options.Any(x => x.Name == optionName))
         {
@@ -84,6 +89,11 @@ public static class Helper
         }
 
         return defaultValue;
+    }
+    public static T GetRequiredValue<T>(this SocketSlashCommandDataOption cmd, string optionName)
+    {
+        object value = cmd.Options.First(x => x.Name == optionName).Value!;
+        return (T) (value is long ? Convert.ToInt32(value) : value);
     }
     public static bool GetOption(this SocketSlashCommand cmd, string optionName, out SocketSlashCommandDataOption option)
     {

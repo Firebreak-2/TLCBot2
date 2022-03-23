@@ -67,7 +67,7 @@ public static class CookieManager
             .WithTitle($"Added Cookie User [{userProfile.Username}]")
             .AddField("Cookies", $"{newUser.Cookies}")
             .AddField("Ban Status", $"{newUser.IsBanned}")
-            .AddField("Reason", $"{reason ?? "No reason provided"}")
+            .AddField("Reason", $"{(string.IsNullOrEmpty(reason) ? "No reason provided" : reason)}")
             .WithColor(Color.Blue)
             .WithAuthor(userProfile)
             .Build());

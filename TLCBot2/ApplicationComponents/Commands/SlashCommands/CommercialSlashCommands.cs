@@ -53,16 +53,16 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                 .AddOption("second", ApplicationCommandOptionType.Integer, "The specified [second] in the UTC timezone")
                 , cmd =>
                 {
-                    var offset = new TimeSpan(cmd.GetOptionValue("hour-offset", 0), 0, 0);
+                    var offset = new TimeSpan(cmd.GetRequiredValue<int>("hour-offset"), 0, 0);
                     var now = DateTimeOffset.UtcNow + offset;
             
-                    string style = cmd.GetOptionValue("style", "f")!;
-                    int year = cmd.GetOptionValue("year", now.Year);
-                    int month = cmd.GetOptionValue("month", now.Month);
-                    int day = cmd.GetOptionValue("day", now.Day);
-                    int hour = cmd.GetOptionValue("hour", now.Hour);
-                    int minute = cmd.GetOptionValue("minute", now.Minute);
-                    int second = cmd.GetOptionValue("second", now.Second);
+                    string style = cmd.GetOptionalValue("style", "f");
+                    int year = cmd.GetOptionalValue("year", now.Year);
+                    int month = cmd.GetOptionalValue("month", now.Month);
+                    int day = cmd.GetOptionalValue("day", now.Day);
+                    int hour = cmd.GetOptionalValue("hour", now.Hour);
+                    int minute = cmd.GetOptionalValue("minute", now.Minute);
+                    int second = cmd.GetOptionalValue("second", now.Second);
                     
                     string timestamp = $"<t:{new DateTimeOffset(year, month, day, hour, minute, second, 0, offset).ToUnixTimeSeconds()}:{style}>";
                     cmd.RespondAsync($"`{timestamp}` {timestamp}");
@@ -80,10 +80,10 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                 ,
                 cmd =>
                 {
-                    string title = cmd.GetOptionValue("title", "poll")!;
-                    int optionCount = cmd.GetOptionValue("options", 2);
-                    bool anonymous = cmd.GetOptionValue("anonymous", false);
-                    bool hasOther = cmd.GetOptionValue("has-other", false);
+                    string title = cmd.GetRequiredValue<string>("title");
+                    int optionCount = cmd.GetRequiredValue<int>("options");
+                    bool anonymous = cmd.GetOptionalValue("anonymous", false);
+                    bool hasOther = cmd.GetOptionalValue("has-other", false);
                     
                     var modalBuilder = new ModalBuilder()
                         .WithTitle("Poll Options")
@@ -210,13 +210,13 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         switch (colorType.Name)
                         {
                             case "hex":
-                                string colorHex = (string) colorType.Options.First().Value;
+                                string colorHex = colorType.GetRequiredValue<string>("value")!;
                                 color = Helper.HexCodeToColor(colorHex).DiscordColorToArgb32();
                                 break;
                             case "rgb":
-                                byte colorR = Convert.ToByte((long) colorType.Options.ToArray()[0].Value);
-                                byte colorG = Convert.ToByte((long) colorType.Options.ToArray()[1].Value);
-                                byte colorB = Convert.ToByte((long) colorType.Options.ToArray()[2].Value);
+                                int colorR = colorType.GetRequiredValue<int>("red");
+                                int colorG = colorType.GetRequiredValue<int>("green");
+                                int colorB = colorType.GetRequiredValue<int>("blue");
                                 color = new Color(colorR, colorG, colorB).DiscordColorToArgb32();
                                 break;
                             default:
@@ -297,7 +297,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     {
                         Embed GetSchemeEmbed()
                         {
-                            string hexcode = (string) cmd.Data.Options.First()!;
+                            string hexcode = cmd.GetRequiredValue<string>("base-color");
                             var color = Helper.HexCodeToColor(hexcode);
 
                             using var client = new WebClient();
@@ -337,9 +337,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     Embed GetBingoEmbed()
                     {
                         using var image = new Image<Argb32>(1000, 1000);
-                        int tilesPerRow = cmd.Data.Options.Count > 0
-                            ? Convert.ToInt32(cmd.Data.Options.First().Value)
-                            : 5;
+                        int tilesPerRow = cmd.GetOptionalValue("tile-count", 5);
                         var bingoPrompts =
                             File.ReadAllLines($"{Program.FileAssetsPath}/bingoPrompts.cfg")
                                 .Select(x => x.Replace(' ', '\n')).ToHashSet();
@@ -357,11 +355,11 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                                     int val = i + image.Width / tilesPerRow * j;
                                     if (val <= gridLineWidth) continue;
 
-                                    if (x == val || y == val) return new Argb32(0, 0, 0);
+                                    if (x == val || y == val) return SixLabors.ImageSharp.Color.Black;
                                 }
                             }
 
-                            return new Argb32(255, 255, 255);
+                            return SixLabors.ImageSharp.Color.White;
                         });
 
                         var centerPos = Point.Empty;
@@ -441,7 +439,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                 Embed GetRandomPromptEmbed()
                 {
 
-                    if (Helper.RandomInt(1, 20) == 1) // 1/20 chance to omit charProp
+                    if (Helper.RandomInt(0, 20) == 0) // 1/20 chance to omit charProp
                         prompt =
                             $"{promptChars.RandomChoice()} {Regex.Replace(promptScenery.RandomChoice(), @"{.+?}", promptSceneryprops.RandomChoice())}";
                     else
@@ -480,7 +478,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     .AddOption("user", ApplicationCommandOptionType.User, "The user to check the details of."),
                 cmd =>
                 {
-                    var user = cmd.Channel.GetGuild().GetUser(((SocketUser?)(cmd.Data.Options.Any() ? cmd.Data.Options.First().Value : null) ?? cmd.User).Id);
+                    var user = cmd.Channel.GetGuild().GetUser(cmd.GetOptionalValue("user", cmd.User)!.Id);
 
                     int cookies = 0;
                     if (CookieManager.GetUser(user.Id, out var entry))
@@ -505,7 +503,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     .AddOption("user", ApplicationCommandOptionType.User, "The user to check the cookies of."),
                 cmd =>
                 {
-                    var user = (SocketUser?)(cmd.Data.Options.Any() ? cmd.Data.Options.First().Value : null) ?? cmd.User;
+                    var user = cmd.Channel.GetGuild().GetUser(cmd.GetOptionalValue("user", cmd.User)!.Id);
 
                     int cookies = 0;
                     if (CookieManager.GetUser(user.Id, out var entry))
@@ -560,7 +558,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                 .AddOption("user", ApplicationCommandOptionType.User, "The user to check the socials of"),
                 cmd =>
                 {
-                    SocketUser user =  (cmd.Data.Options.Count == 1 ? (SocketUser) cmd.Data.Options.First().Value : cmd.User);
+                    var user = cmd.Channel.GetGuild().GetUser(cmd.GetOptionalValue("user", cmd.User)!.Id);
                     if (!SocialMediaManager.GetUser(user.Id, out var entry))
                     {
                         cmd.RespondAsync($"{user.Username} has not linked any of their social media profiles.");
@@ -634,7 +632,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                 .AddOption("profile-link", ApplicationCommandOptionType.String, "The **link** to your social media profile", true),
                 cmd =>
                 {
-                    string profLink = (string) cmd.Data.Options.First(x => x.Name == "profile-link").Value;
+                    string profLink = cmd.GetRequiredValue<string>("profile-link");
                     string platform;
                     if (cmd.Data.Options.Count == 1)
                     {

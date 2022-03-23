@@ -36,9 +36,9 @@ public static class AdminSlashCommands
                     .AddOption("reason", ApplicationCommandOptionType.String, "The reason for giving the 🍪s."),
                 cmd =>
                 {
-                    var user = cmd.GetOptionValue<SocketUser>("user", null)!;
-                    var count = cmd.GetOptionValue<int>("count", 5)!;
-                    var reason = cmd.GetOptionValue<string>("reason", null);
+                    var user = cmd.GetRequiredValue<SocketUser>("user");
+                    var count = cmd.GetOptionalValue("count", 5);
+                    var reason = cmd.GetOptionalValue("reason", "");
 
                     CookieManager.TakeOrGiveCookiesToUser(user.Id, count, reason);
                     CookieManager.GetUser(user.Id, out var entry);
@@ -65,9 +65,9 @@ public static class AdminSlashCommands
                     .AddOption("reason", ApplicationCommandOptionType.String, "The reason for giving the 🍪s."),
                 cmd =>
                 {
-                    var user = cmd.GetOptionValue<SocketUser>("user", null)!;
-                    var count = cmd.GetOptionValue<int>("amount", 5)!;
-                    var reason = cmd.GetOptionValue<string>("reason", null);
+                    var user = cmd.GetRequiredValue<SocketUser>("user");
+                    var count = cmd.GetOptionalValue("count", 5);
+                    var reason = cmd.GetOptionalValue("reason", "");
 
                     CookieManager.GetUser(user.Id, out var entry);
                     CookieManager.AddOrModifyUser(user.Id, count, reason: reason);

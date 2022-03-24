@@ -62,6 +62,15 @@ public static class RuntimeConfig
         }
         set => SetSetting("QOTDChannel", $"{value.Id}");
     }
+    public static SocketTextChannel ServerSuggestionsChannel
+    {
+        get
+        {
+            string x = UnsafeGetSetting<string>("ServerSuggestionsChannel")!;
+            return (SocketTextChannel)Program.Client.GetChannel(ulong.Parse(x));
+        }
+        set => SetSetting("ServerSuggestionsChannel", $"{value.Id}");
+    }
     public static SocketTextChannel TLCBetaCommandLine
     {
         get

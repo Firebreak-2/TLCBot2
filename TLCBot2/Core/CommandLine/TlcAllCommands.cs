@@ -154,11 +154,13 @@ public static class TlcAllCommands
                     break;
                 case 1:
                 {
-                    void Stuff(string messageText, ButtonBuilder eternalButton)
+                    void Stuff(string messageText, params ButtonBuilder[] eternalButton)
                     {
+                        var builder = new ComponentBuilder();
+                        foreach (var button in eternalButton)
+                            builder.WithButton(button);
                         channel.SendMessageAsync(messageText, 
-                            components: new FireMessageComponent(new ComponentBuilder()
-                            .WithButton(eternalButton), null, null).Create());
+                            components: new FireMessageComponent(builder, null, null).Create());
                         Thread.Sleep(1000);
                     }
                     Stuff("Are you lost in the sea of channels and cant find your way through them? " +
@@ -177,19 +179,13 @@ public static class TlcAllCommands
                            EternalButtons.EternalButton6);
                     
                     Stuff("Do you think that the server should have something that it currently does not? " +
-                          "Feel free to suggest it in the `Feedback` button. Your thoughts and suggestions go " +
-                          "directly to the mod team, and we will address your concerns accordingly.",
+                          "Using the `Feedback` button, you may access the Server Suggestions button which you " +
+                          "can then use to post suggestions to the server, and members can vote whether to implement " +
+                          "your suggestion or not. In there you can also find the QOTD Suggestion button, which allows " +
+                          "you to suggest questions for the next Question Of The Day! And if you find any bugs with the " +
+                          "TLC bot you can report the bugs using the Bug Report button. Reporting bugs of any kind is " +
+                          "greatly appreciated by the developer team, and will help everyone in the long run.",
                            EternalButtons.EternalButton2);
-                    
-                    Stuff("Feel like something's off with the bot? like it's doing something it shouldn't? " +
-                          "Try reporting the issue using the `Bug Report` button. Bug reports are highly " +
-                          "appreciated by the developer team, and it helps make everyone's experience better",
-                           EternalButtons.EternalButton3);
-                    
-                    Stuff("Did you think of a great question but have no place to ask it? Suggest it using the " +
-                          "`QOTD Suggestion` button! All suggestions go directly to the mod team, and if they think " +
-                          "that it's a good question, it'll be featured in the server's next Question of the Day!",
-                           EternalButtons.EternalButton4);
                 } 
                     break;
             }

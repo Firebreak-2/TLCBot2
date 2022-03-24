@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
+using Newtonsoft.Json;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -9,6 +10,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.Core;
+using TLCBot2.Core.CommandLine;
 using TLCBot2.DataManagement;
 using TLCBot2.DataManagement.Temporary;
 using TLCBot2.Utilities;
@@ -19,8 +21,10 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
 {
     public static class CommercialSlashCommands
     {
+        public static FontCollection TLCFonts = new();
         public static async Task Initialize()
         {
+            TLCFonts.Add(Program.FileAssetsPath + "/arial.ttf");
             var guild = Constants.Guilds.Lares!;
             const bool devOnly = false;
 
@@ -105,7 +109,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
 
                         if (hasOther) options[^1] = new Poll.Option("Other");
                         
-                        var poll = new Poll(title, $"poll-{Helper.RandomInt(0, 1000)}", options);
+                        var poll = new Poll(title, options);
                         EmbedBuilder GenerateEmbed()
                         {
                             var embed = new EmbedBuilder().WithTitle(title).WithColor(Color.Blue);
@@ -135,12 +139,12 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         }
                     
                         var cb = FireMessageComponent.CreateNew(new FireMessageComponent(new ComponentBuilder()
-                            .WithSelectMenu(poll.CustomID, poll.Options.Select(option => new SelectMenuOptionBuilder()
+                            .WithSelectMenu($"poll-selectmenu-{Helper.RandomInt(0,9999)}", poll.Options.Select(option => new SelectMenuOptionBuilder()
                                 .WithLabel(option.Title)
                                 .WithValue(option.Title)).ToList(), maxValues: 1), null, selectMenu =>
                         {
-                            string stringToCheckIfUserHasVotedBefore = $"{selectMenu.User.Id}";
-                            if (poll.VoteHistory.Contains(stringToCheckIfUserHasVotedBefore))
+                            ulong userId = selectMenu.User.Id;
+                            if (poll.VoteHistory.Contains(userId))
                             {
                                 selectMenu.RespondAsync("Cannot vote more than once", ephemeral: true);
                                 return;
@@ -148,7 +152,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                             poll.Options.First(x => x.Title == selectMenu.Data.Values.First()).Votes++;
                             selectMenu.Message.ModifyAsync(props =>
                                 props.Embed = GenerateEmbed().Build());
-                            poll.VoteHistory.Add(stringToCheckIfUserHasVotedBefore);
+                            poll.VoteHistory.Add(userId);
                         
                             selectMenu.RespondAsync("Response submitted.", ephemeral:true);
                         }));
@@ -334,10 +338,16 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     .AddOption("tile-count", ApplicationCommandOptionType.Integer, "the grid size",minValue:3,maxValue:11),
                 cmd =>
                 {
+                    int tilesPerRow = cmd.GetOptionalValue("tile-count", 5);
+                    if (tilesPerRow % 2 == 0)
+                    {
+                        cmd.RespondAsync("Tile count must be an `odd` number.", ephemeral: true);
+                        return;
+                    }
+                    cmd.RespondAsync("Bingo card creation queued...");
                     Embed GetBingoEmbed()
                     {
                         using var image = new Image<Argb32>(1000, 1000);
-                        int tilesPerRow = cmd.GetOptionalValue("tile-count", 5);
                         var bingoPrompts =
                             File.ReadAllLines($"{Program.FileAssetsPath}/bingoPrompts.cfg")
                                 .Select(x => x.Replace(' ', '\n')).ToHashSet();
@@ -369,7 +379,6 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                             {
                                 int yPos = y * image.Height / tilesPerRow;
                                 int xPos = x * image.Width / tilesPerRow;
-
                                 if (x == y && x == tilesPerRow / 2)
                                 {
                                     centerPos = new Point(xPos, yPos);
@@ -378,7 +387,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
 
                                 string prompt = bingoPrompts.RandomChoice();
                                 bingoPrompts.Remove(prompt);
-                                var font = SystemFonts.CreateFont("Arial", prompt.Length > 8 ? 35 : 42);
+                                Font font = TLCFonts.Get("Arial").CreateFont(prompt.Length > 8 ? 35 : 42);
                                 var options = new TextOptions(font)
                                 {
                                     HorizontalAlignment = HorizontalAlignment.Center,
@@ -406,8 +415,10 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         return new EmbedBuilder()
                             .WithTitle($"TLC bingo card for {cmd.User.Username}")
                             .WithDescription(
-                                "Draw an image that would score a bingo on the following sheet. Don't forget to shout bingo and share your finished drawing!")
+                                "Draw an image that would score a bingo on the following sheet." +
+                                " Don't forget to shout bingo and share your finished drawing!")
                             .WithImageUrl(url)
+                            .WithAuthor(cmd.User)
                             .WithColor(Color.Blue)
                             .Build();
                     }
@@ -415,12 +426,22 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     var fmc = FireMessageComponent.CreateNew(new FireMessageComponent(new ComponentBuilder()
                         .WithButton("Reroll", $"reroll-bingo-{Helper.RandomInt(0, 1000)}"), button =>
                     {
+                        if (button.User.Id == cmd.User.Id)
+                        {
+                            button.RespondAsync("You are not responsible for this button.", ephemeral: true);
+                            return;
+                        }
                         button.Message.ModifyAsync(props => props.Embed = GetBingoEmbed());
                         button.RespondAsync();
                     }, null));
 
-                    cmd.RespondAsync(embed:GetBingoEmbed(),components:fmc);
-                    }, devOnly), guild);
+                    cmd.ModifyOriginalResponseAsync(props =>
+                    {
+                        props.Embed = GetBingoEmbed();
+                        props.Components = fmc;
+                        props.Content = null;
+                    });
+                }, devOnly), guild);
         #endregion
         
             #region Random Prompt Command
@@ -448,7 +469,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
 
                     return new EmbedBuilder()
                         .WithTitle($"Art prompt for {cmd.User.Username}")
-                        .WithDescription($"{prompt[0].ToString().ToUpper()}{prompt[1..]}.")
+                        .WithDescription($"{prompt[..1].ToUpper()}{prompt[1..]}.")
                         .WithColor(Color.Blue)
                         .Build();
                 }

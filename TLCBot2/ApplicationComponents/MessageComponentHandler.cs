@@ -16,6 +16,7 @@ public static class MessageComponentHandler
             .WithColor(Color.Blue)
             .WithTitle("Button Executed")
             .AddField("Button's Original Message", button.Message.GetJumpUrl())
+            .AddField("Button's ID", button.Data.CustomId)
             .WithDescription($"User: {button.User.Mention} : {button.User.Id}")
             .WithAuthor(button.User).Build());
 

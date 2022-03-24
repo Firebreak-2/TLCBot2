@@ -5,6 +5,7 @@ using TLCBot2.DataManagement;
 using TLCBot2.DataManagement.Temporary;
 using TLCBot2.Utilities;
 using Color = Discord.Color;
+using SlashCommandBuilder = Discord.SlashCommandBuilder;
 
 namespace TLCBot2.ApplicationComponents.Commands.SlashCommands;
 
@@ -22,7 +23,9 @@ public static class AdminSlashCommands
                 .WithName("spawn-button")
                 .WithDescription("spawns a button"), cmd =>
             {
-                cmd.RespondAsync("this is a test command with no use", ephemeral: true);
+                cmd.RespondWithModalAsync(new ModalBuilder()
+                    .WithTitle("gamer")
+                    .WithCustomId("nouse").Build());
             }, devOnly), guild);
             #endregion
 

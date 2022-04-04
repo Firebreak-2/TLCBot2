@@ -4,6 +4,12 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
+using Google.Apis.Sheets.v4;
+using Google.Apis.Sheets.v4.Data;
+using Google.Apis.Util.Store;
+using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TLCBot2.Core;
@@ -13,6 +19,66 @@ namespace TLCBot2.Utilities;
 
 public static class Helper
 {
+     // public static class Sheets
+     // {
+     //     public static readonly string[] Scopes = { SheetsService.Scope.Spreadsheets };
+     //     public static string ApplicationName = "Google Sheets API .NET Quickstart";
+     //     public static UserCredential Credential = null!;
+     //     public static SheetsService  Service    = null!;
+     //     public const string SpreadsheetId = "null";
+     //     public static void Initialize()
+     //     {
+     //         using (var stream =
+     //                new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
+     //         {
+     //             const string credPath = "token.json";
+     //             Credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+     //                 GoogleClientSecrets.FromStream(stream).Secrets,
+     //                 Scopes,
+     //                 "user",
+     //                 CancellationToken.None,
+     //                 new FileDataStore(credPath, true)).Result;
+     //             Console.WriteLine($"Credential file saved to: {credPath}");
+     //         }
+     //         
+     //         Service = new SheetsService(new BaseClientService.Initializer
+     //         {
+     //             HttpClientInitializer = Credential,
+     //             ApplicationName = ApplicationName
+     //         });
+     //     }
+     //     public static string UpdateData(string rangeNotation, IList<IList<object>> data)
+     //     {
+     //         const string valueInputOption = "USER_ENTERED";
+     //
+     //         // The new values to apply to the spreadsheet.
+     //         List<ValueRange> updateData = new();
+     //         var dataValueRange = new ValueRange
+     //         {
+     //             Range = $"{rangeNotation}",
+     //             Values = data
+     //         };
+     //         updateData.Add(dataValueRange);
+     //
+     //         BatchUpdateValuesRequest requestBody = new()
+     //         {
+     //             ValueInputOption = valueInputOption,
+     //             Data = updateData
+     //         };
+     //
+     //         var request = Service.Spreadsheets.Values.BatchUpdate(requestBody, SpreadsheetId);
+     //
+     //         BatchUpdateValuesResponse response = request.Execute();
+     //         // BatchUpdateValuesResponse response = await request.ExecuteAsync(); // For async 
+     //
+     //         return JsonConvert.SerializeObject(response);
+     //     }
+     //     public static string UpdateCell(string cellID, string newValue) =>
+     //         UpdateData(cellID, new List<IList<object>> { new List<object> { newValue } });
+     //     public static IList<IList<object>> GetData(string a1Notation) =>
+     //         Service.Spreadsheets.Values.Get(SpreadsheetId, a1Notation).Execute().Values;
+     //     public static string GetCell(string cellID) => GetData(cellID)[0][0].ToString() ?? "";
+     // }
     private static Random _rand = new();
     private static DataTable _dataTable = new();
     public static string Compute(string input) => _dataTable.Compute(input, null).ToString() ?? "null";

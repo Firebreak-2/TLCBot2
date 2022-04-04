@@ -102,6 +102,7 @@ public class Program
     private static async Task Initialize()
     {
         PreInitialize();
+        // Helper.Sheets.Initialize();
         
         await ApplicationCommandManager.Initialize();
         StarboardListener.Initialize();

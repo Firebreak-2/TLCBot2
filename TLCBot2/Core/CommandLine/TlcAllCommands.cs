@@ -1,24 +1,12 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using MoreLinq;
-using Newtonsoft.Json;
-using SixLabors.Fonts;
 using TLCBot2.Utilities;
-using Color = Discord.Color;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using TLCBot2.ApplicationComponents;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.ApplicationComponents.Eternal;
 using TLCBot2.DataManagement;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace TLCBot2.Core.CommandLine;
 
@@ -116,86 +104,141 @@ public static class TlcAllCommands
             RuntimeConfig.TLCBetaCommandLine
                 .SendFileAsync(args[0], null);
         }, 1));
-        
-        AddCommand(new TlcCommand("makeeternalmessage", args =>
-        {
-            var channel = (SocketTextChannel)Program.Client.GetChannel(ulong.Parse(args[1]));
-            switch (int.Parse(args[0]))
-            {
-                case 0:
-                {
-                    void Stuff(
-                        string name,
-                        Func<SocketTextChannel, IEnumerable<SocketRole>> roles,
-                        Func<SocketTextChannel, SelectMenuBuilder> eternalMenu,
-                        bool canSelectMultiple = false)
-                    {
-                        var categoricalRoles = roles(channel);
-                        channel.SendMessageAsync($"**{name}**\n" + string.Join("\n",
-                                categoricalRoles.Select(x => x.Mention)),
-                            components: FireMessageComponent.CreateNew(
-                                new FireMessageComponent(new ComponentBuilder()
-                                        .WithSelectMenu(eternalMenu(channel)
-                                            .AddOption("Remove All", "rmv")
-                                            .WithMaxValues(canSelectMultiple ? categoricalRoles.Count() : 1)),
-                                    null, null)));
-                        Thread.Sleep(1000);
-                    }
 
-                    Stuff("Color Roles", EternalSelectMenus.GetColorRoles, EternalSelectMenus.EternalSelectMenu0);
-                    Stuff("Pronoun Roles", EternalSelectMenus.GetPronounRoles, EternalSelectMenus.EternalSelectMenu1);
-                    Stuff("Ping Roles", EternalSelectMenus.GetPingRoles, EternalSelectMenus.EternalSelectMenu2, true);
-                    Stuff("Bot Fun Roles", EternalSelectMenus.GetBotFunRoles, EternalSelectMenus.EternalSelectMenu3,
-                        true);
-                    Stuff("Art Specialty Roles", EternalSelectMenus.GetArtSpecialityRoles,
-                        EternalSelectMenus.EternalSelectMenu4, true);
-                    Stuff("Misc Roles", EternalSelectMenus.GetMiscRoles, EternalSelectMenus.EternalSelectMenu5, true);
-                }
-                    break;
-                case 1:
-                {
-                    void Stuff(string messageText, params ButtonBuilder[] eternalButton)
-                    {
-                        var builder = new ComponentBuilder();
-                        foreach (var button in eternalButton)
-                            builder.WithButton(button);
-                        channel.SendMessageAsync(messageText, 
-                            components: new FireMessageComponent(builder, null, null).Create());
-                        Thread.Sleep(1000);
-                    }
-                    Stuff("Are you lost in the sea of channels and cant find your way through them? " +
-                          "Check out the `Server Directory` button. It provides information on all the " +
-                          "channels and when to use them.",
-                           EternalButtons.EternalButton1);
-                    
-                    Stuff("Getting confused with what the server's slash commands and message or user commands " +
-                          "do? Give the `Command Catalogue` button! It will explain all there is to know " +
-                          "about all of the server's custom commands.",
-                           EternalButtons.EternalButton5);
-                    
-                    Stuff("Are you curious about what some server roles do or how you earn some of roles? " +
-                          "The `Role Catalogue` button is here to help! It should give you and understanding " +
-                          "of what most of the server's roles do and how you can get your hands on some of them.",
-                           EternalButtons.EternalButton6);
-                    
-                    Stuff("Do you think that the server should have something that it currently does not? " +
-                          "Using the `Feedback` button, you may access the Server Suggestions button which you " +
-                          "can then use to post suggestions to the server, and members can vote whether to implement " +
-                          "your suggestion or not. In there you can also find the QOTD Suggestion button, which allows " +
-                          "you to suggest questions for the next Question Of The Day! And if you find any bugs with the " +
-                          "TLC bot you can report the bugs using the Bug Report button. Reporting bugs of any kind is " +
-                          "greatly appreciated by the developer team, and will help everyone in the long run.",
-                           EternalButtons.EternalButton2);
-                } 
-                    break;
+        {
+            Dictionary<string, 
+                (Func<SocketTextChannel, IEnumerable<SocketRole>> roles,
+                Func<SocketTextChannel, SelectMenuBuilder> eternalMenu,
+                bool canSelectMultiple)> messagesToPost = new()
+            {
+                {"Color Roles", (EternalSelectMenus.GetColorRoles, EternalSelectMenus.EternalSelectMenu0, false)},
+                {"Pronoun Roles", (EternalSelectMenus.GetPronounRoles, EternalSelectMenus.EternalSelectMenu1, false)},
+                {"Ping Roles", (EternalSelectMenus.GetPingRoles, EternalSelectMenus.EternalSelectMenu2, true)},
+                {"Bot Fun Roles", (EternalSelectMenus.GetBotFunRoles, EternalSelectMenus.EternalSelectMenu3, true)},
+                {"Art Specialty Roles", (EternalSelectMenus.GetArtSpecialityRoles, EternalSelectMenus.EternalSelectMenu4, true)},
+                {"Misc Roles", (EternalSelectMenus.GetMiscRoles, EternalSelectMenus.EternalSelectMenu5, true)},
+            };
+            (string content, MessageComponent component) CreateRolesMessageData(
+                string name,
+                Func<SocketTextChannel, IEnumerable<SocketRole>> roles,
+                Func<SocketTextChannel, SelectMenuBuilder> eternalMenu,
+                bool canSelectMultiple,
+                SocketTextChannel channel)
+            {
+                var categoricalRoles = roles(channel);
+                var cont = $"**{name}**\n" + string.Join("\n",
+                    categoricalRoles.Select(x => x.Mention));
+                var comp = FireMessageComponent.CreateNew(
+                    new FireMessageComponent(new ComponentBuilder()
+                            .WithSelectMenu(eternalMenu(channel!)
+                                .AddOption("Remove All", "rmv")
+                                .WithMaxValues(canSelectMultiple ? categoricalRoles.Count() : 1)),
+                        null, null));
+                return (cont, comp);
             }
-        }, 2));
+
+            (string content, MessageComponent component) CreateDashboardMessageData(
+                string messageText,
+                ButtonBuilder[] eternalButton)
+            {
+                var builder = new ComponentBuilder();
+                foreach (var button in eternalButton)
+                    builder.WithButton(button);
+                return (messageText, new FireMessageComponent(builder, null, null).Create());
+            }
+            
+            AddCommand(new("updateeternalmessage", args =>
+            {
+                var channel = (SocketTextChannel) Program.Client.GetChannel(ulong.Parse(args[1]));
+                switch (int.Parse(args[0]))
+                {
+                    case 0:
+                        foreach (var message in channel.GetMessagesAsync().FirstAsync().Result)
+                        {
+                            string key = Regex.Match(message.Content, @"(?<=(\*\*)).+?(?=\1.*)").Value;
+                            if (!messagesToPost.TryGetValue(key, out var data)) continue;
+                            
+                            (string content, MessageComponent component) =
+                                CreateRolesMessageData(key, data.roles, data.eternalMenu, data.canSelectMultiple, channel);
+                            ((RestUserMessage) message).ModifyAsync(props =>
+                            {
+                                props.Content = content;
+                                props.Components = component;
+                            });
+                        }
+                        break;
+                }
+            }, 2));
+
+            AddCommand(new TlcCommand("makeeternalmessage", args =>
+            {
+                var channel = (SocketTextChannel) Program.Client.GetChannel(ulong.Parse(args[1]));
+                switch (int.Parse(args[0]))
+                {
+                    case 0:
+                    {
+                        void PostMessage(
+                            string name,
+                            Func<SocketTextChannel, IEnumerable<SocketRole>> roles,
+                            Func<SocketTextChannel, SelectMenuBuilder> eternalMenu,
+                            bool canSelectMultiple)
+                        {
+                            (string content, MessageComponent component) = 
+                                CreateRolesMessageData(name, roles, eternalMenu, canSelectMultiple, channel);
+                            channel.SendMessageAsync(content, components: component);
+                            Thread.Sleep(1000);
+                        }
+                        foreach (string key in messagesToPost.Keys)
+                        {
+                            var data = messagesToPost.First(x => x.Key == key).Value;
+                            PostMessage(key, data.roles, data.eternalMenu, data.canSelectMultiple);
+                        }
+                    }
+                        break;
+                    case 1:
+                    {
+                        void PostMessage(string messageText, params ButtonBuilder[] eternalButton)
+                        {
+                            (string content, MessageComponent component) =
+                                CreateDashboardMessageData(messageText, eternalButton);
+                            channel.SendMessageAsync(content, components: component);
+                            Thread.Sleep(1000);
+                        }
+
+                        PostMessage("Are you lost in the sea of channels and cant find your way through them? " +
+                              "Check out the `Server Directory` button. It provides information on all the " +
+                              "channels and when to use them.",
+                            EternalButtons.EternalButton1);
+
+                        PostMessage("Getting confused with what the server's slash commands and message or user commands " +
+                              "do? Give the `Command Catalogue` button! It will explain all there is to know " +
+                              "about all of the server's custom commands.",
+                            EternalButtons.EternalButton5);
+
+                        PostMessage("Are you curious about what some server roles do or how you earn some of roles? " +
+                              "The `Role Catalogue` button is here to help! It should give you and understanding " +
+                              "of what most of the server's roles do and how you can get your hands on some of them.",
+                            EternalButtons.EternalButton6);
+
+                        PostMessage("Do you think that the server should have something that it currently does not? " +
+                              "Using the `Feedback` button, you may access the Server Suggestions button which you " +
+                              "can then use to post suggestions to the server, and members can vote whether to implement " +
+                              "your suggestion or not. In there you can also find the QOTD Suggestion button, which allows " +
+                              "you to suggest questions for the next Question Of The Day! And if you find any bugs with the " +
+                              "TLC bot you can report the bugs using the Bug Report button. Reporting bugs of any kind is " +
+                              "greatly appreciated by the developer team, and will help everyone in the long run.",
+                            EternalButtons.EternalButton2);
+                    }
+                        break;
+                }
+            }, 2));
+        }
 
         AddCommand(new TlcCommand("test", _ =>
         {
             
         }));
-        
+
         AddCommand(new TlcCommand("ls", args =>
         {
             TlcConsole.Print(string.Join("\n\n",

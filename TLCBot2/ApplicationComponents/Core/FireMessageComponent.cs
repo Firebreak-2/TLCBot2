@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using TLCBot2.Core;
+using TLCBot2.Utilities;
+using static TLCBot2.ApplicationComponents.MessageComponentHandler;
 
 namespace TLCBot2.ApplicationComponents.Core;
 
@@ -27,17 +29,14 @@ public class FireMessageComponent
     }
     public MessageComponent Create()
     {
-        bool Condition(FireMessageComponent x) => 
-            x.Component.Components.FirstOrDefault()!
-                .Components.FirstOrDefault()!.CustomId ==
-                Component.Components.FirstOrDefault()!
-                    .Components.FirstOrDefault()!.CustomId;
+        AllComponents.RemoveAll(item =>
+            item.Component.Components.Any(actionRow =>
+                actionRow.Components.Any(messageComponent => 
+                    Component.Components.Any(thisActionRow =>
+                        thisActionRow.Components.Any(thisMessageComponent =>
+                            thisMessageComponent.CustomId == messageComponent.CustomId)))));
         
-        if (MessageComponentHandler.AllComponents.Any() && 
-            MessageComponentHandler.AllComponents.Any(Condition))
-            MessageComponentHandler.AllComponents.RemoveAll(Condition);
-        
-        MessageComponentHandler.AllComponents.Add(this);
+        AllComponents.Add(this);
         return Component;
     }
 }

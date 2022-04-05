@@ -21,12 +21,12 @@ public static class ModalHandler
             .WithDescription($"User: {modal.User.Mention} : {modal.User.Id}")
             .WithAuthor(modal.User).Build());
 
-        for (int i = 0; i < AllModals.Count; i++)
+        foreach (var fireModal in AllModals)
         {
-            if (AllModals[i].Modal.CustomId != modal.Data.CustomId) continue;
+            if (fireModal.Modal.CustomId != modal.Data.CustomId) continue;
             
-            AllModals[i].OnSubmitted?.Invoke(modal);
-            AllModals.Remove(AllModals[i]);
+            fireModal.OnSubmitted?.Invoke(modal);
+            AllModals.Remove(fireModal);
             break;
         }
         return Task.CompletedTask;

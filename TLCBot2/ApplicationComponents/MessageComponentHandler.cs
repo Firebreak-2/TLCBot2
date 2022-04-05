@@ -4,6 +4,8 @@ using Discord.WebSocket;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.ApplicationComponents.Eternal;
 using TLCBot2.Core;
+using TLCBot2.Core.CommandLine;
+using TLCBot2.Utilities;
 
 namespace TLCBot2.ApplicationComponents;
 
@@ -23,12 +25,24 @@ public static class MessageComponentHandler
         ClearComponentCache();
         if (!button.Data.CustomId.StartsWith("ETERNAL"))
         {
-            for (int i = 0; i < AllComponents.Count; i++)
+            if (AllComponents.Count == 0)
             {
-                if (AllComponents[i].Component.Components.First()
-                    .Components.Any(x => x.CustomId == button.Data.CustomId))
+                button.RespondAsync(
+                                "This button has expired and can no longer be used. " +
+                                    "This was done as an optimzation so the bot does not have " +
+                                    "to worry about every single button in existence, and only " +
+                                    "the relevant ones.", ephemeral: true);
+                Helper.DisableMessageComponents(button.Message);
+                return Task.CompletedTask;
+            }
+            foreach (var fireMessageComponent in AllComponents)
+            {
+                if (fireMessageComponent.Component.Components.Any(actionRow =>
+                        actionRow.Components.Any(component =>
+                            component.Type == ComponentType.Button
+                            && component.CustomId == button.Data.CustomId)))
                 {
-                    AllComponents[i].OnExecuteButton?.Invoke(button);
+                    fireMessageComponent.OnExecuteButton?.Invoke(button);
                 }
             }
         }
@@ -51,12 +65,24 @@ public static class MessageComponentHandler
         ClearComponentCache();
         if (!selectionMenu.Data.CustomId.StartsWith("ETERNAL"))
         {
-            for (int i = 0; i < AllComponents.Count; i++)
+            if (AllComponents.Count == 0)
             {
-                if (AllComponents[i].Component.Components.First()
-                    .Components.Any(x => x.CustomId == selectionMenu.Data.CustomId))
+                selectionMenu.RespondAsync(
+                    "This selection menu has expired and can no longer be used. " +
+                    "This was done as an optimzation so the bot does not have " +
+                    "to worry about every single button in existence, and only " +
+                    "the relevant ones.", ephemeral: true);
+                Helper.DisableMessageComponents(selectionMenu.Message);
+                return Task.CompletedTask;
+            }
+            foreach (var fireMessageComponent in AllComponents)
+            {
+                if (fireMessageComponent.Component.Components.Any(actionRow =>
+                        actionRow.Components.Any(component =>
+                            component.Type == ComponentType.SelectMenu
+                            && component.CustomId == selectionMenu.Data.CustomId)))
                 {
-                    AllComponents[i].OnExecuteSelectMenu?.Invoke(selectionMenu);
+                    fireMessageComponent.OnExecuteSelectMenu?.Invoke(selectionMenu);
                 }
             }
         }

@@ -23,9 +23,11 @@ public static class AdminSlashCommands
                 .WithName("spawn-button")
                 .WithDescription("spawns a button"), cmd =>
             {
-                cmd.RespondWithModalAsync(new ModalBuilder()
-                    .WithTitle("gamer")
-                    .WithCustomId("nouse").Build());
+                cmd.RespondAsync(components: new FireMessageComponent(new ComponentBuilder()
+                    .WithButton("fancy shmancy button", Helper.RandId("button")), button =>
+                {
+                    button.RespondAsync("wah");
+                }, null).Create());
             }, devOnly), guild);
             #endregion
 

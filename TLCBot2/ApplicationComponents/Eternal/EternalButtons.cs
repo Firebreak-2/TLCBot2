@@ -274,10 +274,7 @@ public static class EternalButtons
                                                         $"{RuntimeConfig.QOTDRole.Mention} {question}\n\n" +
                                                         $"Thanks to {modal.User.Mention} for suggesting this question.")
                                                     .Result;
-                                                subSubButton.Message.ModifyAsync(props =>
-                                                {
-                                                    props.Components = new ComponentBuilder().Build();
-                                                });
+                                                Helper.DisableMessageComponents(subSubButton.Message);
                                                 subSubButton.RespondAsync(
                                                     $"Posted question on {RuntimeConfig.QOTDChannel.Mention}\n\n{msg.GetJumpUrl()}",
                                                     ephemeral: true);
@@ -299,10 +296,7 @@ public static class EternalButtons
                                                         subModal.RespondAsync(
                                                             $"Posted question on {RuntimeConfig.QOTDChannel.Mention}\n\n{msg.GetJumpUrl()}",
                                                             ephemeral: true);
-                                                        subSubButton.Message.ModifyAsync(props =>
-                                                        {
-                                                            props.Components = new ComponentBuilder().Build();
-                                                        });
+                                                        Helper.DisableMessageComponents(subSubButton.Message);
                                                     }).Create());
                                             }
                                         }, null).Create());

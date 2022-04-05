@@ -547,20 +547,23 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     string output = "No users registered in leaderboard";
                     if (CookieManager.CookieUsers.Any())
                         output = string.Join("\n", CookieManager.CookieUsers
-                            .Where((_, i) => i < 10).Select((user, i) =>
-                        {
-                            string rankingPrefix = i switch
+                            .Where((_, i) => i < 10)
+                            .OrderByDescending(x => x.Cookies)
+                            .Select((user, i) =>
                             {
-                                0 => "🥇",
-                                1 => "🥈",
-                                2 => "🥉",
-                                _ => $"#{i+1}"
-                            };
-                            string highlightUnderline = user.UserID == cmd.User.Id ? "__" : "";
-                            string banDash = user.IsBanned ? "~~" : "";
-                            string userMention = $"<@!{user.UserID}>";
-                            return $"{highlightUnderline}{rankingPrefix}: **{user.Cookies}**🍪  {banDash}{userMention}{banDash}{highlightUnderline}";
-                        }));
+                                string rankingPrefix = i switch
+                                {
+                                    0 => "🥇",
+                                    1 => "🥈",
+                                    2 => "🥉",
+                                    _ => $"#{i+1}"
+                                };
+                                string highlightUnderline = user.UserID == cmd.User.Id ? "__" : "";
+                                string banDash = user.IsBanned ? "~~" : "";
+                                string userMention = $"<@!{user.UserID}>";
+                                
+                                return $"{highlightUnderline}{rankingPrefix}: **{user.Cookies}**🍪  {banDash}{userMention}{banDash}{highlightUnderline}"; 
+                            }));
                     
                     var embed = new EmbedBuilder()
                         .WithTitle("TLC 🍪 Leaderboard")

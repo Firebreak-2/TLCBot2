@@ -23,12 +23,8 @@ public class FireModal
     }
     public Modal Create()
     {
-        bool Condition(FireModal x) =>
-            x.Modal.CustomId == Modal.CustomId;
-        
-        if (ModalHandler.AllModals.Any() && 
-            ModalHandler.AllModals.Any(Condition))
-            ModalHandler.AllModals.RemoveAll(Condition);
+        ModalHandler.AllModals.RemoveAll(item =>
+            item.Modal.CustomId == Modal.CustomId);
         
         ModalHandler.AllModals.Add(this);
         return Modal;

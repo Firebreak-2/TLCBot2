@@ -100,6 +100,39 @@ public static class Helper
         var msg = channel.SendFileAsync(stream, "ImageSend.png", text).Result;
         return msg.Attachments?.FirstOrDefault()?.Url ?? "null";
     }
+
+    public static string RandId(string name) => $"{name}-{RandomInt(int.MinValue, int.MaxValue - 1)}";
+    public static void DisableMessageComponents(SocketUserMessage message)
+    {
+        if (message.Author.Id != Program.Client.CurrentUser.Id) return;
+        message.ModifyAsync(props =>
+        {
+            var componentBuilder = new ComponentBuilder();
+            foreach (var actionRow in message.Components)
+            {
+                var row = new ActionRowBuilder();
+                foreach (var component in actionRow.Components)
+                {
+                    if (component.Type == ComponentType.Button)
+                    {
+                        row.AddComponent(((ButtonComponent) component)
+                            .ToBuilder()
+                            .WithDisabled(true)
+                            .WithStyle(ButtonStyle.Secondary).Build());
+                    }
+                    else if (component.Type == ComponentType.SelectMenu)
+                    {
+                        row.AddComponent(((SelectMenuComponent) component)
+                            .ToBuilder()
+                            .WithDisabled(true).Build());
+                    }
+                    else return;
+                }
+                componentBuilder.AddRow(row);
+            }
+            props.Components = componentBuilder.Build();
+        });
+    }
     public static Stream ToStream(this Image image) 
     {
         var stream = new MemoryStream();

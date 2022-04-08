@@ -8,165 +8,150 @@ namespace TLCBot2.Core;
 public static class RuntimeConfig
 {
     public static string ConfigPath => $"{Program.FileAssetsPath}/config.txt";
-    public static string[] GetRuntimeProps() => typeof(RuntimeConfig).GetProperties()
+    public static string[] GetRuntimeProps => typeof(RuntimeConfig).GetProperties()
         .Where(x => x.Name != "ConfigPath")
         .Select(x => x.Name)
         .ToArray();
-    public static SocketGuildChannel[] WhitelistedStarboardChannels
+
+    private static class Get
     {
-        get => UnsafeGetSetting<string>("WhitelistedStarboardChannels")!
-            .Split(',')
-            .Select(x => Program.Client.GetGuild(ulong.Parse(x.Split('/')[0]))
-                .GetChannel(ulong.Parse(x.Split('/')[1]))).ToArray();
-        set => SetSetting("WhitelistedStarboardChannels", string.Join(",", value.Select(x => $"{x.Guild.Id}/{x.Id}")));
+        public static SocketGuild ParseGuild(string val) => 
+            Program.Client
+                .GetGuild(ulong.Parse(val));
+        public static SocketTextChannel ParseTextChannel(string val) => 
+            (SocketTextChannel)Program.Client
+                .GetChannel(ulong.Parse(val));
+        public static SocketGuildChannel ParseChannel(string val) => 
+            (SocketGuildChannel)Program.Client.GetChannel(ulong.Parse(val));
+        public static SocketRole ParseRole(string val)
+        {
+            string[] split = val.Split('/');
+            return Program.Client.GetGuild(ulong.Parse(split[0]))
+                .GetRole(ulong.Parse(split[1]));
+        }
+        public static SocketGuild Guild(string name) => 
+            ParseGuild(UnsafeGetSetting<string>(name)!);
+        public static SocketTextChannel TextChannel(string name) => 
+            ParseTextChannel(UnsafeGetSetting<string>(name)!);
+        public static SocketGuildChannel Channel(string name) => 
+            ParseChannel(UnsafeGetSetting<string>(name)!);
+        public static SocketRole Role(string name) =>
+            ParseRole(UnsafeGetSetting<string>(name)!);
+        public static T[] Array<T>(string name, Func<string, T> parseType)
+        {
+            return UnsafeGetSetting<string>(name)!
+                .Split(',')
+                .Select(parseType).ToArray();
+        }
+    }
+    private static class Set
+    {
+        public static string ParseGuild(SocketGuild val) => val.Id.ToString();
+        public static string ParseTextChannel(SocketTextChannel val) => val.Id.ToString();
+        public static string ParseChannel(SocketGuildChannel val) => val.Id.ToString();
+        public static string ParseRole(SocketRole val) => $"{val.Guild}/{val.Id}";
+        public static void Guild(string name, SocketGuild newValue) => 
+            SetSetting(name, ParseGuild(newValue));
+        public static void TextChannel(string name, SocketTextChannel newValue) => 
+            SetSetting(name, ParseTextChannel(newValue));
+        public static void Channel(string name, SocketGuildChannel newValue) => 
+            SetSetting(name, ParseChannel(newValue));
+        public static void Role(string name, SocketRole newValue) =>
+            SetSetting(name, ParseRole(newValue));
+        public static void Array<T>(string name, IEnumerable<T> newValue, Func<T, string> parseType)
+        {
+            SetSetting(name, string.Join(",", newValue.Select(parseType)));
+        }
+    }
+
+    public static SocketTextChannel[] WhitelistedStarboardChannels
+    {
+        get => Get.Array("WhitelistedStarboardChannels", Get.ParseTextChannel);
+        set => Set.Array("WhitelistedStarboardChannels", value, Set.ParseTextChannel);
     }
     public static SocketTextChannel StarboardChannel
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("StarboardChannel")!;
-            string[] split = x.Split('/');
-            return (SocketTextChannel)Program.Client.GetGuild(ulong.Parse(split[0]))
-                .GetChannel(ulong.Parse(x.Split('/')[1]));
-        }
-        set => SetSetting("StarboardChannel", $"{value.Guild.Id}/{value.Id}");
+        get => Get.TextChannel("StarboardChannel");
+        set => Set.TextChannel("StarboardChannel", value);
     }
     public static SocketRole AdminRole
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("AdminRole")!;
-            string[] split = x.Split('/');
-            return Program.Client.GetGuild(ulong.Parse(split[0]))
-                .GetRole(ulong.Parse(x.Split('/')[1]));
-        }
-        set => SetSetting("AdminRole", $"{value.Guild.Id}/{value.Id}");
+        get => Get.Role("AdminRole");
+        set => Set.Role("AdminRole", value);
     }
     public static SocketRole QOTDRole
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("QOTDRole")!;
-            string[] split = x.Split('/');
-            return Program.Client.GetGuild(ulong.Parse(split[0]))
-                .GetRole(ulong.Parse(x.Split('/')[1]));
-        }
-        set => SetSetting("QOTDRole", $"{value.Guild.Id}/{value.Id}");
+        get => Get.Role("QOTDRole");
+        set => Set.Role("QOTDRole", value);
     }
     public static SocketTextChannel QOTDChannel
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("QOTDChannel")!;
-            return (SocketTextChannel)Program.Client.GetChannel(ulong.Parse(x));
-        }
-        set => SetSetting("QOTDChannel", $"{value.Id}");
+        get => Get.TextChannel("QOTDChannel");
+        set => Set.TextChannel("QOTDChannel", value);
     }
     public static SocketTextChannel ServerSuggestionsChannel
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("ServerSuggestionsChannel")!;
-            return (SocketTextChannel)Program.Client.GetChannel(ulong.Parse(x));
-        }
-        set => SetSetting("ServerSuggestionsChannel", $"{value.Id}");
+        get => Get.TextChannel("ServerSuggestionsChannel");
+        set => Set.TextChannel("ServerSuggestionsChannel", value);
     }
     public static SocketTextChannel TLCBetaCommandLine
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("TLCBetaCommandLine")!;
-            return (SocketTextChannel)Program.Client.GetChannel(ulong.Parse(x));
-        }
-        set => SetSetting("TLCBetaCommandLine", $"{value.Id}");
+        get => Get.TextChannel("TLCBetaCommandLine");
+        set => Set.TextChannel("TLCBetaCommandLine", value);
+    }
+    public static SocketTextChannel PinboardChannel
+    {
+        get => Get.TextChannel("PinboardChannel");
+        set => Set.TextChannel("PinboardChannel", value);
+    }
+    public static SocketGuild FocusServer
+    {
+        get => Get.Guild("FocusServer");
+        set => Set.Guild("FocusServer", value);
     }
     public static SocketTextChannel CookieLogChannel
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("CookieLogChannel")!;
-            string[] split = x.Split('/');
-            return (SocketTextChannel)Program.Client.GetGuild(ulong.Parse(split[0]))
-                .GetChannel(ulong.Parse(x.Split('/')[1]));
-        }
-        set => SetSetting("CookieLogChannel", $"{value.Guild.Id}/{value.Id}");
+        get => Get.TextChannel("CookieLogChannel");
+        set => Set.TextChannel("CookieLogChannel", value);
     }
     public static SocketTextChannel DefaultFileDump
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("DefaultFileDump")!;
-            string[] split = x.Split('/');
-            return (SocketTextChannel)Program.Client.GetGuild(ulong.Parse(split[0]))
-                .GetChannel(ulong.Parse(x.Split('/')[1]));
-        }
-        set => SetSetting("DefaultFileDump", $"{value.Guild.Id}/{value.Id}");
+        get => Get.TextChannel("DefaultFileDump");
+        set => Set.TextChannel("DefaultFileDump", value);
     }
     public static SocketTextChannel FeedbackReceptionChannel
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("FeedbackReceptionChannel")!;
-            return (SocketTextChannel)Program.Client.GetChannel(ulong.Parse(x));
-        }
-        set => SetSetting("FeedbackReceptionChannel", $"{value.Id}");
+        get => Get.TextChannel("FeedbackReceptionChannel");
+        set => Set.TextChannel("FeedbackReceptionChannel", value);
     }
     public static SocketTextChannel CommandExecutionLog
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("CommandExecutionLog")!;
-            return (SocketTextChannel)Program.Client.GetChannel(ulong.Parse(x));
-        }
-        set => SetSetting("CommandExecutionLog", $"{value.Id}");
+        get => Get.TextChannel("CommandExecutionLog");
+        set => Set.TextChannel("CommandExecutionLog", value);
     }
     public static SocketTextChannel DoodleOnlyChannel
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("DoodleOnlyChannel")!;
-            string[] split = x.Split('/');
-            return (SocketTextChannel)Program.Client.GetGuild(ulong.Parse(split[0]))
-                .GetChannel(ulong.Parse(x.Split('/')[1]));
-        }
-        set => SetSetting("DoodleOnlyChannel", $"{value.Guild.Id}/{value.Id}");
+        get => Get.TextChannel("DoodleOnlyChannel");
+        set => Set.TextChannel("DoodleOnlyChannel", value);
     }
     public static SocketGuildChannel StatMembersVC
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("StatMembersVC")!;
-            string[] split = x.Split('/');
-            return Program.Client.GetGuild(ulong.Parse(split[0]))
-                .GetChannel(ulong.Parse(x.Split('/')[1]));
-        }
-        set => SetSetting("StatMembersVC", $"{value.Guild.Id}/{value.Id}");
+        get => Get.Channel("StatMembersVC");
+        set => Set.Channel("StatMembersVC", value);
     }
     public static SocketGuildChannel StatDaysActiveVC
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("StatDaysActiveVC")!;
-            string[] split = x.Split('/');
-            return Program.Client.GetGuild(ulong.Parse(split[0]))
-                .GetChannel(ulong.Parse(x.Split('/')[1]));
-        }
-        set => SetSetting("StatDaysActiveVC", $"{value.Guild.Id}/{value.Id}");
+        get => Get.Channel("StatDaysActiveVC");
+        set => Set.Channel("StatDaysActiveVC", value);
     }
     public static SocketTextChannel GeneralChat
     {
-        get
-        {
-            string x = UnsafeGetSetting<string>("GeneralChat")!;
-            string[] split = x.Split('/');
-            return (SocketTextChannel)Program.Client.GetGuild(ulong.Parse(split[0]))
-                .GetChannel(ulong.Parse(x.Split('/')[1]));
-        }
-        set => SetSetting("GeneralChat", $"{value.Guild.Id}/{value.Id}");
+        get => Get.TextChannel("GeneralChat");
+        set => Set.TextChannel("GeneralChat", value);
     }
     public static void Initialize()
     {
-        string[] props = GetRuntimeProps();
+        string[] props = GetRuntimeProps;
         string[] lines = File.ReadAllLines(ConfigPath);
         File.WriteAllLines(ConfigPath, props.Select(prop =>
         {
@@ -207,7 +192,7 @@ public static class RuntimeConfig
         
         if (!lines.Any(Condition)) return false;
 
-        string[] props = GetRuntimeProps();
+        string[] props = GetRuntimeProps;
         
         string lineToChange = lines.First(Condition);
         string propVal = props.First(x => string.Equals(x, name, StringComparison.CurrentCultureIgnoreCase));

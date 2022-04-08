@@ -101,6 +101,12 @@ public static class Helper
         return msg.Attachments?.FirstOrDefault()?.Url ?? "null";
     }
 
+    public static Image<Argb32> ImageFromUrl(string url)
+    {
+        using var client = new WebClient();
+        byte[] data = client.DownloadData(new Uri(url));
+        return Image.Load<Argb32>(data);
+    }
     public static string RandId(string name) => $"{name}-{RandomInt(int.MinValue, int.MaxValue - 1)}";
     public static void DisableMessageComponents(SocketUserMessage message)
     {

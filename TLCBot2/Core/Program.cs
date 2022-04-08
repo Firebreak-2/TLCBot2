@@ -29,6 +29,7 @@ public class Program
         Client.Ready += Initialize;
         Client.MessageReceived += TlcConsole.OnMessageRecieved;
         Client.MessageReceived += DoodleOnlyListener.OnMessageRecieved;
+        // Client.MessageReceived += PinboardListener.OnMessageReceived;
         Client.MessageReceived += AutoThreadListener.OnMessageRecieved;
         Client.SlashCommandExecuted += SlashCommandHandler.OnCommand;
         Client.MessageCommandExecuted += ContextCommandHandler.OnMessageCommandExecuted;

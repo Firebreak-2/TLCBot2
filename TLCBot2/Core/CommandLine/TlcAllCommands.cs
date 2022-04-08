@@ -170,6 +170,22 @@ public static class TlcAllCommands
                 }
             }, 2));
 
+            AddCommand(new TlcCommand("addswitchbutton", args =>
+            {
+                SocketTextChannel channel = (Program.Client.GetChannel(ulong.Parse(args[0])) as SocketTextChannel)!;
+                string[] options = args[1].Split(',').Select(x => x.Trim()).ToArray();
+
+                string outputData = 
+                    $"Current: {options[0]}\n\n```{string.Join("\n", options.Select((x, i) => $"{i} | {x}"))}```";
+                
+                channel.SendMessageAsync(outputData, components: 
+                    new FireMessageComponent(new ComponentBuilder()
+                        .WithButton(EternalButtons.EternalButton3),
+                        null,
+                        null)
+                        .Create());
+            }, 2));
+
             AddCommand(new TlcCommand("makeeternalmessage", args =>
             {
                 var channel = (SocketTextChannel) Program.Client.GetChannel(ulong.Parse(args[1]));

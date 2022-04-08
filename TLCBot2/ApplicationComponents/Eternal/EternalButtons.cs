@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Text.RegularExpressions;
+using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using TLCBot2.ApplicationComponents.Core;
@@ -13,6 +14,7 @@ public static class EternalButtons
     public static ButtonBuilder EternalButton0 => new("button", "ETERNAL-BUTTON-0");
     public static ButtonBuilder EternalButton1 => new("Server Directory", "ETERNAL-BUTTON-1");
     public static ButtonBuilder EternalButton2 => new("Feedback", "ETERNAL-BUTTON-2");
+    public static ButtonBuilder EternalButton3 => new("Next State", "ETERNAL-BUTTON-3");
     public static ButtonBuilder EternalButton5 => new("Command Catalogue", "ETERNAL-BUTTON-5");
     public static ButtonBuilder EternalButton6 => new("Role Catalogue", "ETERNAL-BUTTON-6");
     public static void OnExecute(SocketMessageComponent button)
@@ -306,6 +308,18 @@ public static class EternalButtons
                 }, null).Create());
                 break;
             case 3:
+                button.Message.ModifyAsync(props =>
+                {
+                    string currentOption = Regex.Match(button.Message.Content, @"(?<=^Current: ).+").Value;
+                    string[] options = Regex.Match(button.Message.Content, @"(?<=```)(?:.|\n)*(?=```)").Value.Split('\n')
+                        .Select(x => Regex.Match(x, @"(?<=\d+ \| ).+").Value).ToArray();
+                    int currentIndex = options.ToList().IndexOf(currentOption);
+                    currentIndex = currentIndex >= options.Length - 1 ? -1 : currentIndex;
+
+                    props.Content = 
+                        $"Current: {options[currentIndex + 1]}\n\n```{string.Join("\n", options.Select((x, i) => $"{i} | {x}"))}```";
+                });
+                button.RespondAsync();
                 break;
             case 4:
                 break;

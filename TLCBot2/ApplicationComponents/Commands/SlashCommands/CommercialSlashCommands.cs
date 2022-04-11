@@ -9,9 +9,11 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using TLCBot2.ApplicationComponents.Core;
+using TLCBot2.ApplicationComponents.Eternal;
 using TLCBot2.Core;
 using TLCBot2.Core.CommandLine;
 using TLCBot2.DataManagement;
+using TLCBot2.DataManagement.Cookies;
 using TLCBot2.DataManagement.Temporary;
 using TLCBot2.Utilities;
 using Color = Discord.Color;
@@ -25,7 +27,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
         public static async Task Initialize()
         {
             TLCFonts.Add(Program.FileAssetsPath + "/arial.ttf");
-            var guild = Constants.Guilds.Lares!;
+            var guild = RuntimeConfig.FocusServer;
             const bool devOnly = false;
 
             #region Dynamic Timestamp Generator Command
@@ -155,7 +157,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                             poll.VoteHistory.Add(userId);
                         
                             selectMenu.RespondAsync("Response submitted.", ephemeral:true);
-                        }));
+                        }){ LifeTime = TimeSpan.FromDays(3) });
                     
                         var msg = modal.Channel.SendMessageAsync(embed: GenerateEmbed().Build(), components:cb).Result;
                         modal.RespondAsync();
@@ -317,7 +319,8 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
 
                             using var image = new Image<Argb32>(100, 250);
                             image.FillColor((_, y) => colors[y / 50]);
-                            string url = Helper.GetFileUrl(image.ToStream(), null,
+                            using var stream = image.ToStream();
+                            string url = Helper.GetFileUrl(stream, null,
                                 $"```\n{outp}\n```");
 
                             return new EmbedBuilder()
@@ -411,7 +414,8 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         image.Mutate(img =>
                             img.DrawImage(imgToBeDrawn, centerPos, 1));
 
-                        string url = Helper.GetFileUrl(image.ToStream());
+                        using var stream = image.ToStream();
+                        string url = Helper.GetFileUrl(stream);
                         return new EmbedBuilder()
                             .WithTitle($"TLC bingo card for {cmd.User.Username}")
                             .WithDescription(
@@ -426,14 +430,9 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                     var fmc = FireMessageComponent.CreateNew(new FireMessageComponent(new ComponentBuilder()
                         .WithButton("Reroll", $"reroll-bingo-{Helper.RandomInt(0, 1000)}"), button =>
                     {
-                        if (button.User.Id == cmd.User.Id)
-                        {
-                            button.RespondAsync("You are not responsible for this button.", ephemeral: true);
-                            return;
-                        }
                         button.Message.ModifyAsync(props => props.Embed = GetBingoEmbed());
                         button.RespondAsync();
-                    }, null));
+                    }, null){OwnerId = cmd.User.Id});
 
                     cmd.ModifyOriginalResponseAsync(props =>
                     {
@@ -479,7 +478,7 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                 {
                     button.Message.ModifyAsync(props => props.Embed = GetRandomPromptEmbed());
                     button.RespondAsync();
-                }, null));
+                }, null){OwnerId = cmd.User.Id});
 
                 cmd.RespondAsync(embed:GetRandomPromptEmbed(),components:fmc);
             }, devOnly), guild);
@@ -512,6 +511,10 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                         .AddField("Account Creation Date", $"<t:{user.CreatedAt.ToUnixTimeSeconds()}>")
                         .AddField("Cookies", cookies)
                         .AddField("Is Cookie Banned", entry?.IsBanned ?? false ? "Yes" : "No")
+                        .AddField("Commission Status", 
+                            user.Roles.Contains(
+                                EternalSelectMenus.GetCommissionStatusRoles((SocketTextChannel)cmd.Channel)
+                                    .First(x => x.Name.EndsWith("Open"))) ? "Available" : "Not available")
                         .AddField("User ID", user.Id);
                     cmd.RespondAsync(embed:embed.Build(), ephemeral: true);
                 }, devOnly), guild);

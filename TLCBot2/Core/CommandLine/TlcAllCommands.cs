@@ -7,6 +7,7 @@ using TLCBot2.Utilities;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.ApplicationComponents.Eternal;
 using TLCBot2.DataManagement;
+using TLCBot2.DataManagement.Cookies;
 
 namespace TLCBot2.Core.CommandLine;
 
@@ -117,6 +118,7 @@ public static class TlcAllCommands
                 {"Bot Fun Roles", (EternalSelectMenus.GetBotFunRoles, EternalSelectMenus.EternalSelectMenu3, true)},
                 {"Art Specialty Roles", (EternalSelectMenus.GetArtSpecialityRoles, EternalSelectMenus.EternalSelectMenu4, true)},
                 {"Misc Roles", (EternalSelectMenus.GetMiscRoles, EternalSelectMenus.EternalSelectMenu5, true)},
+                {"Commission Status Roles", (EternalSelectMenus.GetCommissionStatusRoles, EternalSelectMenus.EternalSelectMenu6, false)},
             };
             (string content, MessageComponent component) CreateRolesMessageData(
                 string name,
@@ -147,7 +149,7 @@ public static class TlcAllCommands
                 return (messageText, new FireMessageComponent(builder, null, null).Create());
             }
             
-            AddCommand(new("updateeternalmessage", args =>
+            AddCommand(new TlcCommand("updateeternalmessage", args =>
             {
                 var channel = (SocketTextChannel) Program.Client.GetChannel(ulong.Parse(args[1]));
                 switch (int.Parse(args[0]))
@@ -201,7 +203,7 @@ public static class TlcAllCommands
                         {
                             (string content, MessageComponent component) = 
                                 CreateRolesMessageData(name, roles, eternalMenu, canSelectMultiple, channel);
-                            channel.SendMessageAsync(content, components: component);
+                            channel.SendMessageAsync(content, components: component, allowedMentions: AllowedMentions.None);
                             Thread.Sleep(1000);
                         }
                         foreach (string key in messagesToPost.Keys)
@@ -252,7 +254,7 @@ public static class TlcAllCommands
 
         AddCommand(new TlcCommand("test", _ =>
         {
-            
+            RuntimeConfig.TLCBetaCommandLine.SendMessageAsync(embed: CookieShop.GenerateShopEmbed().Build());
         }));
 
         AddCommand(new TlcCommand("ls", args =>

@@ -1,7 +1,9 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using TLCBot2.ApplicationComponents.Core;
+using TLCBot2.Core;
 using TLCBot2.DataManagement;
+using TLCBot2.DataManagement.Cookies;
 using TLCBot2.DataManagement.Temporary;
 using TLCBot2.Utilities;
 using Color = Discord.Color;
@@ -13,7 +15,7 @@ public static class AdminSlashCommands
 {
     public static async Task Initialize()
     {
-        var guild = Constants.Guilds.Lares;
+        var guild = RuntimeConfig.FocusServer;
         const bool devOnly = true;
         {
             

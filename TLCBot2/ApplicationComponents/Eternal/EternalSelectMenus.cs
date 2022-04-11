@@ -32,6 +32,10 @@ public static class EternalSelectMenus
         "ETERNAL-SELECTMENU-5",
         GetMiscRoles(channel).Select(x =>
                 new SelectMenuOptionBuilder(x.Name.RemovePrefix(), x.Id.ToString())).ToList());
+    public static SelectMenuBuilder EternalSelectMenu6(SocketTextChannel channel) => new(
+        "ETERNAL-SELECTMENU-6",
+        GetCommissionStatusRoles(channel).Select(x =>
+                new SelectMenuOptionBuilder(x.Name.RemovePrefix(), x.Id.ToString())).ToList());
     public static IEnumerable<SocketRole> GetRoles(string prefix, SocketGuild guild) =>
         guild.Roles
             .OrderByDescending(x => x.Position)
@@ -42,6 +46,8 @@ public static class EternalSelectMenus
             .Where(x => x.Name.StartsWith("[Color]"));
     public static IEnumerable<SocketRole> GetPronounRoles(SocketTextChannel channel) =>
         GetRoles("Pronoun", channel.Guild); 
+    public static IEnumerable<SocketRole> GetCommissionStatusRoles(SocketTextChannel channel) =>
+        GetRoles("Commission Status", channel.Guild); 
     public static IEnumerable<SocketRole> GetPingRoles(SocketTextChannel channel) =>
         GetRoles("Ping", channel.Guild); 
     public static IEnumerable<SocketRole> GetBotFunRoles(SocketTextChannel channel) =>
@@ -95,6 +101,9 @@ public static class EternalSelectMenus
                 break;
             case 5:
                 RoleReplace(GetMiscRoles((SocketTextChannel)selectionMenu.Channel), false);
+                break;
+            case 6:
+                RoleReplace(GetCommissionStatusRoles((SocketTextChannel)selectionMenu.Channel));
                 break;
         }
     }

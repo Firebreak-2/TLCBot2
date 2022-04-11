@@ -69,8 +69,12 @@ public static class PinboardListener
                 .Where(x => Regex.IsMatch(x.Url, 
                     @".+\.(?:TGA|JPEG|GIF|Webp|PNG|BMP|TIFF|PBM)$",
                     RegexOptions.IgnoreCase))
-                .Select(x => 
-                    new FileAttachment(Helper.ImageFromUrl(x.Url).ToStream(),x.Filename,x.Description,x.IsSpoiler())));
+                .Select(x =>
+                {
+                    using var stream = Helper.ImageFromUrl(x.Url).ToStream();
+                    return new FileAttachment(stream, x.Filename, x.Description,
+                        x.IsSpoiler());
+                }));
         
         if (reference.Attachments is null or {Count: 0})
             client.SendMessageAsync(

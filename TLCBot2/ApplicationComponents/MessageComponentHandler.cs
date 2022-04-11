@@ -42,7 +42,9 @@ public static class MessageComponentHandler
                             component.Type == ComponentType.Button
                             && component.CustomId == button.Data.CustomId)))
                 {
-                    fireMessageComponent.OnExecuteButton?.Invoke(button);
+                    if (fireMessageComponent.OwnerId == null || fireMessageComponent.OwnerId == button.User.Id)
+                        fireMessageComponent.OnExecuteButton?.Invoke(button);
+                    else button.RespondAsync("You are not responsible for this button", ephemeral: true);
                 }
             }
         }
@@ -82,7 +84,9 @@ public static class MessageComponentHandler
                             component.Type == ComponentType.SelectMenu
                             && component.CustomId == selectionMenu.Data.CustomId)))
                 {
-                    fireMessageComponent.OnExecuteSelectMenu?.Invoke(selectionMenu);
+                    if (fireMessageComponent.OwnerId == null || fireMessageComponent.OwnerId == selectionMenu.User.Id)
+                        fireMessageComponent.OnExecuteButton?.Invoke(selectionMenu);
+                    else selectionMenu.RespondAsync("You are not responsible for this selection menu", ephemeral: true);
                 }
             }
         }
@@ -95,5 +99,5 @@ public static class MessageComponentHandler
 
     public static void ClearComponentCache() => 
         AllComponents.RemoveAll(component => 
-            DateTime.Now > component.BirthDate.AddMinutes(5));
+            DateTime.Now > component.BirthDate.Add(component.LifeTime));
 }

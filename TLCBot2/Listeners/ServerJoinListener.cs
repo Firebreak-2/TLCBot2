@@ -1,10 +1,12 @@
-﻿using Discord;
+﻿using System.Text.RegularExpressions;
+using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 using MoreLinq.Extensions;
 using Newtonsoft.Json;
 using TLCBot2.Core;
 using TLCBot2.DataManagement;
+using TLCBot2.DataManagement.Cookies;
 
 namespace TLCBot2.Listeners;
 
@@ -31,14 +33,20 @@ public static class ServerJoinListener
         {
             bool Condition(InviteData x) => x.Id == item!.Id;
             if (oldInvites.Any(Condition) && item.Uses <= oldInvites.First(Condition).Uses && !item.Inviter.IsBot) continue;
-            
-            string invitation = $"<@!{item.Inviter.Id}> Thanks for inviting <@!{user.Id}> to the server.";
+
+            string inviterString = $"<@!{item.Inviter.Id}> Thanks for inviting";
+            string invitation = $"{inviterString} <@!{user.Id}> to the server.";
             if (File.ReadAllLines(PreviousInvites).Any(x => x == invitation)) break;
             
             CookieManager.TakeOrGiveCookiesToUser(item.Inviter.Id, 3, 
                 $"Invited [{user.Username}] to server\nInviter: {item.Inviter.Mention} | {item.Inviter.Username}#{item.Inviter.Discriminator} | {item.Inviter.Id}\nInvited: {user.Mention} | {user.Username}#{user.Discriminator} | {user.Id}");
             RuntimeConfig.GeneralChat.SendMessageAsync(invitation + " Have 3 🍪");
-            File.AppendAllText(PreviousInvites, invitation);
+            File.AppendAllText(PreviousInvites, $"{invitation}\n");
+
+            var inviter = RuntimeConfig.FocusServer.GetUser(item.Inviter.Id);
+            if (Regex.Matches(File.ReadAllText(PreviousInvites), inviterString).Count >= 5 
+                && inviter.Roles.All(x => x.Id != RuntimeConfig.SecretsRole.Id))
+                inviter.AddRoleAsync(RuntimeConfig.SecretsRole);
             break;
         }
         return Task.CompletedTask;

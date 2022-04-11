@@ -12,7 +12,9 @@ public class FireMessageComponent
     public ComponentBuilder Builder;
     public Action<SocketMessageComponent>? OnExecuteButton;
     public Action<SocketMessageComponent>? OnExecuteSelectMenu;
+    public ulong? OwnerId = null;
     public DateTime BirthDate = DateTime.Now;
+    public TimeSpan LifeTime = TimeSpan.FromMinutes(5);
     public FireMessageComponent(
         ComponentBuilder component,
         Action<SocketMessageComponent>? onExecuteButton,
@@ -23,10 +25,8 @@ public class FireMessageComponent
         OnExecuteButton = onExecuteButton;
         OnExecuteSelectMenu = onExecuteSelectMenu;
     }
-    public static MessageComponent CreateNew(FireMessageComponent command)
-    {
-        return command.Create();
-    }
+    public static MessageComponent CreateNew(FireMessageComponent command) =>
+        command.Create();
     public MessageComponent Create()
     {
         AllComponents.RemoveAll(item =>

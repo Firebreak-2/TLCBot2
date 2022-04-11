@@ -1,7 +1,10 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using TLCBot2.ApplicationComponents.Core;
+using TLCBot2.ApplicationComponents.Eternal;
+using TLCBot2.Core;
 using TLCBot2.DataManagement;
+using TLCBot2.DataManagement.Cookies;
 using TLCBot2.Utilities;
 
 namespace TLCBot2.ApplicationComponents.Commands.UserCommands;
@@ -10,7 +13,7 @@ public static class CommercialUserCommands
 {
     public static async Task Initialize()
     {
-        var guild = Constants.Guilds.Lares;
+        var guild = RuntimeConfig.FocusServer;
         const bool devOnly = false;
 
         #region User Info Command
@@ -27,11 +30,12 @@ public static class CommercialUserCommands
                 .WithAuthor(user)
                 .AddField("Server Join Date", $"<t:{user.JoinedAt!.Value.ToUnixTimeSeconds()}>")
                 .AddField("Account Creation Date", $"<t:{user.CreatedAt.ToUnixTimeSeconds()}>")
-                // .AddField("Server Permissions", 
-                //     string.Join("\n", user.GuildPermissions.ToList()
-                //         .Select(x => x.ToString())))
                 .AddField("Cookies", cookies)
                 .AddField("Is Cookie Banned", entry?.IsBanned ?? false ? "Yes" : "No")
+                .AddField("Commission Status", 
+                    user.Roles.Contains(
+                        EternalSelectMenus.GetCommissionStatusRoles((SocketTextChannel)cmd.Channel)
+                            .First(x => x.Name.EndsWith("Open"))) ? "Available" : "Not available")
                 .AddField("User ID", user.Id);
             cmd.RespondAsync(embed:embed.Build(), ephemeral: true);
         }, devOnly), guild);

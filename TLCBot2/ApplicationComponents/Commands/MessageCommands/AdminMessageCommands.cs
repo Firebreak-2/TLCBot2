@@ -11,7 +11,7 @@ public class AdminMessageCommands
     
     public static async Task Initialize()
     {
-        var guild = Constants.Guilds.Lares;
+        var guild = RuntimeConfig.FocusServer;
         const bool devOnly = false;
 
         #region Edit Message Command

@@ -1,10 +1,9 @@
-﻿using System.Text.RegularExpressions;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using TLCBot2.Core;
 
-namespace TLCBot2.DataManagement;
+namespace TLCBot2.DataManagement.Cookies;
 
 public static class CookieManager
 {

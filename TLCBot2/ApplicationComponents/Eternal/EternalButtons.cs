@@ -15,8 +15,10 @@ public static class EternalButtons
     public static ButtonBuilder EternalButton1 => new("Server Directory", "ETERNAL-BUTTON-1");
     public static ButtonBuilder EternalButton2 => new("Feedback", "ETERNAL-BUTTON-2");
     public static ButtonBuilder EternalButton3 => new("Next State", "ETERNAL-BUTTON-3");
+    public static ButtonBuilder EternalButton4 => new("Cookie Shop", "ETERNAL-BUTTON-4");
     public static ButtonBuilder EternalButton5 => new("Command Catalogue", "ETERNAL-BUTTON-5");
     public static ButtonBuilder EternalButton6 => new("Role Catalogue", "ETERNAL-BUTTON-6");
+    public static ButtonBuilder EternalButton7 => new("Support The Server", "ETERNAL-BUTTON-7");
     public static void OnExecute(SocketMessageComponent button)
     {
         const string remove = "ETERNAL-BUTTON-";
@@ -220,7 +222,7 @@ public static class EternalButtons
                                             }
                                         }, null)
                                     {
-                                        BirthDate = DateTime.Now.AddDays(7)
+                                        LifeTime = TimeSpan.FromDays(7)
                                     }.Create();
 
                                     var msg = RuntimeConfig.ServerSuggestionsChannel.SendMessageAsync(embed: embed.Build(),
@@ -322,6 +324,7 @@ public static class EternalButtons
                 button.RespondAsync();
                 break;
             case 4:
+                
                 break;
             case 5:
                 button.RespondAsync("The documentation of all the commands can be found here: " +

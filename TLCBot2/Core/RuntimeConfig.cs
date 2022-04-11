@@ -79,6 +79,11 @@ public static class RuntimeConfig
         get => Get.Role("AdminRole");
         set => Set.Role("AdminRole", value);
     }
+    public static SocketRole SecretsRole
+    {
+        get => Get.Role("SecretsRole");
+        set => Set.Role("SecretsRole", value);
+    }
     public static SocketRole QOTDRole
     {
         get => Get.Role("QOTDRole");
@@ -88,6 +93,11 @@ public static class RuntimeConfig
     {
         get => Get.TextChannel("QOTDChannel");
         set => Set.TextChannel("QOTDChannel", value);
+    }
+    public static SocketTextChannel CritiqueMyWorkChannel
+    {
+        get => Get.TextChannel("CritiqueMyWorkChannel");
+        set => Set.TextChannel("CritiqueMyWorkChannel", value);
     }
     public static SocketTextChannel ServerSuggestionsChannel
     {

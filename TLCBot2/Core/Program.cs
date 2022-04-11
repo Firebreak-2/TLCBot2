@@ -6,6 +6,7 @@ using TLCBot2.ApplicationComponents;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.Core.CommandLine;
 using TLCBot2.DataManagement;
+using TLCBot2.DataManagement.Cookies;
 using TLCBot2.Listeners;
 using TLCBot2.Utilities;
 
@@ -29,6 +30,7 @@ public class Program
         Client.Ready += Initialize;
         Client.MessageReceived += TlcConsole.OnMessageRecieved;
         Client.MessageReceived += DoodleOnlyListener.OnMessageRecieved;
+        Client.MessageReceived += CritiqueOnlyListener.OnMessageRecieved;
         // Client.MessageReceived += PinboardListener.OnMessageReceived;
         Client.MessageReceived += AutoThreadListener.OnMessageRecieved;
         Client.SlashCommandExecuted += SlashCommandHandler.OnCommand;

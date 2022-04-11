@@ -54,7 +54,7 @@ public static class ApplicationCommandManager
                 );
         }
         
-        await Constants.Guilds.TlcBetaTesting!.BulkOverwriteApplicationCommandAsync(AllCommands.ToArray());
+        await RuntimeConfig.FocusServer.BulkOverwriteApplicationCommandAsync(AllCommands.ToArray());
         
         // if (allCommands.Any(x => x.Guild == null))
         //     await Program.Client.BulkOverwriteGlobalApplicationCommandsAsync(allCommands

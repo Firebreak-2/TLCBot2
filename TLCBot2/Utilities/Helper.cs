@@ -146,6 +146,24 @@ public static class Helper
         stream.Position = 0;
         return stream;
     }
+
+    public static bool HasUrl(string possibleUrl, out string? url)
+    {
+        url = null;
+        
+        var match = Regex.Match(
+            possibleUrl,
+            @"((\w+:\/\/)[-a-zA-Z0-9:@;?&=\/%\+\.\*!'\(\),\$_\{\}\^~\[\]`#|]+)");
+
+        if (!match.Success) return false;
+        
+        url = match.Value;
+        return true;
+    }
+
+    public static void LogInteractionError(object message, string interactionType, IMessage? originalMessage = null) =>
+        RuntimeConfig.BotReportsChannel.SendMessageAsync(
+            $"```{message}```\n```caused by: {interactionType}\noriginal message: {originalMessage?.GetJumpUrl() ?? "none"}```");
     public static void FillColor(this Image<Argb32> img, Argb32 color) => img.FillColor((_,_)=>color);
     public static void FillColor(this Image<Argb32> img, Func<int, int, Argb32> color) => img.FillColor((x, y, _) => color(x, y));
     public static void FillColor(this Image<Argb32> img, Func<int, int, Argb32, Argb32> color)

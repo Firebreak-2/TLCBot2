@@ -74,6 +74,12 @@ public static class RuntimeConfig
         get => Get.TextChannel("StarboardChannel");
         set => Set.TextChannel("StarboardChannel", value);
     }
+
+    public static SocketTextChannel BotReportsChannel
+    {
+        get => Get.TextChannel("BotReportsChannel");
+        set => Set.TextChannel("BotReportsChannel", value);
+    }
     public static SocketRole AdminRole
     {
         get => Get.Role("AdminRole");

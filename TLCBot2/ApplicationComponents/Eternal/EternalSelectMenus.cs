@@ -88,7 +88,7 @@ public static class EternalSelectMenus
                 RoleReplace(GetColorRoles((SocketTextChannel)selectionMenu.Channel));
                 break;
             case 1:
-                RoleReplace(GetPronounRoles((SocketTextChannel)selectionMenu.Channel));
+                RoleReplace(GetPronounRoles((SocketTextChannel)selectionMenu.Channel), false);
                 break;
             case 2:
                 RoleReplace(GetPingRoles((SocketTextChannel)selectionMenu.Channel), false);

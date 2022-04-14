@@ -1,4 +1,6 @@
-﻿using Discord;
+﻿using System.Net;
+using System.Text.RegularExpressions;
+using Discord;
 using Discord.Interactions;
 using Discord.Interactions.Builders;
 using Discord.WebSocket;
@@ -33,6 +35,7 @@ public class Program
         Client.MessageReceived += CritiqueOnlyListener.OnMessageRecieved;
         // Client.MessageReceived += PinboardListener.OnMessageReceived;
         Client.MessageReceived += AutoThreadListener.OnMessageRecieved;
+        Client.MessageReceived += RepostListener.OnMessageReceived;
         Client.SlashCommandExecuted += SlashCommandHandler.OnCommand;
         Client.MessageCommandExecuted += ContextCommandHandler.OnMessageCommandExecuted;
         Client.UserCommandExecuted += ContextCommandHandler.OnUserCommandExecuted;

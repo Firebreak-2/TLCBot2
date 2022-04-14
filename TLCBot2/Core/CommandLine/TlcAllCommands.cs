@@ -113,7 +113,7 @@ public static class TlcAllCommands
                 bool canSelectMultiple)> messagesToPost = new()
             {
                 {"Color Roles", (EternalSelectMenus.GetColorRoles, EternalSelectMenus.EternalSelectMenu0, false)},
-                {"Pronoun Roles", (EternalSelectMenus.GetPronounRoles, EternalSelectMenus.EternalSelectMenu1, false)},
+                {"Pronoun Roles", (EternalSelectMenus.GetPronounRoles, EternalSelectMenus.EternalSelectMenu1, true)},
                 {"Ping Roles", (EternalSelectMenus.GetPingRoles, EternalSelectMenus.EternalSelectMenu2, true)},
                 {"Bot Fun Roles", (EternalSelectMenus.GetBotFunRoles, EternalSelectMenus.EternalSelectMenu3, true)},
                 {"Art Specialty Roles", (EternalSelectMenus.GetArtSpecialityRoles, EternalSelectMenus.EternalSelectMenu4, true)},

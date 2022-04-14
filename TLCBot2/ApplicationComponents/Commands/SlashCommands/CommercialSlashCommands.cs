@@ -80,14 +80,14 @@ namespace TLCBot2.ApplicationComponents.Commands.SlashCommands
                 .WithName("poll")
                 .WithDescription("Conducts a poll")
                 .AddOption("title", ApplicationCommandOptionType.String, "The title(question) of the poll", true)
-                .AddOption("options", ApplicationCommandOptionType.Integer, "The amount of options (2-5)", true, minValue:2, maxValue:5)
+                .AddOption("option-count", ApplicationCommandOptionType.Integer, "The amount of options (2-5)", true, minValue:2, maxValue:5)
                 .AddOption("anonymous", ApplicationCommandOptionType.Boolean, "Whether you want to make it public that you made this poll")
                 .AddOption("has-other", ApplicationCommandOptionType.Boolean, "Whether to include an \"other\" option")
                 ,
                 cmd =>
                 {
                     string title = cmd.GetRequiredValue<string>("title");
-                    int optionCount = cmd.GetRequiredValue<int>("options");
+                    int optionCount = cmd.GetRequiredValue<int>("option-count");
                     bool anonymous = cmd.GetOptionalValue("anonymous", false);
                     bool hasOther = cmd.GetOptionalValue("has-other", false);
                     

@@ -38,9 +38,10 @@ public static class SlashCommandHandler
             }
             catch (Exception e)
             {
-                string error = JsonConvert.SerializeObject(e, Formatting.Indented);
-                TlcConsole.Print(error);
-                command.RespondAsync(error, ephemeral: true);
+                Helper.LogInteractionError($"{JsonConvert.SerializeObject(e, Formatting.Indented)}", "slash command");
+                command.RespondAsync(
+                    "Uh oh, something failed. The development team has been notified of the error.",
+                    ephemeral: true);
             }
         }
 

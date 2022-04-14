@@ -1,9 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Newtonsoft.Json;
 using TLCBot2.ApplicationComponents.Commands.MessageCommands;
 using TLCBot2.ApplicationComponents.Commands.UserCommands;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.Core;
+using TLCBot2.Core.CommandLine;
 using TLCBot2.Utilities;
 
 namespace TLCBot2.ApplicationComponents;
@@ -31,7 +33,18 @@ public static class ContextCommandHandler
                 break;
             }
 
-            msgCmds[i].OnExecuted?.Invoke(command);
+            try
+            {
+                msgCmds[i].OnExecuted?.Invoke(command);
+            }
+            catch (Exception e)
+            {
+                Helper.LogInteractionError($"{JsonConvert.SerializeObject(e, Formatting.Indented)}", "message command", command.Data.Message);
+                command.RespondAsync(
+                    "Uh oh, something failed. The development team has been notified of the error.",
+                    ephemeral: true);
+            }
+            break;
         }
         return Task.CompletedTask;
     }
@@ -57,7 +70,17 @@ public static class ContextCommandHandler
                 break;
             }
 
-            userCmds[i].OnExecuted?.Invoke(command);
+            try
+            {
+                userCmds[i].OnExecuted?.Invoke(command);
+            }
+            catch (Exception e)
+            {
+                Helper.LogInteractionError($"{JsonConvert.SerializeObject(e, Formatting.Indented)}", "user command");
+                command.RespondAsync(
+                    "Uh oh, something failed. The development team has been notified of the error.",
+                    ephemeral: true);
+            }
         }
         return Task.CompletedTask;
     }

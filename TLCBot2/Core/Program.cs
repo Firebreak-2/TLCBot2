@@ -10,6 +10,7 @@ using TLCBot2.Core.CommandLine;
 using TLCBot2.DataManagement;
 using TLCBot2.DataManagement.Cookies;
 using TLCBot2.Listeners;
+using TLCBot2.Listeners.TimedEvents;
 using TLCBot2.Utilities;
 
 namespace TLCBot2.Core;
@@ -46,6 +47,10 @@ public class Program
         Client.InviteCreated += ServerJoinListener.OnInviteCreated;
         Client.UserJoined += ServerStatsListener.OnMemberJoined;
         Client.UserLeft += ServerStatsListener.OnMemberLeft;
+        AppDomain.CurrentDomain.ProcessExit += async (_, _) =>
+        {
+            await Client.LogoutAsync();
+        };
 
         #region Token retrieval
         const string path = "token.txt";
@@ -103,11 +108,11 @@ public class Program
         // LocateFilePath();
         RuntimeConfig.Initialize();
         TlcAllCommands.Initialize();
+        TheFlowOfTime.Initialize();
     }
     private static async Task Initialize()
     {
         PreInitialize();
-        // Helper.Sheets.Initialize();
         
         await ApplicationCommandManager.Initialize();
         StarboardListener.Initialize();
@@ -115,17 +120,17 @@ public class Program
         CookieManager.Initialize();
         SocialMediaManager.Initialize();
         ServerStatsListener.Initialize();
+        BotMessageReminders.Initialize();
 
-        // Update += () =>
-        // {
-        //     for (int i = 0; i < MessageComponentHandler.AllComponents.Count; i++)
-        //     {
-        //         if (DateTime.Now <= MessageComponentHandler.AllComponents[i].BirthDate.AddMinutes(5)) continue;
-        //         
-        //         MessageComponentHandler.AllComponents.Remove(MessageComponentHandler.AllComponents[i]);
-        //         break;
-        //     }
-        // };
+        try
+        {
+            await RuntimeConfig.TLCBetaCommandLine.SendMessageAsync(
+                $"Bot Initialized at <t:{DateTimeOffset.Now.ToUnixTimeSeconds()}:F>");
+        }
+        catch
+        {
+            Console.WriteLine("Initialization message failed. Consider looking at RuntimeConfig.txt");
+        }
     }
     private static void LocateFilePath()
     {

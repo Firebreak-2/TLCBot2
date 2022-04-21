@@ -3,6 +3,8 @@ using System.Text.RegularExpressions;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using Humanizer;
+using MoreLinq;
 using TLCBot2.Utilities;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.ApplicationComponents.Eternal;
@@ -91,9 +93,48 @@ public static class TlcAllCommands
         AddCommand(new TlcCommand("kill", _ =>
         {
             TlcConsole.Print("goodbye world");
-            Program.Client.LogoutAsync();
-            Process.GetCurrentProcess().Kill();
+            Helper.Kill();
         }));
+
+        AddCommand(new TlcCommand("restart", _ =>
+        {
+            TlcConsole.Print("Attempting restart");
+            Helper.RestartProgram();
+        }));
+
+        AddCommand(new TlcCommand("allreminders", _ =>
+        {
+            if (BotMessageReminders.Items.Any())
+                RuntimeConfig.TLCBetaCommandLine.SendMessageAsync(
+                    string.Join("\n", BotMessageReminders.Items.Select((x, i) => 
+                    $"{i+1} | (`ID:` {x.ReminderID}, " +
+                    $"`Channel:` <#{x.ChannelID}>, " +
+                    $"`Span:` {x.Delay.Humanize()}, " +
+                    $"`Message:` {x.Message})")));
+            else 
+                TlcConsole.Print("There are no reminders");
+        }));
+        AddCommand(new TlcCommand("addreminder", strVal =>
+        {
+            string[] args = strVal.First().Split(',').Select(x => x.Trim()).ToArray();
+
+            var reminder = new BotMessageReminders.BotReminder(
+                args[0],
+                ulong.Parse(args[1]),
+                TimeSpan.FromMilliseconds(int.Parse(args[2])), // delay in milliseconds
+                args[3]); 
+
+            if (Program.Client.GetChannel(reminder.ChannelID) == null)
+                throw new Exception("Channel provided does not exist");
+            
+            BotMessageReminders.Add(reminder);
+            TlcConsole.Print($"Added new reminder with the id of [{reminder.ReminderID}]");
+        }, 1));
+        AddCommand(new TlcCommand("removereminder", args =>
+        {
+            BotMessageReminders.RemoveAll(x => x.ReminderID == args[0]);
+            TlcConsole.Print($"Removed all reminders with the id of {args[0]}");
+        }, 1));
         
         AddCommand(new TlcCommand("ping", _ =>
         {
@@ -188,9 +229,39 @@ public static class TlcAllCommands
                         .Create());
             }, 2));
             
-            AddCommand(new TlcCommand("updatedashboard"   , _ =>
+            AddCommand(new TlcCommand("createdashboard", _ =>
             {
+                var channel = RuntimeConfig.DashboardChannel;
+                void PostMessage(string messageText, params ButtonBuilder[] eternalButton)
+                {
+                    (string content, MessageComponent component) = CreateDashboardMessageData(messageText, eternalButton);
+
+                    channel.SendMessageAsync(content, components: component);
+                    Thread.Sleep(1000);
+                }
+                PostMessage("Are lost in the sea of channels and cant find your way through them? " +
+                        "Check out the `Server Directory` button. It provides information on all the " +
+                        "channels and when to use them.",
+                    EternalButtons.EternalButton1);
                 
+                PostMessage("Getting confused with what the server's slash commands and message or user commands " +
+                            "do? Give the `Command Catalogue` button! It will explain all there is to know " +
+                            "about all of the server's custom commands.",
+                    EternalButtons.EternalButton5);
+                
+                PostMessage("Are you curious about what some server roles do or how you earn some of roles? " +
+                            "The `Role Catalogue` button is here to help! It should give you and understanding " +
+                            "of what most of the server's roles do and how you can get your hands on some of them.",
+                    EternalButtons.EternalButton6);
+                
+                PostMessage("Do you think that the server should have something that it currently does not? " +
+                            "Using the `Feedback` button, you may access the Server Suggestions button which you " +
+                            "can then use to post suggestions to the server, and members can vote whether to implement " +
+                            "your suggestion or not. In there you can also find the QOTD Suggestion button, which allows " +
+                            "you to suggest questions for the next Question Of The Day! And if you find any bugs with the " +
+                            "TLC bot you can report the bugs using the Bug Report button. Reporting bugs of any kind is " +
+                            "greatly appreciated by the developer team, and will help everyone in the long run.",
+                    EternalButtons.EternalButton2);
             }));
             AddCommand(new TlcCommand("updatemoddashboard", _ =>
             {
@@ -260,11 +331,6 @@ public static class TlcAllCommands
                 }
             }, 2));
         }
-
-        AddCommand(new TlcCommand("test", _ =>
-        {
-            RuntimeConfig.TLCBetaCommandLine.SendMessageAsync(embed: CookieShop.GenerateShopEmbed().Build());
-        }));
 
         AddCommand(new TlcCommand("ls", args =>
         {

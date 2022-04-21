@@ -1,4 +1,3 @@
-GetRuntimeProps:null
 WhitelistedStarboardChannels:954086399613735027,954086399613735025
 StarboardChannel:954086399613735028
 BotReportsChannel:964152554890096671

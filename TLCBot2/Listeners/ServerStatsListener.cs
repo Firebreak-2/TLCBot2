@@ -14,13 +14,11 @@ public static class ServerStatsListener
     public static Task OnMemberJoined(SocketGuildUser user)
     {
         UpdateMemberCount();
-        UpdateDaysSinceOpen();
         return Task.CompletedTask;
     }
     public static Task OnMemberLeft(SocketGuild guild, SocketUser user)
     {
         UpdateMemberCount();
-        UpdateDaysSinceOpen();
         return Task.CompletedTask;
     }
     public static void UpdateMemberCount()

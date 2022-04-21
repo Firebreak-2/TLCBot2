@@ -1,15 +1,10 @@
 ﻿using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
-using Google.Apis.Sheets.v4;
-using Google.Apis.Sheets.v4.Data;
-using Google.Apis.Util.Store;
-using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TLCBot2.Core;
@@ -161,6 +156,30 @@ public static class Helper
         return true;
     }
 
+    public static void RestartProgram()
+    {
+        Console.WriteLine("RESTARTING BOT...");
+        Process.Start(AppDomain.CurrentDomain.FriendlyName);
+        Kill();
+    }
+    public static void Kill()
+    {
+        Environment.Exit(0);
+    }
+
+    public static IEnumerable<IUserMessage> GetLatestMessages(this SocketTextChannel channel, int limit = 100) => channel
+        .GetMessagesAsync(limit)
+        .ToArrayAsync()
+        .Result.SelectMany(x => x)
+        .OrderByDescending(x => x.Timestamp.Ticks).Cast<IUserMessage>();
+    public static SocketTextChannel GetChannelFromId(ulong id) => (SocketTextChannel) Program.Client.GetChannel(id);
+    public static bool TryFirst<T>(this IEnumerable<T> collection, Func<T, bool> condition, out T? first)
+    {
+        first = default;
+        if (!collection.Any(condition)) return false;
+        first = collection.First(condition);
+        return true;
+    }
     public static void LogInteractionError(object message, string interactionType, IMessage? originalMessage = null) =>
         RuntimeConfig.BotReportsChannel.SendMessageAsync(
             $"```{message}```\n```caused by: {interactionType}\noriginal message: {originalMessage?.GetJumpUrl() ?? "none"}```");

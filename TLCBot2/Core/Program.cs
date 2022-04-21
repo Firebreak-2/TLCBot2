@@ -33,7 +33,7 @@ public class Program
         Client.MessageReceived += TlcConsole.OnMessageRecieved;
         Client.MessageReceived += DoodleOnlyListener.OnMessageRecieved;
         Client.MessageReceived += CritiqueOnlyListener.OnMessageRecieved;
-        // Client.MessageReceived += PinboardListener.OnMessageReceived;
+        // Client.MessageReceived += PinboardListener.OnMessageReceived; // ditched cus bad
         Client.MessageReceived += AutoThreadListener.OnMessageRecieved;
         Client.MessageReceived += RepostListener.OnMessageReceived;
         Client.SlashCommandExecuted += SlashCommandHandler.OnCommand;

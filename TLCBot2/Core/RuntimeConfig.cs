@@ -8,7 +8,7 @@ namespace TLCBot2.Core;
 public static class RuntimeConfig
 {
     public static string ConfigPath => $"{Program.FileAssetsPath}/config.txt";
-    public static string[] GetRuntimeProps => typeof(RuntimeConfig).GetProperties()
+    public static string[] GetRuntimeProps() => typeof(RuntimeConfig).GetProperties()
         .Where(x => x.Name != "ConfigPath")
         .Select(x => x.Name)
         .ToArray();
@@ -100,6 +100,16 @@ public static class RuntimeConfig
         get => Get.TextChannel("QOTDChannel");
         set => Set.TextChannel("QOTDChannel", value);
     }
+    public static SocketTextChannel DashboardChannel
+    {
+        get => Get.TextChannel("DashboardChannel");
+        set => Set.TextChannel("DashboardChannel", value);
+    }
+    public static SocketTextChannel ModDashboardChannel
+    {
+        get => Get.TextChannel("ModDashboardChannel");
+        set => Set.TextChannel("ModDashboardChannel", value);
+    }
     public static SocketTextChannel CritiqueMyWorkChannel
     {
         get => Get.TextChannel("CritiqueMyWorkChannel");
@@ -167,7 +177,7 @@ public static class RuntimeConfig
     }
     public static void Initialize()
     {
-        string[] props = GetRuntimeProps;
+        string[] props = GetRuntimeProps();
         string[] lines = File.ReadAllLines(ConfigPath);
         File.WriteAllLines(ConfigPath, props.Select(prop =>
         {
@@ -208,7 +218,7 @@ public static class RuntimeConfig
         
         if (!lines.Any(Condition)) return false;
 
-        string[] props = GetRuntimeProps;
+        string[] props = GetRuntimeProps();
         
         string lineToChange = lines.First(Condition);
         string propVal = props.First(x => string.Equals(x, name, StringComparison.CurrentCultureIgnoreCase));

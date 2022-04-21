@@ -187,6 +187,15 @@ public static class TlcAllCommands
                         null)
                         .Create());
             }, 2));
+            
+            AddCommand(new TlcCommand("updatedashboard"   , _ =>
+            {
+                
+            }));
+            AddCommand(new TlcCommand("updatemoddashboard", _ =>
+            {
+                
+            }));
 
             AddCommand(new TlcCommand("makeeternalmessage", args =>
             {

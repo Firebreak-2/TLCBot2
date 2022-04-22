@@ -102,11 +102,43 @@ public static class TlcAllCommands
             Helper.RestartProgram();
         }));
 
+        AddCommand(new TlcCommand("allrolebans", _ =>
+        {
+            var items = UserRoleBans.LoadAll();
+            if (items.Any())
+                RuntimeConfig.TLCBetaCommandLine.SendMessageAsync(
+                    string.Join("\n", items.Select((x, i) =>
+                        $"{i + 1} | (`User:` <@!{x.UserID}>, " +
+                        $"`Roles:` {string.Join(", ", x.RolesBannedIDs.Select(role => $"<@&{role}>"))})")),
+                    allowedMentions: AllowedMentions.None);
+            else
+                TlcConsole.Print("There are no role bans");
+        }));
+        AddCommand(new TlcCommand("addroleban", args =>
+        {
+            var roleBan = new UserRoleBans.RoleBan(
+                args[0].To<ulong>(),
+                args[1].Split(',').Select(ulong.Parse).ToArray());
+            var roles = roleBan.RolesBannedIDs.Select(Helper.GetRoleFromId);
+
+            if (RuntimeConfig.TLCBetaCommandLine.Guild.GetUser(roleBan.UserID) is not { } selectedUser || roles.Any(x => x == null)) return;
+            
+            UserRoleBans.Add(roleBan);
+            TlcConsole.Print($"Added new role ban with the user id of [{roleBan.UserID}]");
+            selectedUser.RemoveRolesAsync(roles);
+        }, 2));
+        AddCommand(new TlcCommand("removeroleban", args =>
+        {
+            UserRoleBans.RemoveAll(x => x.UserID.ToString() == args[0]);
+            TlcConsole.Print($"Removed all role bans with the user id of [{args[0]}]");
+        }, 1));
+
         AddCommand(new TlcCommand("allreminders", _ =>
         {
-            if (BotMessageReminders.Items.Any())
+            var items = BotMessageReminders.LoadAll();
+            if (items.Any())
                 RuntimeConfig.TLCBetaCommandLine.SendMessageAsync(
-                    string.Join("\n", BotMessageReminders.Items.Select((x, i) => 
+                    string.Join("\n", items.Select((x, i) => 
                     $"{i+1} | (`ID:` {x.ReminderID}, " +
                     $"`Channel:` <#{x.ChannelID}>, " +
                     $"`Span:` {x.Delay.Humanize()}, " +
@@ -121,8 +153,8 @@ public static class TlcAllCommands
             var reminder = new BotMessageReminders.BotReminder(
                 args[0],
                 ulong.Parse(args[1]),
-                TimeSpan.FromMilliseconds(int.Parse(args[2])), // delay in milliseconds
-                args[3]); 
+                TimeSpan.FromMinutes(int.Parse(args[2])), // delay in minutes
+                args[3]);
 
             if (Program.Client.GetChannel(reminder.ChannelID) == null)
                 throw new Exception("Channel provided does not exist");
@@ -133,7 +165,7 @@ public static class TlcAllCommands
         AddCommand(new TlcCommand("removereminder", args =>
         {
             BotMessageReminders.RemoveAll(x => x.ReminderID == args[0]);
-            TlcConsole.Print($"Removed all reminders with the id of {args[0]}");
+            TlcConsole.Print($"Removed all reminders with the id of [{args[0]}]");
         }, 1));
         
         AddCommand(new TlcCommand("ping", _ =>
@@ -173,9 +205,9 @@ public static class TlcAllCommands
                     categoricalRoles.Select(x => x.Mention));
                 var comp = FireMessageComponent.CreateNew(
                     new FireMessageComponent(new ComponentBuilder()
-                            .WithSelectMenu(eternalMenu(channel!)
+                            .WithSelectMenu(eternalMenu(channel)
                                 .AddOption("Remove All", "rmv")
-                                .WithMaxValues(canSelectMultiple ? categoricalRoles.Count() : 1)),
+                                .WithMaxValues(canSelectMultiple ? categoricalRoles.Count() + 1 : 1)),
                         null, null));
                 return (cont, comp);
             }
@@ -212,6 +244,29 @@ public static class TlcAllCommands
                         break;
                 }
             }, 2));
+            
+            AddCommand(new TlcCommand("test", _ =>
+            {
+                
+            }));
+            
+            AddCommand(new TlcCommand("lockserver", _ =>
+            {
+                var guild = RuntimeConfig.TLCBetaCommandLine.Guild;
+                guild.EveryoneRole.Permissions.Modify(viewChannel: false);
+                RuntimeConfig.MaintenanceModeChannel.GetPermissionOverwrite(guild.EveryoneRole)!.Value
+                    .Modify(viewChannel: PermValue.Allow);
+                TlcConsole.Print("Server locked");
+            }));
+            
+            AddCommand(new TlcCommand("unlockserver", _ =>
+            {
+                var guild = RuntimeConfig.TLCBetaCommandLine.Guild;
+                guild.EveryoneRole.Permissions.Modify(viewChannel: true);
+                RuntimeConfig.MaintenanceModeChannel.GetPermissionOverwrite(guild.EveryoneRole)!.Value
+                    .Modify(viewChannel: PermValue.Deny);
+                TlcConsole.Print("Server unlocked");
+            }));
 
             AddCommand(new TlcCommand("addswitchbutton", args =>
             {
@@ -291,41 +346,6 @@ public static class TlcAllCommands
                             var data = messagesToPost.First(x => x.Key == key).Value;
                             PostMessage(key, data.roles, data.eternalMenu, data.canSelectMultiple);
                         }
-                    }
-                        break;
-                    case 1:
-                    {
-                        void PostMessage(string messageText, params ButtonBuilder[] eternalButton)
-                        {
-                            (string content, MessageComponent component) =
-                                CreateDashboardMessageData(messageText, eternalButton);
-                            channel.SendMessageAsync(content, components: component);
-                            Thread.Sleep(1000);
-                        }
-
-                        PostMessage("Are you lost in the sea of channels and cant find your way through them? " +
-                              "Check out the `Server Directory` button. It provides information on all the " +
-                              "channels and when to use them.",
-                            EternalButtons.EternalButton1);
-
-                        PostMessage("Getting confused with what the server's slash commands and message or user commands " +
-                              "do? Give the `Command Catalogue` button! It will explain all there is to know " +
-                              "about all of the server's custom commands.",
-                            EternalButtons.EternalButton5);
-
-                        PostMessage("Are you curious about what some server roles do or how you earn some of roles? " +
-                              "The `Role Catalogue` button is here to help! It should give you and understanding " +
-                              "of what most of the server's roles do and how you can get your hands on some of them.",
-                            EternalButtons.EternalButton6);
-
-                        PostMessage("Do you think that the server should have something that it currently does not? " +
-                              "Using the `Feedback` button, you may access the Server Suggestions button which you " +
-                              "can then use to post suggestions to the server, and members can vote whether to implement " +
-                              "your suggestion or not. In there you can also find the QOTD Suggestion button, which allows " +
-                              "you to suggest questions for the next Question Of The Day! And if you find any bugs with the " +
-                              "TLC bot you can report the bugs using the Bug Report button. Reporting bugs of any kind is " +
-                              "greatly appreciated by the developer team, and will help everyone in the long run.",
-                            EternalButtons.EternalButton2);
                     }
                         break;
                 }

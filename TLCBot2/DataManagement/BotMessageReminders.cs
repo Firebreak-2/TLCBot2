@@ -14,54 +14,49 @@ public static class BotMessageReminders
         LoadAll();
         TheFlowOfTime.MinuteCLock.Elapsed += (_, _) =>
         {
-            foreach (var reminder in Items)
+            foreach (var reminder in _items)
             {
                 var channel = Helper.GetChannelFromId(reminder.ChannelID);
-
-                var messages = channel.GetLatestMessages();
                 
+                var messages = channel.GetLatestMessages();
+                if (!messages.Any()) continue;
+
                 var message = messages.First();
 
                 bool isPreviousMessagePostedByBot = message.Author.IsBot;
                 if (isPreviousMessagePostedByBot) continue;
-                
+
                 if (DateTime.Now.Ticks > message.Timestamp.Add(reminder.Delay).Ticks)
-                    channel.SendMessageAsync(reminder.Message, allowedMentions: AllowedMentions.None);
+                {
+                    if (reminder.LatestReminderMessage != null
+                        && channel.GetMessageAsync(reminder.LatestReminderMessage.Value).Result is { } prevMessage)
+                        prevMessage.DeleteAsync();
+
+                    reminder.LatestReminderMessage =
+                        channel.SendMessageAsync(reminder.Message, allowedMentions: AllowedMentions.None).Result.Id;
+                }
             }
         };
     }
-
-    public static Task OnMessageReceived(SocketMessage message)
-    {
-        var latestMessages = ((SocketTextChannel) message.Channel).GetLatestMessages(10);
-
-        foreach (var msg in latestMessages)
-        {
-            if (msg.Author.Id != Program.Client.CurrentUser.Id || Items.All(x => x.Message != msg.Content)) continue;
-            msg.DeleteAsync();
-            break;
-        }
-        
-        return Task.CompletedTask;
-    }
     public record BotReminder(string ReminderID, ulong ChannelID, TimeSpan Delay, string Message)
     {
+        public ulong? LatestReminderMessage;
         public string Format() => JsonConvert.SerializeObject(this, Formatting.Indented);
         public static BotReminder? Deformat(string data) => JsonConvert.DeserializeObject<BotReminder>(data);
     }
-    public static List<BotReminder> Items = new();
+    private static List<BotReminder> _items = new();
     public static string DatabasePath => $"{Program.FileAssetsPath}/botReminders.json";
     public static void SaveAll() =>
-        File.WriteAllText(DatabasePath, JsonConvert.SerializeObject(Items));
+        File.WriteAllText(DatabasePath, JsonConvert.SerializeObject(_items, Formatting.Indented));
     public static bool Load(Func<BotReminder, bool> condition, out BotReminder? reminder) => 
         LoadAll().TryFirst(condition, out reminder);
     public static IEnumerable<BotReminder> LoadAll()
     {
         if (File.Exists(DatabasePath))
-            Items = JsonConvert.DeserializeObject<List<BotReminder>>(File.ReadAllText(DatabasePath))!;
+            _items = JsonConvert.DeserializeObject<List<BotReminder>>(File.ReadAllText(DatabasePath))!;
         else
             SaveAll();
-        return Items;
+        return _items;
     }
     public static void Add(BotReminder reminder) => Modify(list => { list.Add(reminder); return list; });
     public static void Add(params BotReminder[] reminder) => Modify(list => { list.AddRange(reminder); return list; });
@@ -69,7 +64,7 @@ public static class BotMessageReminders
     public static void RemoveAll(Predicate<BotReminder> condition) => Modify(list => { list.RemoveAll(condition); return list; });
     public static void Modify(Func<List<BotReminder>, IEnumerable<BotReminder>> action)
     {
-        Items = action(LoadAll().ToList()).ToList();
+        _items = action(LoadAll().ToList()).ToList();
         SaveAll();
     }
 }

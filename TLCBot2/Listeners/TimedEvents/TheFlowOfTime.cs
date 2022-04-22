@@ -8,10 +8,10 @@ public static class TheFlowOfTime
     public static void Initialize()
     {
         // SixHourCLock.Elapsed += (_, _) => Helper.RestartProgram();
-        // HourCLock.Elapsed += (_, _) => ServerStatsListener.UpdateDaysSinceOpen();
+        HourCLock.Elapsed += (_, _) => ServerStatsListener.UpdateDaysSinceOpen();
     }
 
-    public static readonly Timer MinuteCLock = new(5000)
+    public static readonly Timer MinuteCLock = new(_minuteTickSpeed)
     {
         Enabled = true,
         AutoReset = true

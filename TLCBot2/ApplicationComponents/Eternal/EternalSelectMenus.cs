@@ -2,6 +2,7 @@
 using Discord;
 using Discord.WebSocket;
 using MoreLinq;
+using TLCBot2.DataManagement;
 using TLCBot2.Utilities;
 
 namespace TLCBot2.ApplicationComponents.Eternal;
@@ -68,11 +69,22 @@ public static class EternalSelectMenus
             if (selectionMenu.Data.Values.All(x => x != "rmv"))
             {
                 var guild = selectionMenu.Channel.GetGuild();
-                var selectedRoles = selectionMenu.Data.Values.Select(x => guild.GetRole(ulong.Parse(x)));
+                var selectedRoleIds = selectionMenu.Data.Values.Select(x => x.To<ulong>());
+                var selectedRoles = selectedRoleIds.Select(guild.GetRole);
                 var user = guild.GetUser(selectionMenu.User.Id);
+
+                ulong badRole = 0;
+                if (UserRoleBans.LoadAll().Any(roleBan =>
+                        roleBan.UserID == user.Id && roleBan.RolesBannedIDs.TryFirst(selectedRoleIds.Contains, out badRole)))
+                {
+                    selectionMenu.RespondAsync($"Role selection failed. You have been banned from selecting the <@&{badRole}> role",
+                        ephemeral: true, allowedMentions: AllowedMentions.None);
+                    return;
+                }
+                
                 if (onlyOne)
                     user.RemoveRolesAsync(roles.Where(user.Roles.Contains));
-                MoreEnumerable.ForEach(selectedRoles, x => user.AddRoleAsync(x));
+                selectedRoles.ForEach(x => user.AddRoleAsync(x));
             }
             else
             {

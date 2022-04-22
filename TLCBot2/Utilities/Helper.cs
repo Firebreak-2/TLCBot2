@@ -167,6 +167,31 @@ public static class Helper
         Environment.Exit(0);
     }
 
+    public static T To<T>(this object thing) where T : IConvertible
+    {
+        return (T)Convert.ChangeType(thing, typeof(T));
+    }
+
+    public static SocketRole? GetRoleFromId(ulong Id)
+    {
+        foreach (var guild in Program.Client.Guilds)
+        {
+            if (guild.Roles.TryFirst(x => x.Id == Id, out var role))
+            {
+                return role;
+            }
+        }
+        return null;
+    }
+
+    public static bool TryGetRole(ulong Id, out SocketRole? role)
+    {
+        role = null;
+        if (GetRoleFromId(Id) is not { } r) return false;
+        role = r;
+        return true;
+    }
+    
     public static IEnumerable<IUserMessage> GetLatestMessages(this SocketTextChannel channel, int limit = 100) => channel
         .GetMessagesAsync(limit)
         .ToArrayAsync()

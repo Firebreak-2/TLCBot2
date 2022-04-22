@@ -36,6 +36,7 @@ public class Program
         Client.MessageReceived += CritiqueOnlyListener.OnMessageRecieved;
         Client.MessageReceived += AutoThreadListener.OnMessageRecieved;
         Client.MessageReceived += RepostListener.OnMessageReceived;
+        Client.MessageReceived += VentingTagListener.OnMessageReceived;
         Client.SlashCommandExecuted += SlashCommandHandler.OnCommand;
         Client.MessageCommandExecuted += ContextCommandHandler.OnMessageCommandExecuted;
         Client.UserCommandExecuted += ContextCommandHandler.OnUserCommandExecuted;
@@ -121,6 +122,8 @@ public class Program
         SocialMediaManager.Initialize();
         ServerStatsListener.Initialize();
         BotMessageReminders.Initialize();
+        UserRoleBans.Initialize();
+        ChannelVisiblityData.Initialize();
 
         try
         {

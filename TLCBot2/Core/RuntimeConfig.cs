@@ -80,6 +80,18 @@ public static class RuntimeConfig
         get => Get.TextChannel("BotReportsChannel");
         set => Set.TextChannel("BotReportsChannel", value);
     }
+
+    public static SocketTextChannel MaintenanceModeChannel
+    {
+        get => Get.TextChannel("MaintenanceModeChannel");
+        set => Set.TextChannel("MaintenanceModeChannel", value);
+    }
+    
+    public static SocketTextChannel VentingChannel
+    {
+        get => Get.TextChannel("VentingChannel");
+        set => Set.TextChannel("VentingChannel", value);
+    }
     public static SocketRole AdminRole
     {
         get => Get.Role("AdminRole");
@@ -124,11 +136,6 @@ public static class RuntimeConfig
     {
         get => Get.TextChannel("TLCBetaCommandLine");
         set => Set.TextChannel("TLCBetaCommandLine", value);
-    }
-    public static SocketTextChannel PinboardChannel
-    {
-        get => Get.TextChannel("PinboardChannel");
-        set => Set.TextChannel("PinboardChannel", value);
     }
     public static SocketGuild FocusServer
     {

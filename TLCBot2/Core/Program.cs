@@ -48,6 +48,7 @@ public class Program
         Client.InviteCreated += ServerJoinListener.OnInviteCreated;
         Client.UserJoined += ServerStatsListener.OnMemberJoined;
         Client.UserLeft += ServerStatsListener.OnMemberLeft;
+        TLCLogListener.PreInitialize();
         AppDomain.CurrentDomain.ProcessExit += async (_, _) =>
         {
             await Client.LogoutAsync();

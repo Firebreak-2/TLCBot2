@@ -31,7 +31,8 @@ public static class ServerJoinListener
         if (DateTime.Now.Subtract(TimeSpan.FromDays(30 * 6)) < user.CreatedAt)
             RuntimeConfig.BotReportsChannel.SendMessageAsync(text:
                 $"New member <@!{user.Id}>'s account is less than 6 months old\n" +
-                $"created <t:{user.CreatedAt.ToUnixTimeMilliseconds()}:F>");
+                $"created <t:{user.CreatedAt.ToUnixTimeMilliseconds()}:F>",
+                allowedMentions: AllowedMentions.None);
         
         var oldInvites = OldInvites;
         foreach (var item in user.Guild.GetInvitesAsync().Result)

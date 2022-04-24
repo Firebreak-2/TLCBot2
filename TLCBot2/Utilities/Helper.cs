@@ -191,7 +191,54 @@ public static class Helper
         role = r;
         return true;
     }
-    
+
+    public static (string ChannelName, string ChannelType) GetChannelInfo(SocketChannel channel)
+    {
+        string channelTypeName = "null";
+        string channelName = "null";
+        switch (channel.GetChannelType())
+        {
+            case ChannelType.Text:
+                channelTypeName = "Text Channel";
+                channelName = ((SocketTextChannel) channel).Name;
+                break;
+            case ChannelType.DM:
+                channelTypeName = "Direct Message";
+                channelName = $"DM with {((SocketDMChannel) channel).Recipient.Username}";
+                break;
+            case ChannelType.Voice:
+                channelTypeName = "Voice Channel";
+                channelName = ((SocketVoiceChannel) channel).Name;
+                break;
+            case ChannelType.Group:
+                channelTypeName = "Group Chat";
+                channelName = ((SocketGroupChannel) channel).Name;
+                break;
+            case ChannelType.Category:
+                channelTypeName = "Category";
+                channelName = ((SocketCategoryChannel) channel).Name;
+                break;
+            case ChannelType.News:
+                channelTypeName = "News Channel";
+                channelName = ((SocketNewsChannel) channel).Name;
+                break;
+            case ChannelType.NewsThread:
+            case ChannelType.PublicThread:
+                channelTypeName = "Public Thread";
+                channelName = ((SocketThreadChannel) channel).Name;
+                break;
+            case ChannelType.PrivateThread:
+                channelTypeName = "Private Thread";
+                channelName = ((SocketThreadChannel) channel).Name;
+                break;
+            case ChannelType.Stage:
+                channelTypeName = "Stage Channel";
+                channelName = ((SocketStageChannel) channel).Name;
+                break;
+        }
+
+        return (channelName, channelTypeName);
+    }
     public static IEnumerable<IUserMessage> GetLatestMessages(this SocketTextChannel channel, int limit = 100) => channel
         .GetMessagesAsync(limit)
         .ToArrayAsync()

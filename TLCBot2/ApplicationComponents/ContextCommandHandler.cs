@@ -14,14 +14,6 @@ public static class ContextCommandHandler
 {
     public static Task OnMessageCommandExecuted(SocketMessageCommand command)
     {
-        RuntimeConfig.CommandExecutionLog.SendMessageAsync(embed: new EmbedBuilder()
-            .WithColor(Color.Blue)
-            .WithTitle("Message Command Executed")
-            .AddField("Command Name", command.CommandName)
-            .AddField("Message Used On", command.Data.Message.GetJumpUrl())
-            .WithDescription($"User: {command.User.Mention} : {command.User.Id}")
-            .WithAuthor(command.User).Build());
-        
         var msgCmds = ApplicationCommandManager.AllMessageCommands;
         for (int i = 0; i < msgCmds.Count; i++)
         {
@@ -51,14 +43,6 @@ public static class ContextCommandHandler
 
     public static Task OnUserCommandExecuted(SocketUserCommand command)
     {
-        RuntimeConfig.CommandExecutionLog.SendMessageAsync(embed: new EmbedBuilder()
-            .WithColor(Color.Blue)
-            .WithTitle("User Command Executed")
-            .AddField("Command Name", command.CommandName)
-            .AddField("User Used On", command.Data.Member.Mention)
-            .WithDescription($"User: {command.User.Mention} : {command.User.Id}")
-            .WithAuthor(command.User).Build());
-
         var userCmds = ApplicationCommandManager.AllUserCommands;
         for (int i = 0; i < userCmds.Count; i++)
         {

@@ -15,7 +15,7 @@ using TLCBot2.Utilities;
 
 namespace TLCBot2.Core;
 
-public class Program
+public class Program // test change
 {
     public static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
     public static DiscordSocketClient Client = null!;

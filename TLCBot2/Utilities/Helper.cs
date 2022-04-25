@@ -81,6 +81,8 @@ public static class Helper
     {
         return Regex.Replace(path, @"/[^/]+$", "");
     }
+
+    public static string GetHyperLink(this string text, string link) => $"[{text}]({link})";
     public static string GetFileNameFromPath(string path)
     {
         return Regex.Match(path, @"/[^/]+$").Value;

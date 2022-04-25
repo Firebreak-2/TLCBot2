@@ -157,10 +157,15 @@ public static class RuntimeConfig
         get => Get.TextChannel("FeedbackReceptionChannel");
         set => Set.TextChannel("FeedbackReceptionChannel", value);
     }
-    public static SocketTextChannel CommandExecutionLog
+    public static SocketTextChannel TLCLogs
     {
-        get => Get.TextChannel("CommandExecutionLog");
-        set => Set.TextChannel("CommandExecutionLog", value);
+        get => Get.TextChannel("TLCLogs");
+        set => Set.TextChannel("TLCLogs", value);
+    }
+    public static SocketTextChannel UselessLogs
+    {
+        get => Get.TextChannel("UselessLogs");
+        set => Set.TextChannel("UselessLogs", value);
     }
     public static SocketTextChannel DoodleOnlyChannel
     {

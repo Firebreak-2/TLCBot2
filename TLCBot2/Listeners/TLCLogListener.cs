@@ -1,10 +1,9 @@
 ﻿using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using Humanizer;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using TLCBot2.Core;
 using TLCBot2.Utilities;
 using Color = Discord.Color;
@@ -50,25 +49,203 @@ public static class TLCLogListener
         Program.Client.ThreadUpdated += OnThreadUpdated;
         Program.Client.ThreadMemberJoined += OnThreadUserJoined;
         Program.Client.ThreadMemberLeft += OnThreadUserLeft;
-        // Program.Client.UserBanned += 
-        // Program.Client.UserUnbanned += 
-        // Program.Client.UserJoined += 
-        // Program.Client.UserLeft += 
-        // Program.Client.UserUpdated += 
-        // Program.Client.UserVoiceStateUpdated += 
-        // Program.Client.GuildScheduledEventCancelled += 
-        // Program.Client.GuildScheduledEventCompleted += 
-        // Program.Client.GuildScheduledEventCreated += 
-        // Program.Client.GuildScheduledEventStarted += 
-        // Program.Client.GuildScheduledEventUpdated += 
-        // Program.Client.GuildScheduledEventUserAdd += 
-        // Program.Client.GuildScheduledEventUserRemove += 
-        // Program.Client.GuildMemberUpdated += 
-        // Program.Client.ThreadMemberJoined += 
-        // Program.Client.ThreadMemberLeft += 
-        // Program.Client.GuildJoinRequestDeleted += 
+        Program.Client.UserBanned += OnUserBanned;
+        Program.Client.UserUnbanned += OnUserUnbanned;
+        Program.Client.UserJoined += OnUserJoined;
+        Program.Client.UserLeft += OnUserLeft;
+        Program.Client.UserVoiceStateUpdated += OnUserVoiceStateUpdated;
+        Program.Client.GuildScheduledEventCancelled += OnScheduledEventCancelled;
+        Program.Client.GuildScheduledEventCompleted += OnScheduledEventCompleted;
+        Program.Client.GuildScheduledEventCreated += OnScheduledEventCreated;
+        Program.Client.GuildScheduledEventStarted += OnScheduledEventStarted;
+        Program.Client.GuildScheduledEventUpdated += OnScheduledEventUpdated;
+        Program.Client.GuildScheduledEventUserAdd += OnScheduledEventUserAdd;
+        Program.Client.GuildScheduledEventUserRemove += OnScheduledEventUserRemove;
+        Program.Client.GuildMemberUpdated += OnGuildUserUpdated;
+        Program.Client.ThreadMemberJoined += OnThreadMemberJoined;
+        Program.Client.ThreadMemberLeft += OnThreadMemberLeft;
+        Program.Client.GuildJoinRequestDeleted += OnJoinRequestDeleted;
     }
 
+    public static Task OnJoinRequestDeleted(Cacheable<SocketGuildUser, ulong> userCacheable, SocketGuild guild)
+    {
+        if (userCacheable.GetOrDownloadAsync().Result is not { } user) return Task.CompletedTask;
+        return AddLogEntry(LogSignificance.Neutral,
+            new[] {"join request deleted"},
+            "Newjoin Declined Welcome Screening Board",
+            user,
+            ("Account Creation Date",
+                $"<t:{user.CreatedAt.ToUnixTimeSeconds()}:F> <t:{user.CreatedAt.ToUnixTimeSeconds()}:R>"),
+            ("Has Nitro", user.PremiumSince != null));
+    }
+    public static Task OnThreadMemberLeft(SocketThreadUser user) =>
+        AddLogEntry(LogSignificance.Useless,
+            new[] {"thread member left", "user change", "threads"},
+            "Member Left Thread",
+            user,
+            ("Thread", user.Thread.Mention),
+            ("Thread Channel", $"<#{user.Thread.ParentChannel.Id}."));
+    public static Task OnThreadMemberJoined(SocketThreadUser user) =>
+        AddLogEntry(LogSignificance.Useless,
+            new[] {"thread member joined", "user change", "threads"},
+            "Member Joined Thread",
+            user,
+            ("Thread", user.Thread.Mention),
+            ("Thread Channel", $"<#{user.Thread.ParentChannel.Id}."));
+    public static Task OnScheduledEventUserAdd(
+        Cacheable<SocketUser, RestUser, IUser, ulong> userCacheable,
+        SocketGuildEvent guildEvent)
+    {
+        if (userCacheable.Value is not { } user) return Task.CompletedTask;
+        return AddLogEntry(LogSignificance.Useless,
+            new[] {"events", "server change", "event user added"},
+            "Event User Added",
+            user,
+            ("Event Name", guildEvent.Name));
+    }
+    public static Task OnScheduledEventUserRemove(
+        Cacheable<SocketUser, RestUser, IUser, ulong> userCacheable,
+        SocketGuildEvent guildEvent)
+    {
+        if (userCacheable.Value is not { } user) return Task.CompletedTask;
+        return AddLogEntry(LogSignificance.Useless,
+            new[] {"events", "server change", "event user removed"},
+            "Event User Removed",
+            user,
+            ("Event Name", guildEvent.Name));
+    }
+    public static Task OnScheduledEventUpdated(
+        Cacheable<SocketGuildEvent, ulong> oldGuildEventCacheable, 
+        SocketGuildEvent newGuildEvent)
+    {
+        var oldGuildEvent = oldGuildEventCacheable.GetOrDownloadAsync().Result;
+        if (oldGuildEvent == null) return Task.CompletedTask;
+        var oldData = 
+               (oldGuildEvent.Name,
+                oldGuildEvent.Description,
+                oldGuildEvent.StartTime, 
+                oldGuildEvent.EndTime,
+                oldGuildEvent.UserCount,
+                oldGuildEvent.Creator.Mention);
+        var newData = 
+               (newGuildEvent.Name,
+                newGuildEvent.Description,
+                newGuildEvent.StartTime, 
+                newGuildEvent.EndTime,
+                newGuildEvent.UserCount,
+                newGuildEvent.Creator.Mention);
+        if (newData == oldData) return Task.CompletedTask;
+        return AddLogEntry(LogSignificance.Neutral,
+            new[] {"events", "server change", "server event updated"},
+            "Server Event Updated",
+            null,
+            ("Event Name", oldData.Name),
+            ("Event Description", $"{oldData.Description} → {newData.Description}"),
+            ("Event Start Time", $"{oldData.StartTime.Humanize()} → {newData.StartTime.Humanize()}"),
+            ("Event End Time", $"{oldData.EndTime.Humanize()} → {newData.EndTime.Humanize()}"),
+            ("Event Participants", $"{oldData.UserCount ?? 0} → {newData.UserCount ?? 0}"),
+            ("Event Organizer", $"{oldData.Mention} → {newData.Mention}"));
+    }
+
+    public static Task OnScheduledEventCancelled(SocketGuildEvent guildEvent) =>
+        AddLogEntry(LogSignificance.Neutral,
+            new[] {"events", "server change", "server event cancelled"},
+            "Server Event Cancelled",
+            null,
+            ("Event Name", guildEvent.Name),
+            ("Event Description", guildEvent.Description),
+            ("Event Start Time", guildEvent.StartTime.Humanize()),
+            ("Event End Time", guildEvent.EndTime.Humanize()),
+            ("Event Participants", guildEvent.UserCount ?? 0),
+            ("Event Organizer", guildEvent.Creator.Mention));
+    public static Task OnScheduledEventCompleted(SocketGuildEvent guildEvent) =>
+        AddLogEntry(LogSignificance.Neutral,
+            new[] {"events", "server change", "server event completed"},
+            "Server Event Completed",
+            null,
+            ("Event Name", guildEvent.Name),
+            ("Event Description", guildEvent.Description),
+            ("Event Start Time", guildEvent.StartTime.Humanize()),
+            ("Event End Time", guildEvent.EndTime.Humanize()),
+            ("Event Participants", guildEvent.UserCount ?? 0),
+            ("Event Organizer", guildEvent.Creator.Mention));
+    public static Task OnScheduledEventCreated(SocketGuildEvent guildEvent) =>
+        AddLogEntry(LogSignificance.Neutral,
+            new[] {"events", "server change", "server event created"},
+            "Server Event Created",
+            null,
+            ("Event Name", guildEvent.Name),
+            ("Event Description", guildEvent.Description),
+            ("Event Start Time", guildEvent.StartTime.Humanize()),
+            ("Event End Time", guildEvent.EndTime.Humanize()),
+            ("Event Participants", guildEvent.UserCount ?? 0),
+            ("Event Organizer", guildEvent.Creator.Mention));
+    public static Task OnScheduledEventStarted(SocketGuildEvent guildEvent) =>
+        AddLogEntry(LogSignificance.Neutral,
+            new[] {"events", "server change", "server event started"},
+            "Server Event Started",
+            null,
+            ("Event Name", guildEvent.Name),
+            ("Event Description", guildEvent.Description),
+            ("Event Start Time", guildEvent.StartTime.Humanize()),
+            ("Event End Time", guildEvent.EndTime.Humanize()),
+            ("Event Participants", guildEvent.UserCount ?? 0),
+            ("Event Organizer", guildEvent.Creator.Mention));
+    public static Task OnUserVoiceStateUpdated(
+        SocketUser user,
+        SocketVoiceState oldState,
+        SocketVoiceState newState)
+    {
+        var oldData = (oldState.VoiceChannel, oldState.IsDeafened, oldState.IsMuted);
+        var newData = (newState.VoiceChannel, newState.IsDeafened, newState.IsMuted);
+        if (oldData == newData) return Task.CompletedTask;
+        return AddLogEntry(LogSignificance.Useless,
+            new[] {"user voice state updated", "user change"},
+            "User Voice State Updated",
+            user,
+            ("Voice Channel", $"{oldData.VoiceChannel.Mention} → {newData.VoiceChannel.Mention}"),
+            ("Server Deafened", $"{oldData.IsDeafened} → {newData.IsDeafened}"),
+            ("Server Muted", $"{oldData.IsMuted} → {newData.IsMuted}"));
+    }
+    public static Task OnGuildUserUpdated(Cacheable<SocketGuildUser, ulong> oldUserCacheable, SocketGuildUser newUser)
+    {
+        if (oldUserCacheable.GetOrDownloadAsync().Result is not { } oldUser) return Task.CompletedTask;
+        var oldData = (oldUser.Username, oldUser.Nickname, oldUser.GetAvatarUrl());
+        var newData = (newUser.Username, newUser.Nickname, newUser.GetAvatarUrl());
+        if (oldData == newData) return Task.CompletedTask;
+        return AddLogEntry(LogSignificance.Neutral,
+            new[] {"user updated", "user change"},
+            "User Updated",
+            oldUser,
+            new (object, object)[]
+            {
+                ("Username", $"{oldData.Username} → {newData.Username}"),
+                ("Nickname", $"{oldData.Nickname} → {newData.Nickname}"),
+                ("Avatar", $"{oldData.Item2} → {newData.Item2}")
+            }, newData.Item2);
+    }
+    public static Task OnUserJoined(SocketGuildUser user) =>
+        AddLogEntry(LogSignificance.Neutral,
+            new[] {"user joined", "user change", "server change"},
+            "User Joined",
+            user,
+            ("Account Creation Date", $"<t:{user.CreatedAt.ToUnixTimeSeconds()}:F> <t:{user.CreatedAt.ToUnixTimeSeconds()}:R>"),
+            ("Has Nitro", user.PremiumSince != null));
+    public static Task OnUserLeft(SocketGuild _, SocketUser user) =>
+        AddLogEntry(LogSignificance.Neutral,
+            new[] {"user left", "user change", "server change"},
+            "User Left",
+            user);
+    public static Task OnUserBanned(SocketUser user, SocketGuild _) =>
+        AddLogEntry(LogSignificance.Warning,
+            new[] {"ban", "user banned", "user change", "server change"},
+            "User Banned",
+            user);
+    public static Task OnUserUnbanned(SocketUser user, SocketGuild _) =>
+        AddLogEntry(LogSignificance.Warning,
+            new[] {"ban", "user unbanned", "user change", "server change"},
+            "User Unbanned",
+            user);
     public static Task OnThreadUserJoined(SocketThreadUser user) =>
         AddLogEntry(LogSignificance.Useless,
             new[] {"thread user joined", "threads"},
@@ -431,7 +608,7 @@ public static class TLCLogListener
             ("Channel Type", channel.GetChannelType().Humanize()));
     }
     public static Task OnSlashCommandExecuted(SocketSlashCommand command) =>
-        AddLogEntry(LogSignificance.Neutral,
+        AddLogEntry(LogSignificance.Useless,
             new[] {"slash command executed", "command", "interaction"},
             "Slash Command Executed",
             command.User,
@@ -441,7 +618,7 @@ public static class TLCLogListener
                     ? string.Join("\n", command.Data.Options.Select(x => $"{x.Name}: {x.Value}"))
                     : "None"));
     public static Task OnModalSubmitted(SocketModal modal) =>
-        AddLogEntry(LogSignificance.Neutral,
+        AddLogEntry(LogSignificance.Useless,
             new[] {"modal submitted", "interaction"},
             "Modal Submitted",
             modal.User,
@@ -452,7 +629,7 @@ public static class TLCLogListener
                         $"`{i + 1}` {x.Value}"))
                     : "None"));
     public static Task OnSelectionMenuExecuted(SocketMessageComponent selectionMenu) =>
-        AddLogEntry(LogSignificance.Neutral,
+        AddLogEntry(LogSignificance.Useless,
             new[] {"selection menu executed", "message component", "interaction"},
             "Selection Menu Executed",
             selectionMenu.User,
@@ -462,21 +639,21 @@ public static class TLCLogListener
             ("Original Message", $"[Go to message]({selectionMenu.Message.GetJumpUrl()})"),
             ("Unique ID", selectionMenu.Data.CustomId));
     public static Task OnButtonExecuted(SocketMessageComponent button) =>
-        AddLogEntry(LogSignificance.Neutral,
+        AddLogEntry(LogSignificance.Useless,
             new[] {"button executed", "message component", "interaction"},
             "Button Executed",
             button.User,
             ("Original Message", $"[Go to message]({button.Message.GetJumpUrl()})"),
             ("Unique ID", button.Data.CustomId));
     public static Task OnUserCommandExecuted(SocketUserCommand command) =>
-        AddLogEntry(LogSignificance.Neutral,
+        AddLogEntry(LogSignificance.Useless,
             new[] {"user command executed", "command", "interaction"},
             "User Command Executed", 
             command.User, 
             ("Command Name", command.CommandName),
             ("Used On", command.Data.Member.Mention));
     public static Task OnMessageCommandExecuted(SocketMessageCommand command) => 
-        AddLogEntry(LogSignificance.Neutral,
+        AddLogEntry(LogSignificance.Useless,
             new[] {"message command executed", "command", "interaction"},
             "Message Command Executed",
             command.User,

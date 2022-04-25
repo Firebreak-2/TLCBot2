@@ -4,6 +4,8 @@ using Discord;
 using Discord.Interactions;
 using Discord.Interactions.Builders;
 using Discord.WebSocket;
+using Humanizer;
+using Newtonsoft.Json;
 using TLCBot2.ApplicationComponents;
 using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.Core.CommandLine;
@@ -22,6 +24,63 @@ public class Program
     public static string FileAssetsPath = "";
     public static async Task MainAsync()
     {
+        // var values = new[]
+        // {
+        //     new[] { new[] { "Join Request Deleted" }, new[] { "Neutral", "join request deleted" } },
+        //     new[] { new[] { "Thread Member Left" }, new[] { "Useless", "thread member left", "user change", "threads", "user={user.Id}" } },
+        //     new[] { new[] { "Thread Member Joined" }, new[] { "Useless", "thread member joined", "user change", "threads", "user={user.Id}" } },
+        //     new[] { new[] { "Event User Added" }, new[] { "Useless", "events", "server change", "event user added", "user={user.Id}" } },
+        //     new[] { new[] { "Event User Removed" }, new[] { "Useless", "events", "server change", "event user removed", "user={user.Id}" } },
+        //     new[] { new[] { "Server Event Updated" }, new[] { "Neutral", "events", "server change", "server event updated" } },
+        //     new[] { new[] { "Server Event Cancelled" }, new[] { "Neutral", "events", "server change", "server event cancelled" } },
+        //     new[] { new[] { "Server Event Completed" }, new[] { "Neutral", "events", "server change", "server event completed" } },
+        //     new[] { new[] { "Server Event Created" }, new[] { "Neutral", "events", "server change", "server event created" } },
+        //     new[] { new[] { "Server Event Started" }, new[] { "Neutral", "events", "server change", "server event started" } },
+        //     new[] { new[] { "User Voice State Updated" }, new[] { "Useless", "user voice state updated", "user change", "user={user.Id}" } },
+        //     new[] { new[] { "User Updated" }, new[] { "Neutral", "user updated", "user change", "user={user.Id}" } },
+        //     new[] { new[] { "User Joined" }, new[] { "Neutral", "user joined", "user change", "server change", "user={user.Id}" } },
+        //     new[] { new[] { "User Left" }, new[] { "Neutral", "user left", "user change", "server change", "user={user.Id}" } },
+        //     new[] { new[] { "User Banned" }, new[] { "Warning", "ban", "user banned", "user change", "server change", "user={user.Id}" } },
+        //     new[] { new[] { "User Unbanned" }, new[] { "Warning", "ban", "user unbanned", "user change", "server change", "user={user.Id}" } },
+        //     new[] { new[] { "Thread User Joined" }, new[] { "Useless", "thread user joined", "threads", "user={user.Id}" } },
+        //     new[] { new[] { "Thread User Left" }, new[] { "Useless", "thread user left", "threads", "user={user.Id}" } },
+        //     new[] { new[] { "Thread Created" }, new[] { "Neutral", "threads", "thread created", "server change" } },
+        //     new[] { new[] { "Thread Deleted" }, new[] { "Neutral", "threads", "thread deleted", "server change" } },
+        //     new[] { new[] { "Thread Updated" }, new[] { "Neutral", "threads", "thread updated", "server change" } },
+        //     new[] { new[] { "Stage Updated" }, new[] { "Useless", "stage", "stage updated", "server change" } },
+        //     new[] { new[] { "Stage Started" }, new[] { "Neutral", "stage", "stage started", "server change" } },
+        //     new[] { new[] { "Stage Ended" }, new[] { "Neutral", "stage", "stage ended", "server change" } },
+        //     new[] { new[] { "Speaker Added" }, new[] { "Useless", "stage", "user change", "speaker added", "user={user.Id}" } },
+        //     new[] { new[] { "Speaker Removed" }, new[] { "Useless", "stage", "user change", "speaker removed", "user={user.Id}" } },
+        //     new[] { new[] { "Role Created" }, new[] { "Warning", "roles", "role created", "server change" } },
+        //     new[] { new[] { "Role Deleted" }, new[] { "Dangerous", "roles", "role deleted", "server change" } },
+        //     new[] { new[] { "Role Updated" }, new[] { "Warning", "roles", "role updated", "server change" } },
+        //     new[] { new[] { "Reactions Cleared For Message" }, new[] { "Neutral", "reactions", "reaction removed", "reactions cleared", "reactions cleared for message", "message change" } },
+        //     new[] { new[] { "Reactions Cleared For Emote" }, new[] { "Neutral", "reactions", "reaction removed", "reactions cleared", "reactions cleared for emote", "message change" } },
+        //     new[] { new[] { "Reaction Removed" }, new[] { "Useless", "reactions", "reaction removed", "message change", "user={user.Id}" } },
+        //     new[] { new[] { "Reaction Added" }, new[] { "Useless", "reactions", "reaction added", "message change", "user={user.Id}" } },
+        //     new[] { new[] { "Status Changed" }, new[] { "Useless", "status changed", "user change", "status", "user={user.Id}" } },
+        //     new[] { new[] { "Message Edited" }, new[] { "Neutral", "message edited", "message change", "channel={channel.Id}", "user={user.Id}" } },
+        //     new[] { new[] { "Bulk Messages Deleted" }, new[] { "Warning", "message deleted", "message change", "bulk messages deleted", "channel={channel.Id}" } },
+        //     new[] { new[] { "Message Deleted" }, new[] { "Warning", "message deleted", "message change", "user={user.Id}" } },
+        //     new[] { new[] { "Invite Created" }, new[] { "Neutral", "invite created", "server change", "user={user.Id}" } },
+        //     new[] { new[] { "Invite Deleted" }, new[] { "Neutral", "invite deleted", "server change", "channel={inviteChannel.Id}" } },
+        //     new[] { new[] { "Sticker Created" }, new[] { "Warning", "sticker created", "server change" } },
+        //     new[] { new[] { "Sticker Deleted" }, new[] { "Warning", "sticker deleted", "server change" } },
+        //     new[] { new[] { "Sticker Updated" }, new[] { "Neutral", "sticker updated", "server change" } },
+        //     new[] { new[] { "Channel Updated" }, new[] { "Warning", "channel updated", "server change", "channel={newChannel.Id}" } },
+        //     new[] { new[] { "Channel Created" }, new[] { "Warning", "channel created", "server change", "channel={channel.Id}" } },
+        //     new[] { new[] { "Channel Deleted" }, new[] { "Dangerous", "channel deleted", "server change", "channel={channel.Id}" } },
+        //     new[] { new[] { "Slash Command Executed" }, new[] { "Useless", "slash command executed", "command", "interaction", "user={user.Id}" } },
+        //     new[] { new[] { "Modal Submitted" }, new[] { "Useless", "modal submitted", "interaction", "user={user.Id}" } },
+        //     new[] { new[] { "Selection Menu Executed" }, new[] { "Useless", "selection menu executed", "message component", "interaction", "user={user.Id}" } },
+        //     new[] { new[] { "Button Executed" }, new[] { "Useless", "button executed", "message component", "interaction", "user={user.Id}" } },
+        //     new[] { new[] { "User Command Executed" }, new[] { "Useless", "user command executed", "command", "interaction", "user={user.Id}" } },
+        //     new[] { new[] { "Message Command Executed" }, new[] { "Useless", "message command executed", "command", "interaction", "user={user.Id}" } },
+        // };
+        // string tagify(string y) => "TAG_" + y.ToUpper().Replace(' ', '_');
+        // Console.WriteLine(JsonConvert.SerializeObject(values.Select(x => new[] {x[0], x[1].Select(tagify)}), Formatting.Indented));
+        // return;
         var config = new DiscordSocketConfig
         {
             MessageCacheSize = 100,

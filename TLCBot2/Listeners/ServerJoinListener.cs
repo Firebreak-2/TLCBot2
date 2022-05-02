@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using TLCBot2.Core;
 using TLCBot2.DataManagement;
 using TLCBot2.DataManagement.Cookies;
+using TLCBot2.Utilities;
 
 namespace TLCBot2.Listeners;
 

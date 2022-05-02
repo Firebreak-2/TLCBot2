@@ -249,24 +249,6 @@ public static class TlcAllCommands
             {
                 
             }));
-            
-            AddCommand(new TlcCommand("lockserver", _ =>
-            {
-                var guild = RuntimeConfig.TLCBetaCommandLine.Guild;
-                guild.EveryoneRole.Permissions.Modify(viewChannel: false);
-                RuntimeConfig.MaintenanceModeChannel.GetPermissionOverwrite(guild.EveryoneRole)!.Value
-                    .Modify(viewChannel: PermValue.Allow);
-                TlcConsole.Print("Server locked");
-            }));
-            
-            AddCommand(new TlcCommand("unlockserver", _ =>
-            {
-                var guild = RuntimeConfig.TLCBetaCommandLine.Guild;
-                guild.EveryoneRole.Permissions.Modify(viewChannel: true);
-                RuntimeConfig.MaintenanceModeChannel.GetPermissionOverwrite(guild.EveryoneRole)!.Value
-                    .Modify(viewChannel: PermValue.Deny);
-                TlcConsole.Print("Server unlocked");
-            }));
 
             AddCommand(new TlcCommand("addswitchbutton", args =>
             {

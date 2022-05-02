@@ -224,13 +224,28 @@ public static class TLCLogListener
                 ("Avatar", $"{oldData.Item2} → {newData.Item2}")
             }, newData.Item2);
     }
-    public static Task OnUserJoined(SocketGuildUser user) =>
-        AddLogEntry(LogSignificance.Neutral,
+
+    public static Task OnUserJoined(SocketGuildUser user)
+    {
+        var oldInvites = ServerJoinListener.OldInvites;
+        RestInviteMetadata? invite = null;
+        foreach (var item in user.Guild.GetInvitesAsync().Result)
+        {
+            if (oldInvites.TryFirst(x => x.Id == item!.Id, out var inv) && item.Uses <= inv!.Uses) continue;
+            invite = item;
+        }
+        
+        return AddLogEntry(LogSignificance.Neutral,
             new[] {"user joined", "user change", "server change"},
             "User Joined",
             user,
-            ("Account Creation Date", $"<t:{user.CreatedAt.ToUnixTimeSeconds()}:F> <t:{user.CreatedAt.ToUnixTimeSeconds()}:R>"),
-            ("Has Nitro", user.PremiumSince != null));
+            ("Account Creation Date",
+                $"<t:{user.CreatedAt.ToUnixTimeSeconds()}:F> <t:{user.CreatedAt.ToUnixTimeSeconds()}:R>"),
+            ("Has Nitro", user.PremiumSince != null),
+            ("Invited By", invite?.Inviter?.Mention ?? "Null"),
+            ("Invite Uses", invite?.Uses ?? 0));
+    }
+
     public static Task OnUserLeft(SocketGuild _, SocketUser user) =>
         AddLogEntry(LogSignificance.Neutral,
             new[] {"user left", "user change", "server change"},
@@ -468,12 +483,15 @@ public static class TLCLogListener
     public static Task OnPresenceUpdated(
         SocketUser user,
         SocketPresence oldPresence,
-        SocketPresence newPresence) =>
-        AddLogEntry(LogSignificance.Useless,
+        SocketPresence newPresence)
+    {
+        if (oldPresence.Status == newPresence.Status) return Task.CompletedTask;
+        return AddLogEntry(LogSignificance.Useless,
             new[] {"status changed", "user change", "status"},
             "Status Changed",
             user,
             ("Status", $"{oldPresence.Status.Humanize()} → {newPresence.Status.Humanize()}"));
+    }
 
     public static Task OnMessageUpdated(
         Cacheable<IMessage, ulong> oldMessageCacheable,

@@ -14,6 +14,7 @@ using TLCBot2.DataManagement.Cookies;
 using TLCBot2.Listeners;
 using TLCBot2.Listeners.TimedEvents;
 using TLCBot2.Utilities;
+using Timer = System.Timers.Timer;
 
 namespace TLCBot2.Core;
 

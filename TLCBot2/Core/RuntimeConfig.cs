@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using MoreLinq;
 using MoreLinq.Extensions;
+using System.Data.SQLite;
 
 namespace TLCBot2.Core;
 
@@ -18,9 +19,9 @@ public static class RuntimeConfig
         public static SocketGuild ParseGuild(string val) => 
             Program.Client
                 .GetGuild(ulong.Parse(val));
+
         public static SocketTextChannel ParseTextChannel(string val) => 
-            (SocketTextChannel)Program.Client
-                .GetChannel(ulong.Parse(val));
+            (SocketTextChannel)ParseChannel(val);
         public static SocketGuildChannel ParseChannel(string val) => 
             (SocketGuildChannel)Program.Client.GetChannel(ulong.Parse(val));
         public static SocketRole ParseRole(string val)
@@ -47,7 +48,7 @@ public static class RuntimeConfig
     private static class Set
     {
         public static string ParseGuild(SocketGuild val) => val.Id.ToString();
-        public static string ParseTextChannel(SocketTextChannel val) => val.Id.ToString();
+        public static string ParseTextChannel(SocketTextChannel val) => ParseChannel(val);
         public static string ParseChannel(SocketGuildChannel val) => val.Id.ToString();
         public static string ParseRole(SocketRole val) => $"{val.Guild}/{val.Id}";
         public static void Guild(string name, SocketGuild newValue) => 
@@ -79,12 +80,6 @@ public static class RuntimeConfig
     {
         get => Get.TextChannel("BotReportsChannel");
         set => Set.TextChannel("BotReportsChannel", value);
-    }
-
-    public static SocketTextChannel MaintenanceModeChannel
-    {
-        get => Get.TextChannel("MaintenanceModeChannel");
-        set => Set.TextChannel("MaintenanceModeChannel", value);
     }
     
     public static SocketTextChannel VentingChannel

@@ -16,6 +16,7 @@
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="SixLabors.ImageSharp" Version="2.1.0" />
       <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14" />
+      <PackageReference Include="System.Data.SQLite" Version="1.0.115.5" />
     </ItemGroup>
 
 </Project>

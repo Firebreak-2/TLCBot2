@@ -1,20 +1,12 @@
-﻿using System.Net;
-using System.Text.RegularExpressions;
-using Discord;
-using Discord.Interactions;
-using Discord.Interactions.Builders;
+﻿using Discord;
 using Discord.WebSocket;
-using Humanizer;
-using Newtonsoft.Json;
 using TLCBot2.ApplicationComponents;
-using TLCBot2.ApplicationComponents.Core;
 using TLCBot2.Core.CommandLine;
 using TLCBot2.DataManagement;
 using TLCBot2.DataManagement.Cookies;
 using TLCBot2.Listeners;
 using TLCBot2.Listeners.TimedEvents;
 using TLCBot2.Utilities;
-using Timer = System.Timers.Timer;
 
 namespace TLCBot2.Core;
 
@@ -115,33 +107,19 @@ public class Program
         };
 
         #region Token retrieval
-        const string path = "token.txt";
-        const string fileAssetsPath = "files_path.txt";
-        string token;
-        if (File.Exists(path))
-        {
-            token = (await File.ReadAllTextAsync(path)).Replace("\n", "");
-            FileAssetsPath = (await File.ReadAllTextAsync(fileAssetsPath)).Replace("\n", "");
-        }
-        else if (File.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{path}"))
-        {
-            token = (await File.ReadAllTextAsync(
-                $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{path}")).Replace("\n", "");
-            FileAssetsPath =
-                (await File.ReadAllTextAsync(
-                    $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{fileAssetsPath}")).Replace("\n", "");
-        }
-        else
+        string? token = Environment.GetEnvironmentVariable("TOKEN");
+
+        if (token == null)
         {
             Console.WriteLine($"No token has been found. Shutting down...\n" +
                               $"Current Directory: {Directory.GetCurrentDirectory()}");
             return;
         }
         #endregion
-        
+
         await Client.LoginAsync(TokenType.Bot, token);
         await Client.StartAsync();
-            
+
         // Block this task until the program is closed.
         await Task.Delay(-1);
     }
@@ -175,7 +153,7 @@ public class Program
     private static async Task Initialize()
     {
         PreInitialize();
-        
+
         await ApplicationCommandManager.Initialize();
         StarboardListener.Initialize();
         ServerJoinListener.Initialize();

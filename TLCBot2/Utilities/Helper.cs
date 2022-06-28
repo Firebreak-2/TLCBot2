@@ -1,79 +1,26 @@
-﻿using System.Data;
+﻿using System.Collections;
+using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Net;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TLCBot2.Core;
 using Image = SixLabors.ImageSharp.Image;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace TLCBot2.Utilities;
 
-public static class Helper
+public static partial class Helper
 {
-     // public static class Sheets
-     // {
-     //     public static readonly string[] Scopes = { SheetsService.Scope.Spreadsheets };
-     //     public static string ApplicationName = "Google Sheets API .NET Quickstart";
-     //     public static UserCredential Credential = null!;
-     //     public static SheetsService  Service    = null!;
-     //     public const string SpreadsheetId = "null";
-     //     public static void Initialize()
-     //     {
-     //         using (var stream =
-     //                new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
-     //         {
-     //             const string credPath = "token.json";
-     //             Credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-     //                 GoogleClientSecrets.FromStream(stream).Secrets,
-     //                 Scopes,
-     //                 "user",
-     //                 CancellationToken.None,
-     //                 new FileDataStore(credPath, true)).Result;
-     //             Console.WriteLine($"Credential file saved to: {credPath}");
-     //         }
-     //         
-     //         Service = new SheetsService(new BaseClientService.Initializer
-     //         {
-     //             HttpClientInitializer = Credential,
-     //             ApplicationName = ApplicationName
-     //         });
-     //     }
-     //     public static string UpdateData(string rangeNotation, IList<IList<object>> data)
-     //     {
-     //         const string valueInputOption = "USER_ENTERED";
-     //
-     //         // The new values to apply to the spreadsheet.
-     //         List<ValueRange> updateData = new();
-     //         var dataValueRange = new ValueRange
-     //         {
-     //             Range = $"{rangeNotation}",
-     //             Values = data
-     //         };
-     //         updateData.Add(dataValueRange);
-     //
-     //         BatchUpdateValuesRequest requestBody = new()
-     //         {
-     //             ValueInputOption = valueInputOption,
-     //             Data = updateData
-     //         };
-     //
-     //         var request = Service.Spreadsheets.Values.BatchUpdate(requestBody, SpreadsheetId);
-     //
-     //         BatchUpdateValuesResponse response = request.Execute();
-     //         // BatchUpdateValuesResponse response = await request.ExecuteAsync(); // For async 
-     //
-     //         return JsonConvert.SerializeObject(response);
-     //     }
-     //     public static string UpdateCell(string cellID, string newValue) =>
-     //         UpdateData(cellID, new List<IList<object>> { new List<object> { newValue } });
-     //     public static IList<IList<object>> GetData(string a1Notation) =>
-     //         Service.Spreadsheets.Values.Get(SpreadsheetId, a1Notation).Execute().Values;
-     //     public static string GetCell(string cellID) => GetData(cellID)[0][0].ToString() ?? "";
-     // }
     private static Random _rand = new();
     private static DataTable _dataTable = new();
     public static string Compute(string input) => _dataTable.Compute(input, null).ToString() ?? "null";
@@ -88,23 +35,53 @@ public static class Helper
         return Regex.Match(path, @"/[^/]+$").Value;
     }
 
+    private static readonly string _ansiBlueBg = Ansi.Generate(null, Ansi.Background.Indigo);
+    private static readonly string _ansiYellowFg = Ansi.Generate(Ansi.Foreground.Yellow);
+    private static readonly string _ansiGreenFg = Ansi.Generate(Ansi.Foreground.Green);
+    private static readonly string _ansiBlueFg = Ansi.Generate(Ansi.Foreground.Blue);
+    private static readonly string _ansiMagentaFg = Ansi.Generate(Ansi.Foreground.Pink);
+    private static readonly string _ansiCyanFg = Ansi.Generate(Ansi.Foreground.Cyan);
+    private static readonly string _ansiWhiteFg = Ansi.Generate(Ansi.Foreground.White);
+    
+    private static readonly (Regex Regex, string color)[] _regexTokenizer =
+    {
+        /* multiple characters     ;  Yellow  */ (new Regex(@"(?:\[\^?(?=.*\])|(?<=\[.*)\]|(?<=\[.*)-(?=.*\]))+", RegexOptions.Compiled), _ansiYellowFg),
+        /* groups & alternation    ;  Green   */ (new Regex(@"(?:(?:\(\?:|\(\?<!|\(\?!|\(\?=|\(\?<=|\(\?<\w+?>|\()(?=.+\))|(?<=(?:\(\?:|\(\?<!|\(\?!|\(\?=|\(\?<=|\(\?<\w+?>|\().+)\)|(?:(?<!\[.*(?=.*]))(?<!\\)\|(?!(?<=\[.*).*])))+", RegexOptions.Compiled), _ansiGreenFg),
+        /* quantifiers             ;  Blue    */ (new Regex(@"(?:(?:\{\d+,?\d*?\}|(?<!\[.*(?=.*]))(?:\+|\*|(?<!\()\?)(?!(?<=\[.*).*])))+", RegexOptions.Compiled), _ansiBlueFg),
+        /* escaped characters      ;  Magenta */ (new Regex(@"(?:\\.)+", RegexOptions.Compiled), _ansiMagentaFg),
+        /* common pattern escapes  ;  Cyan    */ (new Regex(@"(?:^\^|\$$|(?<!\\)\\[wdsWDS])+", RegexOptions.Compiled), _ansiCyanFg),
+    };
+
+    public static string GenerateRegexHighlightedCodeBlocks([RegexPattern] string pattern, string matchString)
+    {
+        string finalRegexString = pattern;
+        string finalParagraphString = Regex.Replace(matchString, $"(?:{pattern})+", match => $"{_ansiBlueBg}{match.Value}{Ansi.Reset}");
+        foreach ((Regex regex, string color) in _regexTokenizer)
+        {
+            finalRegexString = regex.Replace(finalRegexString, match => $"{color}{match.Value}{_ansiWhiteFg}");
+        }
+
+        return $"```ansi\n{_ansiWhiteFg}{finalRegexString}\x1B[0m\n```\n```ansi\n{finalParagraphString}\n```";
+    }
+    public static string ToJson(this object obj, Formatting formatting = Formatting.Indented) =>
+        JsonConvert.SerializeObject(obj, formatting);
+    public static T? FromJson<T>(this string str) =>
+        JsonConvert.DeserializeObject<T>(str);
     public static bool CheckStringIsLink(string link) =>
         Regex.IsMatch(link,
             @"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
-    public static string GetFileUrl(Stream stream, SocketTextChannel? channel = null, string text = "text")
+    public static string GetFileUrl(Stream stream, SocketTextChannel channel, string text = "text")
     {
-        channel ??= RuntimeConfig.DefaultFileDump;
         var msg = channel.SendFileAsync(stream, "ImageSend.png", text).Result;
         return msg.Attachments?.FirstOrDefault()?.Url ?? "null";
     }
 
     public static Image<Argb32> ImageFromUrl(string url)
     {
-        using var client = new WebClient();
-        byte[] data = client.DownloadData(new Uri(url));
+        using var client = new HttpClient();
+        byte[] data = client.GetByteArrayAsync(new Uri(url)).Result;
         return Image.Load<Argb32>(data);
     }
-    public static string RandId(string name) => $"{name}-{RandomInt(int.MinValue, int.MaxValue - 1)}";
     public static void DisableMessageComponents(SocketUserMessage message)
     {
         if (message.Author.Id != Program.Client.CurrentUser.Id) return;
@@ -142,6 +119,15 @@ public static class Helper
         image.SaveAsPng(stream);
         stream.Position = 0;
         return stream;
+    }
+
+    private static readonly Regex _autoLineBreakRegex = new(@".{0,40}(?:\s+|.$)", RegexOptions.Compiled);
+
+    public static string ApplyLineBreaks(string str, int charsUntilLineBreak = 40)
+    {
+        return (charsUntilLineBreak == 40
+            ? _autoLineBreakRegex.Replace(str, "$&\n")
+            : Regex.Replace(str, $@".{{0,{charsUntilLineBreak}}}(?:\s+|.$)", "$&\n"))[..^1];
     }
 
     public static bool HasUrl(string possibleUrl, out string? url)
@@ -247,6 +233,7 @@ public static class Helper
         .Result.SelectMany(x => x)
         .OrderByDescending(x => x.Timestamp.Ticks).Cast<IUserMessage>();
     public static SocketTextChannel GetChannelFromId(ulong id) => (SocketTextChannel) Program.Client.GetChannel(id);
+    public static async Task<SocketTextChannel> GetChannelFromIdAsync(ulong id) => (SocketTextChannel) await Program.Client.GetChannelAsync(id);
     public static bool TryFirst<T>(this IEnumerable<T> collection, Func<T, bool> condition, out T? first)
     {
         first = default;
@@ -254,9 +241,6 @@ public static class Helper
         first = collection.First(condition);
         return true;
     }
-    public static void LogInteractionError(object message, string interactionType, IMessage? originalMessage = null) =>
-        RuntimeConfig.BotReportsChannel.SendMessageAsync(
-            $"```{message}```\n```caused by: {interactionType}\noriginal message: {originalMessage?.GetJumpUrl() ?? "none"}```");
     public static void FillColor(this Image<Argb32> img, Argb32 color) => img.FillColor((_,_)=>color);
     public static void FillColor(this Image<Argb32> img, Func<int, int, Argb32> color) => img.FillColor((x, y, _) => color(x, y));
     public static void FillColor(this Image<Argb32> img, Func<int, int, Argb32, Argb32> color)
@@ -288,9 +272,76 @@ public static class Helper
     {
         return color.Argb32ToDiscordColor().Invert().DiscordColorToArgb32();
     }
+
+    public enum DynamicTimestampFormat
+    {
+        ShortTime,
+        LongTime,
+        ShortDate,
+        LongDate,
+        ShortDateTime,
+        LongDateTime,
+        RelativeTime
+    }
+
+    public static char FormatToLetter(this DynamicTimestampFormat format)
+    {
+        return format switch
+        {
+            DynamicTimestampFormat.ShortTime => 't',
+            DynamicTimestampFormat.LongTime => 'T',
+            DynamicTimestampFormat.ShortDate => 'd',
+            DynamicTimestampFormat.LongDate => 'D',
+            DynamicTimestampFormat.ShortDateTime => 'f',
+            DynamicTimestampFormat.LongDateTime => 'F',
+            DynamicTimestampFormat.RelativeTime => 'R',
+            _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+        };
+    }
+    public static string ToDynamicTimestamp(this DateTimeOffset dto, DynamicTimestampFormat format = DynamicTimestampFormat.ShortDateTime)
+    {
+        return $"<t:{dto.ToUnixTimeSeconds()}:{format.FormatToLetter()}>";
+    }
     public static Discord.Color Argb32ToDiscordColor(this Argb32 color) => new(color.R, color.G, color.B);
     public static Argb32 DiscordColorToArgb32(this Discord.Color color) => new(color.R, color.G, color.B, 255);
+    
+    public static IEnumerable<(TInfoType Member, IEnumerable<TAttribute> Attributes)>
+        GetAllMembersWithAttribute<TInfoType, TAttribute>() where TInfoType  : MemberInfo 
+                                                            where TAttribute : Attribute
+    {
+        MemberTypes memberType = MemberTypes.All;
 
+        if (typeof(TInfoType).IsAssignableTo(typeof(FieldInfo)))
+            memberType = MemberTypes.Field;
+        else if (typeof(TInfoType).IsAssignableTo(typeof(MethodInfo)))
+            memberType = MemberTypes.Method;
+        else if (typeof(TInfoType).IsAssignableTo(typeof(PropertyInfo)))
+            memberType = MemberTypes.Property;
+        else if (typeof(TInfoType).IsAssignableTo(typeof(ConstructorInfo)))
+            memberType = MemberTypes.Constructor;
+        
+        return GetAllMembersWithAttribute<TAttribute>(memberType)
+            .Select<(MemberInfo Member, IEnumerable<TAttribute> Attributes), (TInfoType, IEnumerable<TAttribute>)>
+                (x => ((TInfoType) x.Member, x.Attributes));
+    }
+    
+    public static IEnumerable<(MemberInfo Member, IEnumerable<TAttribute> Attributes)>
+        GetAllMembersWithAttribute<TAttribute>(MemberTypes filter = MemberTypes.All, Type? inType = null) where TAttribute : Attribute
+    {
+        if (inType is { })
+            return inType.GetMembers(BindingFlags.Public | BindingFlags.Static)
+                .Where(x => x.GetCustomAttributes<TAttribute>(false).Any()
+                            && x.MemberType.HasFlag(filter))
+                .Select(x => (x, x.GetCustomAttributes<TAttribute>(false)));
+        
+        return Assembly.GetExecutingAssembly()
+            .GetTypes()
+            .SelectMany(x => x.GetMembers(BindingFlags.Public | BindingFlags.Static))
+            .Where(x => x.GetCustomAttributes<TAttribute>(false).Any()
+                && x.MemberType.HasFlag(filter))
+            .Select(x => (x, x.GetCustomAttributes<TAttribute>(false)));
+    }
+    
     public static T GetRequiredValue<T>(this SocketSlashCommand cmd, string optionName)
     {
         object value = cmd.Data.Options.First(x => x.Name == optionName).Value!;
@@ -298,13 +349,11 @@ public static class Helper
     }
     public static T GetOptionalValue<T>(this SocketSlashCommand cmd, string optionName, T defaultValue)
     {
-        if (cmd.Data.Options.Any(x => x.Name == optionName))
-        {
-            object value = cmd.Data.Options.First(x => x.Name == optionName).Value!;
-            return (T)(value is long ? Convert.ToInt32(value) : value);
-        }
-
-        return defaultValue;
+        if (cmd.Data.Options.All(x => x.Name != optionName)) 
+            return defaultValue;
+        
+        object value = cmd.Data.Options.First(x => x.Name == optionName).Value!;
+        return (T) (value is long ? Convert.ToInt32(value) : value);
     }
     public static T GetRequiredValue<T>(this SocketSlashCommandDataOption cmd, string optionName)
     {
@@ -320,10 +369,9 @@ public static class Helper
             return true;
         }
     }
-    public static int RandomInt(int min, int max) => _rand.Next(min, max + 1);
 
     public static T RandomChoice<T>(this IEnumerable<T> collection) =>
-        collection.ToArray()[RandomInt(0, collection.Count() - 1)];
+        collection.ToArray()[Rando.Int(0, collection.Count() - 1)];
 
     public static string NamedFormat(this string baseString, string key, string replacement)
     {
@@ -341,10 +389,10 @@ public static class Helper
 
     public static string GetRandomWord()
     {
-        using var client = new WebClient();
+        using var client = new HttpClient();
         
         return Regex.Match(
-            client.DownloadString("https://randomword.com/"),
+            client.GetStringAsync("https://randomword.com/").Result,
             "(?<=<div id=\"random_word\">).+(?=</div>)").Value;
     }
     public static SocketGuild GetGuild(this ISocketMessageChannel channel) => Program.Client.Guilds.First(x => x.Channels.Any(y => y.Id == channel.Id));

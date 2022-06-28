@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TLCBot2", "TLCBot2\TLCBot2.csproj", "{A723C5B1-63D1-4361-A6C1-A383DDAD7359}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TLCBot2.Tests", "TLCBot2.Tests\TLCBot2.Tests.csproj", "{85C4CA24-C14E-4050-B1CE-DCAE17951418}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{A723C5B1-63D1-4361-A6C1-A383DDAD7359}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A723C5B1-63D1-4361-A6C1-A383DDAD7359}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A723C5B1-63D1-4361-A6C1-A383DDAD7359}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85C4CA24-C14E-4050-B1CE-DCAE17951418}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85C4CA24-C14E-4050-B1CE-DCAE17951418}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85C4CA24-C14E-4050-B1CE-DCAE17951418}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85C4CA24-C14E-4050-B1CE-DCAE17951418}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

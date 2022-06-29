@@ -52,6 +52,12 @@ public static partial class Helper
         /* common pattern escapes  ;  Cyan    */ (new Regex(@"(?:^\^|\$$|(?<!\\)\\[wdsWDS])+", RegexOptions.Compiled), _ansiCyanFg),
     };
 
+    public static readonly Regex AnsiFormattingRegex =
+        new("\x1b\\[(?:\\d{1,2};\\d{1,2}(?:;\\d{1,2})?|0)m", RegexOptions.Compiled);
+
+    public static string CleanAnsiFormatting(string str) => 
+        AnsiFormattingRegex.Replace(str, "");
+
     public static string GenerateRegexHighlightedCodeBlocks([RegexPattern] string pattern, string matchString)
     {
         string finalRegexString = pattern;

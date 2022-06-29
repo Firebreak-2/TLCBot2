@@ -11,6 +11,8 @@ public static partial class ChannelTerminal
 {
     public static async Task RunCommand(IMessage message)
     {
+        TerminalCommands.LastCommandUser = message.Author;
+        
         if (message.Channel.Id != Channel.Id)
             return;
 
@@ -21,7 +23,7 @@ public static partial class ChannelTerminal
             return; // safe char for non-command messages
         
         if (await TryRunCommand(message) is { Length: > 0 } err)
-            await PrintAsync(err, LogSeverity.Error);
+            await PrintAsync(err, LogSeverity.Error, title: $"Command Error:");
     }
     
     /// <returns>An error message if the command fails.
@@ -55,7 +57,8 @@ public static partial class ChannelTerminal
                 {
                     case "?":
                         await PrintAsync(
-                            TerminalCommands.GenerateCommandHelpInfo(correctCommand.Method, correctCommand.Attribute));
+                            TerminalCommands.GenerateCommandHelpInfo(correctCommand.Method, correctCommand.Attribute),
+                            title: $"Information about the [{correctCommand.Method.Name}] command");
                         return "";
                     case "\\?":
                         command.Arguments[0] = "?";

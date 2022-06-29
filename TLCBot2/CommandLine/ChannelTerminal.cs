@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using TLCBot2.Attributes;
+using TLCBot2.CommandLine.Commands;
 using TLCBot2.Core;
 using TLCBot2.Data;
 using TLCBot2.Utilities;
@@ -26,7 +27,7 @@ public static partial class ChannelTerminal
         await Channel.SendMessageAsync($"Bot initialized at {DateTimeOffset.Now.ToDynamicTimestamp()}");
     }
 
-    public static async Task PrintAsync(object? obj, LogSeverity? severity = null)
+    public static async Task PrintAsync(object? obj, LogSeverity? severity = null, IUser? caller = null, string? title = null, string? footnote = null)
     {
         string colorPrefix = severity switch
         {
@@ -35,6 +36,23 @@ public static partial class ChannelTerminal
             LogSeverity.Verbose => Helper.Ansi.Generate(textModifier: Helper.Ansi.Modifier.Bold),
             _ => ""
         };
-        await Channel.SendMessageAsync($"```ansi\n{colorPrefix}{obj ?? "null"}\n```");
+        string str = $"{obj ?? "null"}";
+        caller ??= TerminalCommands.LastCommandUser;
+
+        if (caller is null || caller.ActiveClients.Any(x => x == ClientType.Mobile))
+            await PrintAsync(Helper.CleanAnsiFormatting(str), "", title, footnote ?? "ANSI formatting disabled due to mobile client visibility");
+        else
+            await PrintAsync($"{colorPrefix}{str}", "ansi", title, footnote);
+    }
+    
+    public static async Task PrintAsync(object? obj, string lang, string? title = null, string? footnote = null)
+    {
+        var builder = new EmbedBuilder();
+        builder.WithDescription($"```{lang}\n{obj ?? "null"}\n```");
+        if (title is { })
+            builder.WithTitle(title);
+        if (footnote is { })
+            builder.WithFooter(footnote);
+        await Channel.SendMessageAsync(null, embed: builder.Build());
     }
 }

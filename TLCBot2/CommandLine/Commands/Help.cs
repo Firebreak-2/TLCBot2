@@ -12,7 +12,9 @@ public static partial class TerminalCommands
     [TerminalCommand(Description = "Lists each terminal command with it's parameters and a description on the command.")]
     public static async Task Help()
     {
-        await ChannelTerminal.PrintAsync(string.Join("\n\n", All.Select(x => GenerateCommandHelpInfo(x.Method, x.Attribute))));
+        await ChannelTerminal.PrintAsync(
+            string.Join("\n\n", All.Select(x => GenerateCommandHelpInfo(x.Method, x.Attribute))),
+            title: "Terminal Command Help");
     }
 
     public static string GenerateCommandHelpInfo(MethodInfo commandMethodInfo, TerminalCommandAttribute attribute)

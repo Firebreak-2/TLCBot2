@@ -11,6 +11,7 @@ public static partial class TerminalCommands
     {
         await using var db = new TlcDbContext();
         int rowsAffected = await db.Database.ExecuteSqlRawAsync(sqlExpression);
+        
         await ChannelTerminal.PrintAsync($"{sqlExpression}\n```\n```\nNumber of rows affected: {rowsAffected}", "sql");
     }
 }

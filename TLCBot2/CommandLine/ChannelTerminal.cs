@@ -19,7 +19,7 @@ public static partial class ChannelTerminal
         return Task.CompletedTask;
     }
 
-    [Initialize]
+    [Initialize(Priority = 999)]
     public static async Task Initialize()
     {
         Channel = await Helper.GetChannelFromIdAsync(RuntimeConfig.TerminalChannelId);

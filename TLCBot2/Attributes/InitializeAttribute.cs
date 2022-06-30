@@ -8,10 +8,10 @@ namespace TLCBot2.Attributes;
 /// Runs the method when Discord's <see cref="DiscordSocketClient.Ready"/> event fires
 /// Only accepts async methods with no parameters
 /// </summary>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Method)]
 public class InitializeAttribute : Attribute
 {
-    public static readonly Func<Task>[] MethodsUsing;
+    public static readonly (Func<Task> Action, InitializeAttribute Attribute)[] MethodsUsing;
 
     static InitializeAttribute()
     {
@@ -24,12 +24,14 @@ public class InitializeAttribute : Attribute
             .ToArray();
 
         int length = methods.Length;
-        MethodsUsing = new Func<Task>[length];
+        MethodsUsing = new (Func<Task>, InitializeAttribute)[length];
 
         for (int i = 0; i < length; i++)
         {
             var method = methods[i].Member;
-            MethodsUsing[i] = () => (Task)method.Invoke(null, null)!;
+            MethodsUsing[i] = (() => (Task) method.Invoke(null, null)!, methods[i].Attributes.First());
         }
     }
+
+    public int Priority { get; set; } = 0;
 }

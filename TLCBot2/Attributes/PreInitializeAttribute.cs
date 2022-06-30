@@ -11,10 +11,10 @@ namespace TLCBot2.Attributes;
 /// <see cref="DiscordSocketClient.Ready"/> event.
 /// Only accepts async methods with no parameters
 /// </summary>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Method)]
 public class PreInitializeAttribute : Attribute
 {
-    public static readonly Func<Task>[] MethodsUsing;
+    public static readonly (Func<Task> Action, PreInitializeAttribute Attribute)[] MethodsUsing;
 
     static PreInitializeAttribute()
     {
@@ -27,12 +27,14 @@ public class PreInitializeAttribute : Attribute
             .ToArray();
 
         int length = methods.Length;
-        MethodsUsing = new Func<Task>[length];
+        MethodsUsing = new (Func<Task>, PreInitializeAttribute)[length];
 
         for (int i = 0; i < length; i++)
         {
-            var (method, _) = methods[i];
-            MethodsUsing[i] = () => (Task) method.Invoke(null, null)!;
+            var (method, attr) = methods[i];
+            MethodsUsing[i] = (() => (Task) method.Invoke(null, null)!, attr.First());
         }
     }
+
+    public int Priority { get; set; } = 0;
 }

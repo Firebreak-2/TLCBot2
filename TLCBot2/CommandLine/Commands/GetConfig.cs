@@ -11,6 +11,12 @@ public static partial class TerminalCommands
     {
         if (field != "")
         {
+            // attempts to find the field;
+            // if not found, throw an exception;
+            // checks if the field's DisplayName is null
+            // if yes, prints the field name and it's display value
+            // if not, prints the field name and it's actual value
+            
             string fieldValue = RuntimeConfig.Fields.TryFirst(x => string.Equals(x.Field.Name, field,
                     StringComparison.CurrentCultureIgnoreCase),
                 out var f)
@@ -24,6 +30,10 @@ public static partial class TerminalCommands
         }
         else
         {
+            // does the same as above, but without checking
+            // if a field exists or not, and just does the
+            // process to every field the config has
+            
             await ChannelTerminal.Channel.SendMessageAsync(string.Join('\n', RuntimeConfig.Fields
                 .Select(x => x.Attribute.DisplayValue is null 
                     ? $"{x.Field.Name} = {x.Field.GetValue(null)}"

@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
+using Discord.WebSocket;
 using TLCBot2.Attributes;
+using TLCBot2.CommandLine;
 using TLCBot2.Core;
 using TLCBot2.Types;
 using TLCBot2.Utilities;
@@ -16,6 +18,14 @@ public static class RuntimeConfig
         Fields = Helper.GetAllMembersWithAttribute<RuntimeConfigFieldAttribute>(MemberTypes.Field, typeof(RuntimeConfig))
             .Select(x => ((FieldInfo) x.Member, x.Attributes.First()))
             .ToArray();
+    }
+
+    [Initialize(Priority = 998)]
+    public static Task Initialize()
+    {
+        FocusServer = ChannelTerminal.Channel.GetGuild();
+
+        return Task.CompletedTask;
     }
     
     [PreInitialize]
@@ -47,6 +57,8 @@ public static class RuntimeConfig
 
     public static ulong TerminalChannelId { get; } = ulong.Parse(Environment.GetEnvironmentVariable("TERMINAL") 
                                                                  ?? throw new Exception("Terminal channel id not provided"));
+
+    public static SocketGuild? FocusServer;
     
     [RuntimeConfigField(ShortName = "fdch", DisplayValue = $"<#{RuntimeConfigFieldAttribute.ReplacementString}> | {RuntimeConfigFieldAttribute.ReplacementString}")]
     public static ulong FileDumpChannelId;

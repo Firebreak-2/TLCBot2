@@ -46,7 +46,7 @@ public class Program
         }
         
         // Executes every method using the PreInitialize attribute
-        foreach (Func<Task> action in PreInitializeAttribute.MethodsUsing)
+        foreach ((Func<Task> action, _) in PreInitializeAttribute.MethodsUsing.OrderByDescending(x => x.Attribute.Priority))
         {
             await Task.Run(action);
         }
@@ -85,7 +85,7 @@ public class Program
     private static async Task Initialize()
     {
         // Executes every method using the Initialize attribute
-        foreach (var method in InitializeAttribute.MethodsUsing)
+        foreach ((Func<Task> method, _) in InitializeAttribute.MethodsUsing.OrderByDescending(x => x.Attribute.Priority))
         {
             await Task.Run(method);
         }

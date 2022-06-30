@@ -12,6 +12,8 @@ public static partial class TerminalCommands
     [TerminalCommand(Description = "Lists each terminal command with it's parameters and a description on the command.")]
     public static async Task Help()
     {
+        // prints every command in the terminal with a description
+        // generated with the GenerateCommandHelpInfo method
         await ChannelTerminal.PrintAsync(
             string.Join("\n\n", All.Select(x => GenerateCommandHelpInfo(x.Method, x.Attribute))),
             title: "Terminal Command Help");
@@ -28,6 +30,7 @@ public static partial class TerminalCommands
         StringBuilder stringBuilder = new();
 
         // generates a string that looks like: MethodName(ParameterType ParameterName)
+        // with ansi coloring, such that it looks like it has syntax highlighting
         AddString($"{green}{commandMethodInfo.Name}{white}({string.Join($"{white}, ", commandMethodInfo.GetParameters().Select(x => $"{green}{x.ParameterType.Name} {yellow}{x.Name}"))}{white})\n");
         indentLevel++;
         
@@ -42,6 +45,8 @@ public static partial class TerminalCommands
 
         return stringBuilder.ToString();
 
+        // appends a string to the string builder with
+        // consideration to the indent level
         void AddString(string str)
         {
             stringBuilder.Append($"{new string(' ', 2 * indentLevel)}{str}");

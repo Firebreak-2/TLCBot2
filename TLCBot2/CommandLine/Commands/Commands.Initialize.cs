@@ -11,13 +11,10 @@ public static partial class TerminalCommands
     
     public static readonly List<(MethodInfo Method, TerminalCommandAttribute Attribute)> All = new();
 
-    [Initialize]
-    public static Task Initialize()
+    static TerminalCommands()
     {
         All.AddRange(Helper.GetAllMembersWithAttribute<MethodInfo, TerminalCommandAttribute>()
             .Where(x => x.Member.ReturnType.IsAssignableTo(typeof(Task)))
             .Select(x => (x.Member, x.Attributes.First())));
-
-        return Task.CompletedTask;
     }
 }

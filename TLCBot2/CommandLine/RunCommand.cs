@@ -23,9 +23,9 @@ public static partial class ChannelTerminal
             return; // safe char for non-command messages
         
         if (await TryRunCommand(message) is { Length: > 0 } err)
-            await PrintAsync(err, LogSeverity.Error, title: $"Command Error:");
+            await PrintAsync(err, LogSeverity.Error, title: "Command Error");
     }
-    
+
     /// <returns>An error message if the command fails.
     /// If the command succeeded, an empty string is returned</returns>
     private static async Task<string> TryRunCommand(IMessage message)
@@ -34,24 +34,24 @@ public static partial class ChannelTerminal
         {
             if (message.Content.Length == 0)
                 return "There is no command to be executed";
-            
+
             (string Name, string[]? Arguments) command = ("", null);
             {
                 string[] split = message.Content.Split(' ');
-                
+
                 command.Name = split[0];
-                
+
                 if (split.Length > 1)
                     command.Arguments = split[1..];
             }
 
-            bool Condition((MethodInfo Method, TerminalCommandAttribute Attribute) x) => 
+            bool Condition((MethodInfo Method, TerminalCommandAttribute Attribute) x) =>
                 string.Equals(x.Method.Name, command.Name, StringComparison.CurrentCultureIgnoreCase);
 
             if (!TerminalCommands.All.TryFirst(Condition, out var correctCommand))
                 return $"Command with name [{command.Name}] not found";
 
-            if (command.Arguments is { Length: 1 })
+            if (command.Arguments is {Length: 1})
             {
                 switch (command.Arguments[0])
                 {
@@ -76,9 +76,9 @@ public static partial class ChannelTerminal
             object?[] providedParameters = correctParameters.Select(x => x.DefaultValue).ToArray();
             for (int i = 0; i < providedParameters.Length; i++)
             {
-                if ((command.Arguments?.Length ?? 0) <= i) 
+                if ((command.Arguments?.Length ?? 0) <= i)
                     continue;
-                
+
                 if (i != correctParameters.Length - 1)
                     providedParameters[i] =
                         Helper.ConvertFromString(command.Arguments![i], correctParameters[i].ParameterType);

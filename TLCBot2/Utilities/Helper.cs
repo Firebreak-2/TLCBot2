@@ -7,15 +7,30 @@ using Discord;
 using Discord.WebSocket;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using TLCBot2.Attributes;
 using TLCBot2.Core;
+using TLCBot2.Data;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace TLCBot2.Utilities;
 
 public static partial class Helper
 {
+    public static FontCollection TLCFonts = new();
+    public static FontFamily ArialFont;
+    
+    [PreInitialize]
+    public static Task PreInitialize()
+    {
+        TLCFonts.Add(Program.FileAssetsPath + "/arial.ttf");
+        ArialFont = TLCFonts.Get("Arial");
+
+        return Task.CompletedTask;
+    }
+    
     private static Random _rand = new();
     private static DataTable _dataTable = new();
     public static string Compute(string input) => _dataTable.Compute(input, null).ToString() ?? "null";
@@ -71,16 +86,17 @@ public static partial class Helper
     public static bool CheckStringIsLink(string link) =>
         Regex.IsMatch(link,
             @"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
-    public static string GetFileUrl(Stream stream, SocketTextChannel channel, string text = "text")
+    public static async Task<string> GetFileUrl(Stream stream, SocketTextChannel? channel = null, string text = "text")
     {
-        var msg = channel.SendFileAsync(stream, "ImageSend.png", text).Result;
-        return msg.Attachments?.FirstOrDefault()?.Url ?? "null";
+        channel ??= RuntimeConfig.FocusServer!.GetTextChannel(RuntimeConfig.FileDumpChannelId);
+        var msg = await channel.SendFileAsync(stream, "ImageSend.png", text);
+        return msg.Attachments.First().Url;
     }
 
-    public static Image<Argb32> ImageFromUrl(string url)
+    public static async Task<Image<Argb32>> ImageFromUrl(string url)
     {
         using var client = new HttpClient();
-        byte[] data = client.GetByteArrayAsync(new Uri(url)).Result;
+        byte[] data = await client.GetByteArrayAsync(new Uri(url));
         return Image.Load<Argb32>(data);
     }
     public static void DisableMessageComponents(SocketUserMessage message)
@@ -230,10 +246,9 @@ public static partial class Helper
 
         return (channelName, channelTypeName);
     }
-    public static IEnumerable<IUserMessage> GetLatestMessages(this SocketTextChannel channel, int limit = 100) => channel
+    public static async Task<IEnumerable<IUserMessage>> GetLatestMessages(this SocketTextChannel channel, int limit = 100) => (await channel
         .GetMessagesAsync(limit)
-        .ToArrayAsync()
-        .Result.SelectMany(x => x)
+        .ToArrayAsync()).SelectMany(x => x)
         .OrderByDescending(x => x.Timestamp.Ticks).Cast<IUserMessage>();
     public static SocketTextChannel GetChannelFromId(ulong id) => (SocketTextChannel) Program.Client.GetChannel(id);
     public static async Task<SocketTextChannel> GetChannelFromIdAsync(ulong id) => (SocketTextChannel) await Program.Client.GetChannelAsync(id);
@@ -388,15 +403,6 @@ public static partial class Helper
             output = Regex.Replace(output, $"{{{i}}}", replacement[i]);
         }
         return output;
-    }
-
-    public static string GetRandomWord()
-    {
-        using var client = new HttpClient();
-        
-        return Regex.Match(
-            client.GetStringAsync("https://randomword.com/").Result,
-            "(?<=<div id=\"random_word\">).+(?=</div>)").Value;
     }
     public static SocketGuild GetGuild(this ISocketMessageChannel channel) => Program.Client.Guilds.First(x => x.Channels.Any(y => y.Id == channel.Id));
 }

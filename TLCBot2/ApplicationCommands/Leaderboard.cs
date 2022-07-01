@@ -33,6 +33,6 @@ public partial class InteractionCommands
             // .WithFooter("Your rank is #NN • You have N 🍪")
             .WithDescription(stringBuilder.ToString());
 
-        await RespondAsync(ephemeral: true, embed: embedBuilder.Build());
+        await RespondAsync(embed: embedBuilder.Build());
     }
 }

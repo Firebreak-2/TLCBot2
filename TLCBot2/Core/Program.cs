@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using TLCBot2.Attributes;
+using TLCBot2.Utilities;
 
 namespace TLCBot2.Core;
 
@@ -8,8 +9,8 @@ public static class Program
 {
     public static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
     public static DiscordSocketClient Client;
-    public static string? FileAssetsPath;
-    public static bool DeveloperMode;
+    public static readonly string FileAssetsPath;
+    public static readonly bool DeveloperMode;
 
     static Program()
     {
@@ -19,24 +20,24 @@ public static class Program
             LogGatewayIntentWarnings = true,
             GatewayIntents = GatewayIntents.All
         });
+        
+        DeveloperMode = (Environment.GetEnvironmentVariable("DEV_MODE") ?? "").ToLower() == "true";
+
+        const string filesPathEnvVariableName = "FILES_PATH";
+        if (Environment.GetEnvironmentVariable(filesPathEnvVariableName) is not { } filesPath)
+        {
+            filesPath = null;
+            Console.WriteLine($"No path for files has been found. Shutting down...\n" +
+                              $"Enviroment variable name: {filesPathEnvVariableName}");
+            Helper.Kill();
+        }
+        FileAssetsPath = filesPath!;
     }
 
     public static async Task MainAsync()
     {
         const string tokenEnvVariableName = "TOKEN";
-        const string filesPathEnvVariableName = "FILES_PATH";
-
-        if (Environment.GetEnvironmentVariable(filesPathEnvVariableName) is not { } filesPath)
-        {
-            Console.WriteLine($"No path for files has been found. Shutting down...\n" +
-                              $"Enviroment variable name: {filesPathEnvVariableName}");
-            return;
-        }
-        FileAssetsPath = filesPath;
-
-        DeveloperMode = (Environment.GetEnvironmentVariable("DEV_MODE") ?? "").ToLower() == "true";
-
-
+        
         if (Environment.GetEnvironmentVariable(tokenEnvVariableName) is not { } token)
         {
             Console.WriteLine($"No token has been found. Shutting down...\n" +

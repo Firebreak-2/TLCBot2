@@ -27,6 +27,10 @@ public static partial class TerminalCommands
         string oldVal = fieldInfo.GetValue(null)?.ToString() ?? "null";
         fieldInfo.SetValue(null, val);
 
-        await ChannelTerminal.PrintAsync($"Changed the value of {fieldInfo.Name} from {oldVal} to {val}");
+        string blue = Helper.Ansi.Foreground.Blue.Get();
+        string pink = Helper.Ansi.Foreground.Pink.Get();
+        const string reset = Helper.Ansi.Reset;
+
+        await ChannelTerminal.PrintAsync($"Changed the value of {blue}{fieldInfo.Name}{reset} from {pink}{oldVal}{reset} to {pink}{val}");
     }
 }

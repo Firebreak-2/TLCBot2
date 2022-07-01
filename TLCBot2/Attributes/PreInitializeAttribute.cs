@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using TLCBot2.Utilities;
 using Discord.WebSocket;
-using TLCBot2.Core;
 
 namespace TLCBot2.Attributes;
 

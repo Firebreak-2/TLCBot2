@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.Rest;
 using Discord.WebSocket;
 using TLCBot2.Core;
 
@@ -35,7 +34,7 @@ public partial class InteractionCommands
     }
     
     [ModalInteraction("edit-message-modal;*")]
-    public async Task ModalResponse(string id, EditMessageModal modal)
+    public async Task EditMessageModalResponse(string id, EditMessageModal modal)
     {
         ulong messageId = ulong.Parse(id);
 

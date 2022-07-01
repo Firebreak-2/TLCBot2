@@ -1,5 +1,4 @@
 ﻿using Discord.Interactions;
-using TLCBot2.Core;
 
 namespace TLCBot2.ApplicationCommands;
 

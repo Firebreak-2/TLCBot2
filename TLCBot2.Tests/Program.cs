@@ -1,6 +1,4 @@
-﻿using TLCBot2.Utilities;
-
-namespace TLCBot2.tests;
+﻿namespace TLCBot2.tests;
 
 public class Program
 {

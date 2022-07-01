@@ -1,8 +1,8 @@
 ﻿namespace TLCBot2.Types;
 
-public class MessageReminder
+public record MessageReminder(string Reminder)
 {
-    public string Reminder;
+    public string Reminder = Reminder;
     public bool FailIfConsecutive;
     public TimeSpan Interval;
 }

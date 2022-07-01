@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Timers;
 using TLCBot2.Utilities;
 using Timer = System.Timers.Timer;
 

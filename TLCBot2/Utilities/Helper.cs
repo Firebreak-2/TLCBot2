@@ -1,10 +1,6 @@
-﻿using System.Collections;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq.Expressions;
-using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Discord;
@@ -15,7 +11,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TLCBot2.Core;
 using Image = SixLabors.ImageSharp.Image;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace TLCBot2.Utilities;
 
@@ -135,6 +130,8 @@ public static partial class Helper
             ? _autoLineBreakRegex.Replace(str, "$&\n")
             : Regex.Replace(str, $@".{{0,{charsUntilLineBreak}}}(?:\s+|.$)", "$&\n"))[..^1];
     }
+
+    public static int AsInt(this bool boolean) => boolean ? 1 : 0;
 
     public static bool HasUrl(string possibleUrl, out string? url)
     {

@@ -1,5 +1,4 @@
-﻿using Discord;
-using TLCBot2.Attributes;
+﻿using TLCBot2.Attributes;
 using TLCBot2.Utilities;
 
 namespace TLCBot2.CommandLine.Commands;

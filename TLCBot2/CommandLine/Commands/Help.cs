@@ -1,7 +1,5 @@
 ﻿using System.Reflection;
 using System.Text;
-using Microsoft.Extensions.Primitives;
-using MoreLinq;
 using TLCBot2.Attributes;
 using TLCBot2.Utilities;
 

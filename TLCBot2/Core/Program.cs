@@ -1,15 +1,14 @@
-﻿using System.Text.RegularExpressions;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using TLCBot2.Attributes;
 
 namespace TLCBot2.Core;
 
-public class Program
+public static class Program
 {
     public static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
     public static DiscordSocketClient Client;
-    public static string FileAssetsPath;
+    public static string? FileAssetsPath;
     public static bool DeveloperMode;
 
     static Program()

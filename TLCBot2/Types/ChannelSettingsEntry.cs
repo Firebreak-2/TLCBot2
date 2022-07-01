@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace TLCBot2.Types;
 
 [PrimaryKey(nameof(ChannelId))]
-public class ChannelSettingsEntry
+public record ChannelSettingsEntry
 {
     public ulong ChannelId { get; set; }
     public bool DeleteMessagesWithNoAttachments { get; set; } = false;

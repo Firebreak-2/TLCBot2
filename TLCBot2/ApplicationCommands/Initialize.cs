@@ -3,6 +3,7 @@ using Discord.Interactions;
 using TLCBot2.Attributes;
 using TLCBot2.Core;
 using TLCBot2.Data;
+using TLCBot2.Data.RuntimeConfig;
 
 namespace TLCBot2.ApplicationCommands;
 

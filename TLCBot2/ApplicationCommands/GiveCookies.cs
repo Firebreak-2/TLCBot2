@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using TLCBot2.Data;
+using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Logging;
 using TLCBot2.Types;
 using TLCBot2.Utilities;

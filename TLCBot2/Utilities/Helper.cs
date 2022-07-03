@@ -13,6 +13,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using TLCBot2.Attributes;
 using TLCBot2.Core;
 using TLCBot2.Data;
+using TLCBot2.Data.RuntimeConfig;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace TLCBot2.Utilities;
@@ -148,6 +149,70 @@ public static partial class Helper
     }
 
     public static int AsInt(this bool boolean) => boolean ? 1 : 0;
+    public static bool AsBool(this int num) => num == 1;
+
+    /// <returns>The ID of the message that contains the json data</returns>
+    public static async Task<ulong?> StoreJsonData(object data, ulong? editId = null)
+    {
+        string json = data is string str ? str : data.ToJson();
+        string formattedJson = $"```json\n{json}\n```";
+        
+        if (await RuntimeConfig.Get.Channel<SocketTextChannel>(RuntimeConfig.JsonDataChannelId) 
+            is not { } channel) 
+            return null;
+        
+        if (editId is not { } id)
+            return (await channel.SendMessageAsync(formattedJson)).Id;
+
+        await channel.ModifyMessageAsync(id, props => props.Content = formattedJson);
+        return editId;
+    }
+
+    public static async Task<string?> FetchJsonData(ulong messageId)
+    {
+        if (await RuntimeConfig.Get.Channel<SocketTextChannel>(RuntimeConfig.JsonDataChannelId) is not
+            { } channel) return null;
+        
+        return ExtractCodeFromCodeBlock((await channel.GetMessageAsync(messageId)).Content)
+            is ("json", var code) ? code : null;
+    }
+
+    public static async Task<T?> FetchJsonData<T>(ulong messageId) where T : class
+    {
+        return (await FetchJsonData(messageId))?.FromJson<T>();
+    }
+    
+    private static readonly Regex _extractCodeRegex = new(@"```([a-z0-9]+)?\n?((?:.|[\n\r])*)```", RegexOptions.Compiled);
+    
+    public static (string? Language, string Code)? ExtractCodeFromCodeBlock(string codeBlock)
+    {
+        var match = _extractCodeRegex.Match(codeBlock);
+        if (!match.Success)
+            return null;
+        string lang = match.Groups[1].Value;
+        string code = match.Groups[2].Value;
+        return (lang == "" ? null : lang, code);
+    }
+
+    public static string GenerateProgressBar(
+        float current,
+        float max,
+        int characterCount = 20,
+        char filled = '#',
+        char empty = '-')
+    {
+        float fillPercentage = (max > 0 ? current / max : current) * characterCount;
+
+        string whiteBar = $"{(fillPercentage > 0 ? new string(filled, (int)fillPercentage) : "")}";
+        string blackBar = $"{new string(empty, (int)(characterCount - fillPercentage))}";
+        
+        string fullBar = $"{whiteBar}{blackBar}";
+        fullBar = fullBar.Length == characterCount - 1 
+            ? fullBar + empty
+            : fullBar;
+        
+        return fullBar;
+    }
 
     public static bool HasUrl(string possibleUrl, out string? url)
     {

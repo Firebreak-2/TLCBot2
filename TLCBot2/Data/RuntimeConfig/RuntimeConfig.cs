@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Reflection;
+﻿using System.Reflection;
 using Discord.WebSocket;
 using TLCBot2.Attributes;
 using TLCBot2.CommandLine;
@@ -7,9 +6,9 @@ using TLCBot2.Core;
 using TLCBot2.Types;
 using TLCBot2.Utilities;
 
-namespace TLCBot2.Data;
+namespace TLCBot2.Data.RuntimeConfig;
 
-public static class RuntimeConfig
+public static partial class RuntimeConfig
 {
     public static string Path => $"{Program.FileAssetsPath}/config.json";
     public static readonly (FieldInfo Field, RuntimeConfigFieldAttribute Attribute)[] Fields;
@@ -61,16 +60,4 @@ public static class RuntimeConfig
                                                                  ?? throw new Exception("Terminal channel id not provided"));
 
     public static SocketGuild? FocusServer;
-    
-    [RuntimeConfigField(ShortName = "dump", DisplayValue = ChannelDisplayValue)]
-    public static ulong FileDumpChannelId;
-    
-    [RuntimeConfigField(ShortName = "json", DisplayValue = ChannelDisplayValue)]
-    public static ulong JsonDataChannelId;
-
-    [RuntimeConfigField(ShortName = "logs", DisplayValue = ChannelDisplayValue)]
-    public static ulong ServerLogsChannelId;
-
-    private const string ChannelDisplayValue =
-        $"<#{RuntimeConfigFieldAttribute.ReplacementString}> | {RuntimeConfigFieldAttribute.ReplacementString}";
 }

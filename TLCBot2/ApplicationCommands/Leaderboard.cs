@@ -4,6 +4,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Humanizer;
 using TLCBot2.Data;
+using TLCBot2.Data.RuntimeConfig;
 
 namespace TLCBot2.ApplicationCommands;
 

@@ -79,7 +79,8 @@ public static partial class ChannelTerminal
                 if ((command.Arguments?.Length ?? 0) <= i)
                     continue;
 
-                if (i != correctParameters.Length - 1)
+                if (i != correctParameters.Length - 1 
+                    || correctParameters.Last().ParameterType != typeof(string))
                     providedParameters[i] =
                         Helper.ConvertFromString(command.Arguments![i], correctParameters[i].ParameterType);
                 else
@@ -93,7 +94,7 @@ public static partial class ChannelTerminal
         }
         catch (Exception e)
         {
-            return e.ToString();
+            return e.Message;
         }
 
         return "";

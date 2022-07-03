@@ -13,7 +13,7 @@ public static partial class Helper
         // because it says it's not a compile-time
         // constant. so here we are stuck with this
         // abomination.
-        
+
         if (type.IsAssignableTo(typeof(Enum)))
         {
             var values = Enum.GetValues(type).Cast<Enum>();

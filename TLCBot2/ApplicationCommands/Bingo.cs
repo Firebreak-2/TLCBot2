@@ -38,7 +38,7 @@ public partial class InteractionCommands
     }
 
     [ComponentInteraction("reroll-button;*,*")]
-    public async Task RerollButtonExecuted(string id, string tileCount)
+    public async Task ReRollButtonExecuted(string id, string tileCount)
     {
         Embed embed = await Task.Run(async () => await GetBingoEmbed(int.Parse(tileCount)));
 

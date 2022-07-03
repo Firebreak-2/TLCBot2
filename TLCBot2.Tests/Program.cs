@@ -1,12 +1,19 @@
-﻿namespace TLCBot2.tests;
+﻿using Newtonsoft.Json;
+using TLCBot2.Types;
+using TLCBot2.Utilities;
+
+namespace TLCBot2.tests;
 
 public class Program
 {
-    public static async Task Main(string[] args)
+    public static void Main(string[] args)
     {
-        await Task.Run(() =>
+        var data = new PollData("Poll Title", new[]
         {
-            Console.WriteLine("Hello World!");
+            new PollData.Option("Yes"),
+            new PollData.Option("No"),
         });
+        
+        Console.WriteLine(data.ToJson());
     }
 }

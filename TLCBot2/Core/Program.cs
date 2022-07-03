@@ -10,7 +10,7 @@ public static class Program
     public static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
     public static DiscordSocketClient Client;
     public static readonly string FileAssetsPath;
-    public static readonly bool DeveloperMode;
+    public static bool DeveloperMode;
 
     static Program()
     {

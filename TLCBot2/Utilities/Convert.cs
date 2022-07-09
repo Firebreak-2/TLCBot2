@@ -1,11 +1,14 @@
-﻿using Discord;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
+using Discord;
 using TLCBot2.Core;
+using TLCBot2.Data.RuntimeConfig;
 
 namespace TLCBot2.Utilities;
 
 public static partial class Helper
 {
-    public static object ConvertFromString(string strVal, Type type)
+    public static object? ConvertFromString(string? strVal, Type type)
     {
         // i would have used a switch statement
         // for this but unfortunately doing
@@ -14,7 +17,9 @@ public static partial class Helper
         // constant. so here we are stuck with this
         // abomination.
 
-        if (type.IsAssignableTo(typeof(Enum)))
+        if (strVal is null)
+            return null;
+        else if (type.IsAssignableTo(typeof(Enum)))
         {
             var values = Enum.GetValues(type).Cast<Enum>();
             if (values.TryFirst(x => string.Equals($"{x}", strVal, StringComparison.CurrentCultureIgnoreCase),
@@ -37,18 +42,42 @@ public static partial class Helper
         }
         else if (type.IsAssignableTo(typeof(IUser)))
         {
-            return Program.Client.GetUser(ulong.Parse(strVal));
+            var match = MentionDeFormatRegex.Match(strVal);
+            if (!match.Success)
+                return Program.Client.GetUser(ulong.Parse(strVal));
+
+            if (match.Groups[1].Value[0] != '@')
+                throw new Exception("Not a valid user");
+            
+            return Program.Client.GetUser(ulong.Parse(match.Groups[2].Value));
         }
         else if (type.IsAssignableTo(typeof(IChannel)))
         {
-            return Program.Client.GetChannel(ulong.Parse(strVal));
+            var match = MentionDeFormatRegex.Match(strVal);
+            if (!match.Success)
+                return Program.Client.GetChannel(ulong.Parse(strVal));
+
+            if (match.Groups[1].Value != "#")
+                throw new Exception("Not a valid channel");
+            
+            return Program.Client.GetChannel(ulong.Parse(match.Groups[2].Value));
         }
         else if (type.IsAssignableTo(typeof(IRole)))
         {
-            if (strVal.Split('/') is { Length: 2 } split)
+            var match = MentionDeFormatRegex.Match(strVal);
+            if (!match.Success && strVal.Split('/') is { Length: 2 } split)
                 return Program.Client
                     .GetGuild(split[0].To<ulong>())
                     .GetRole(split[1].To<ulong>());
+            
+            if (match.Groups[1].Value != "@&")
+                throw new Exception("Not a valid role");
+            
+            return RuntimeConfig.FocusServer!.GetRole(match.Groups[2].Value.To<ulong>());
+        }
+        else if (type.IsAssignableTo(typeof(IGuild)))
+        {
+            return Program.Client.GetGuild(ulong.Parse(strVal));
         }
 
         try
@@ -60,6 +89,19 @@ public static partial class Helper
             throw new Exception($"Conversion to type {type.FullName} is not supported");
         }
     }
+    
+    public static string? ConvertToString(object? obj) =>
+        obj switch
+        {
+            Enum @enum => @enum.ToString(),
+            DateTimeOffset dateTimeOffset => dateTimeOffset.ToUnixTimeSeconds().ToString(),
+            TimeSpan timeSpan => timeSpan.TotalSeconds.ToString(CultureInfo.CurrentCulture),
+            IUser user => user.Id.ToString(),
+            IChannel channel => channel.Id.ToString(),
+            IRole role => $"{role.Guild.Id}/{role.Id}",
+            IGuild guild => guild.Id.ToString(),
+            _ => obj?.ToJson()
+        };
 
     public static T ConvertFromString<T>(string strVal) => (T) ConvertFromString(strVal, typeof(T));
 }

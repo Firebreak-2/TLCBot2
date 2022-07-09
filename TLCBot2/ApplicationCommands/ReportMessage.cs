@@ -27,10 +27,9 @@ public partial class InteractionCommands
     [ModalInteraction("message-report-modal;*,*")]
     public async Task MessageReportModalResponse(string messageId, string reporterId, MessageReportModal modal)
     {
-        var message = await Context.Channel.GetMessageAsync(messageId.To<ulong>());
-        var channel = await RuntimeConfig.Get.Channel<SocketTextChannel>(RuntimeConfig.BotReportsChannelId);
-        if (channel is null)
+        if (RuntimeConfig.BotReportsChannel is not { } channel)
             return;
+        var message = await Context.Channel.GetMessageAsync(messageId.To<ulong>());
         var reporter = await Program.Client.GetUserAsync(reporterId.To<ulong>());
 
         var embed = new EmbedBuilder()

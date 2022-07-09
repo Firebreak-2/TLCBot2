@@ -107,14 +107,14 @@ namespace TLCBot2.ApplicationCommands
             await RespondAsync("Vote cast!", ephemeral: true);
         }
 
-        public static async Task<SelectMenuBuilder?> GeneratePollSelectMenu(ulong messageId, PollData? data = null)
+        public static async Task<SelectMenuBuilder?> GeneratePollSelectMenu(ulong messageId, PollData? data = null, string customId = "poll-sm")
         {
             data ??= (await Helper.FetchJsonData(messageId))?.FromJson<PollData>();
             if (data is null)
                 return null;
 
             var builder = new SelectMenuBuilder()
-                .WithCustomId($"poll-sm;{messageId}");
+                .WithCustomId($"{customId};{messageId}");
 
             foreach (var dataOption in data.Options)
             {

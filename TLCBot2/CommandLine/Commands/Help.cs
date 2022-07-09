@@ -13,7 +13,7 @@ public static partial class TerminalCommands
         // prints every command in the terminal with a description
         // generated with the GenerateCommandHelpInfo method
         await ChannelTerminal.PrintAsync(
-            string.Join("\n\n", All.Select(x => GenerateCommandHelpInfo(x.Method, x.Attribute))),
+            string.Join("\n", All.Select(x => GenerateCommandHelpInfo(x.Method, x.Attribute))),
             title: "Terminal Command Help");
     }
 

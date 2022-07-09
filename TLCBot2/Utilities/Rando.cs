@@ -18,5 +18,6 @@ public static partial class Helper
 
         public static string Id(string name) => $"{name}-{Int(int.MinValue, int.MaxValue - 1)}";
         public static int Int(int min, int max) => _rand.Next(min, max + 1);
+        public static bool Bool() => Int(0, 1) == 0;
     }
 }

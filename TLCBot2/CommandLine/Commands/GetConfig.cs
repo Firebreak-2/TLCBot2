@@ -37,7 +37,7 @@ public static partial class TerminalCommands
             
             await ChannelTerminal.Channel.SendMessageAsync(string.Join('\n', RuntimeConfig.Fields
                 .Select(x => x.Attribute.DisplayValue is null 
-                    ? $"{x.Field.Name} = {x.Field.GetValue(null)}"
+                    ? $"{x.Field.Name} = {x.Field.GetValue(null) ?? "`null`"}"
                     : $"{x.Field.Name} = " + x.Attribute.DisplayValue.Replace(RuntimeConfigFieldAttribute.ReplacementString,
                         x.Field.GetValue(null)?.ToString() ?? "null"))));
         }

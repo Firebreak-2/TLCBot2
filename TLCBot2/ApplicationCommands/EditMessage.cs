@@ -41,6 +41,6 @@ public partial class InteractionCommands
         await Context.Channel.ModifyMessageAsync(messageId, 
             props => props.Content = modal.NewContent);
 
-        await RespondAsync();
+        await DeferAsync();
     }
 }

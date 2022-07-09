@@ -24,8 +24,21 @@ public static partial class ChannelTerminal
     public static async Task Initialize()
     {
         Channel = await Helper.GetChannelFromIdAsync(RuntimeConfig.TerminalChannelId);
+    }
 
-        await Channel.SendMessageAsync($"Bot initialized at {DateTimeOffset.Now.ToDynamicTimestamp()}");
+    [Initialize(Priority = 0)]
+    public static async Task PostInitialize()
+    {
+        // this is quite slow because of uncached reflection get value methods
+        // but it should be ok since it only runs once when the bot starts up
+        
+        string missingValues = RuntimeConfig.Fields.Any(x => x.Field.GetValue(null) is null) 
+            ? $"\n" +
+              $"⚠️ Missing Runtime Config Fields ⚠️\n" +
+              $"{string.Join('\n', RuntimeConfig.Fields.Where(x => x.Field.GetValue(null) is null).Select(x => $"[{x.Field.Name}]"))}"
+            : "";
+
+        await Channel.SendMessageAsync($"Bot initialized at {DateTimeOffset.Now.ToDynamicTimestamp()}{missingValues}");
     }
 
     public static async Task PrintAsync(object? obj, LogSeverity? severity = null, IUser? caller = null, string? title = null, string? footnote = null)

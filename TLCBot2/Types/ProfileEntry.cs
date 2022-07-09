@@ -16,4 +16,5 @@ public record ProfileEntry
     /// A json string of a <see cref="List{T}"/> of <see cref="ulong"/>
     /// </summary>
     public string BannedRoles { get; set; } = "[]";
+    public string? ModNote { get; set; }
 }

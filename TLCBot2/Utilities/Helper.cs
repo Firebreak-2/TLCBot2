@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections;
+using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
@@ -31,13 +32,40 @@ public static partial class Helper
 
         return Task.CompletedTask;
     }
-    
+
+    public static readonly Regex MentionDeFormatRegex = new(@"<(#|@[!&]?)(\d+)>", RegexOptions.Compiled);
     private static Random _rand = new();
     private static DataTable _dataTable = new();
     public static string Compute(string input) => _dataTable.Compute(input, null).ToString() ?? "null";
     public static string GoBackDirectory(string path)
     {
         return Regex.Replace(path, @"/[^/]+$", "");
+    }
+    
+    public static float GetHue(this Discord.Color color)
+    {
+        int red = color.R;
+        int green = color.G;
+        int blue = color.B;
+        
+        float min = Math.Min(Math.Min(red, green), blue);
+        float max = Math.Max(Math.Max(red, green), blue);
+
+        if (Math.Abs(min - max) < 0.05f)
+            return 0;
+
+        float hue = Math.Abs(max - red) < 0.05f
+            ? (green - blue) / (max - min)
+            : Math.Abs(max - green) < 0.05f
+                ? 2f + (blue - red) / (max - min)
+                : 4f + (red - green) / (max - min);
+
+        hue *= 60;
+        
+        if (hue < 0) 
+            hue += 360;
+
+        return hue;
     }
 
     public static string GetHyperLink(this string text, string link) => $"[{text}]({link})";
@@ -89,7 +117,10 @@ public static partial class Helper
             @"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
     public static async Task<string> GetFileUrl(Stream stream, SocketTextChannel? channel = null, string text = "text")
     {
-        channel ??= RuntimeConfig.FocusServer!.GetTextChannel(RuntimeConfig.FileDumpChannelId);
+        channel ??= RuntimeConfig.FileDumpChannel;
+        if (channel is null)
+            throw new Exception("File dump channel not registered");
+        
         var msg = await channel.SendFileAsync(stream, "ImageSend.png", text);
         return msg.Attachments.First().Url;
     }
@@ -100,31 +131,36 @@ public static partial class Helper
         byte[] data = await client.GetByteArrayAsync(new Uri(url));
         return Image.Load<Argb32>(data);
     }
-    public static void DisableMessageComponents(SocketUserMessage message)
+    public static async Task DisableMessageComponentsAsync(IUserMessage message)
     {
-        if (message.Author.Id != Program.Client.CurrentUser.Id) return;
-        message.ModifyAsync(props =>
+        if (message.Author.Id != Program.Client.CurrentUser.Id) 
+            return;
+        
+        await message.ModifyAsync(props =>
         {
             var componentBuilder = new ComponentBuilder();
             foreach (var actionRow in message.Components)
             {
                 var row = new ActionRowBuilder();
-                foreach (var component in actionRow.Components)
+                foreach (var component in ((ActionRowComponent) actionRow).Components)
                 {
-                    if (component.Type == ComponentType.Button)
+                    switch (component.Type)
                     {
-                        row.AddComponent(((ButtonComponent) component)
-                            .ToBuilder()
-                            .WithDisabled(true)
-                            .WithStyle(ButtonStyle.Secondary).Build());
+                        case ComponentType.Button:
+                            row.AddComponent(((ButtonComponent) component)
+                                .ToBuilder()
+                                .WithDisabled(true)
+                                .WithStyle(ButtonStyle.Secondary).Build());
+                            break;
+                        case ComponentType.SelectMenu:
+                            row.AddComponent(((SelectMenuComponent) component)
+                                .ToBuilder()
+                                .WithDisabled(true).Build());
+                            break;
+                        
+                        default:
+                            return;
                     }
-                    else if (component.Type == ComponentType.SelectMenu)
-                    {
-                        row.AddComponent(((SelectMenuComponent) component)
-                            .ToBuilder()
-                            .WithDisabled(true).Build());
-                    }
-                    else return;
                 }
                 componentBuilder.AddRow(row);
             }
@@ -157,8 +193,7 @@ public static partial class Helper
         string json = data is string str ? str : data.ToJson();
         string formattedJson = $"```json\n{json}\n```";
         
-        if (await RuntimeConfig.Get.Channel<SocketTextChannel>(RuntimeConfig.JsonDataChannelId) 
-            is not { } channel) 
+        if (RuntimeConfig.JsonDataChannel is not { } channel) 
             return null;
         
         if (editId is not { } id)
@@ -170,8 +205,8 @@ public static partial class Helper
 
     public static async Task<string?> FetchJsonData(ulong messageId)
     {
-        if (await RuntimeConfig.Get.Channel<SocketTextChannel>(RuntimeConfig.JsonDataChannelId) is not
-            { } channel) return null;
+        if (RuntimeConfig.JsonDataChannel is not { } channel) 
+            return null;
         
         return ExtractCodeFromCodeBlock((await channel.GetMessageAsync(messageId)).Content)
             is ("json", var code) ? code : null;
@@ -358,32 +393,66 @@ public static partial class Helper
 
     public enum DynamicTimestampFormat
     {
-        ShortTime,
-        LongTime,
-        ShortDate,
-        LongDate,
-        ShortDateTime,
-        LongDateTime,
-        RelativeTime
+        ShortTime = 't',
+        LongTime = 'T',
+        ShortDate = 'd',
+        LongDate = 'D',
+        ShortDateTime = 'f',
+        LongDateTime = 'F',
+        RelativeTime = 'R',
+    }
+    
+    public static FieldInfo[] GetConstants(this Type type)
+    {
+        // https://stackoverflow.com/a/10261848
+        
+        ArrayList constants = new ArrayList();
+
+        FieldInfo[] fieldInfos = type.GetFields(
+
+            // Gets all public and static fields
+            BindingFlags.Public | BindingFlags.Static | 
+
+            // This tells it to get the fields from all base types as well
+            BindingFlags.FlattenHierarchy);
+
+        // Go through the list and only pick out the constants
+        foreach (FieldInfo fi in fieldInfos)
+            // IsLiteral determines if its value is written at 
+            //   compile time and not changeable
+            // IsInitOnly determines if the field can be set 
+            //   in the body of the constructor
+            // for C# a field which is readonly keyword would have both true 
+            //   but a const field would have only IsLiteral equal to true
+            if (fi.IsLiteral && !fi.IsInitOnly)
+                constants.Add(fi);           
+
+        // Return an array of FieldInfos
+        return (FieldInfo[])constants.ToArray(typeof(FieldInfo));
     }
 
-    public static char FormatToLetter(this DynamicTimestampFormat format)
-    {
-        return format switch
-        {
-            DynamicTimestampFormat.ShortTime => 't',
-            DynamicTimestampFormat.LongTime => 'T',
-            DynamicTimestampFormat.ShortDate => 'd',
-            DynamicTimestampFormat.LongDate => 'D',
-            DynamicTimestampFormat.ShortDateTime => 'f',
-            DynamicTimestampFormat.LongDateTime => 'F',
-            DynamicTimestampFormat.RelativeTime => 'R',
-            _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
-        };
-    }
-    public static string ToDynamicTimestamp(this DateTimeOffset dto, DynamicTimestampFormat format = DynamicTimestampFormat.ShortDateTime)
+    public static char FormatToLetter(this DynamicTimestampFormat format) => (char) (int) format;
+
+    public static string ToDynamicTimestamp(
+        this DateTimeOffset dto, 
+        DynamicTimestampFormat format = DynamicTimestampFormat.ShortDateTime)
     {
         return $"<t:{dto.ToUnixTimeSeconds()}:{format.FormatToLetter()}>";
+    }
+
+    private static readonly Regex _dtoFromTimeRegex = new(@"<t:(\d+)(?::([tTdDfFR]))?>", RegexOptions.Compiled);  
+    public static (DateTimeOffset DateTimeOffset, DynamicTimestampFormat Format)? DateTimeOffsetFromDynamicTimestamp(string str)
+    {
+        var match = _dtoFromTimeRegex.Match(str);
+        if (!match.Success)
+            return null;
+        
+        DateTimeOffset offset = DateTimeOffset.FromUnixTimeSeconds(match.Groups[1].Value.To<long>());
+        DynamicTimestampFormat format = match.Groups[2].Value is {Length: 1} c
+            ? (DynamicTimestampFormat) c[0]
+            : DynamicTimestampFormat.ShortDateTime;
+        
+        return (offset, format);
     }
     public static Discord.Color Argb32ToDiscordColor(this Argb32 color) => new(color.R, color.G, color.B);
     public static Argb32 DiscordColorToArgb32(this Discord.Color color) => new(color.R, color.G, color.B, 255);

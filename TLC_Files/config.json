@@ -1,0 +1,46 @@
+[
+  {
+    "Name": "FileDumpChannel",
+    "Value": "988169181230952513"
+  },
+  {
+    "Name": "JsonDataChannel",
+    "Value": "988169181230952513"
+  },
+  {
+    "Name": "ServerLogsChannel",
+    "Value": "988172367341690880"
+  },
+  {
+    "Name": "UserFeedbackChannel",
+    "Value": "988173654938509404"
+  },
+  {
+    "Name": "BotReportsChannel",
+    "Value": "988169181457436764"
+  },
+  {
+    "Name": "ServerSuggestionsChannel",
+    "Value": "988169180169764939"
+  },
+  {
+    "Name": "QotdChannel",
+    "Value": "988169180350148612"
+  },
+  {
+    "Name": "QotdRole",
+    "Value": "988169179528069130/988169179578368141"
+  },
+  {
+    "Name": "CanGiveCookiesRole",
+    "Value": "988169179528069130/988169179528069133"
+  },
+  {
+    "Name": "CanAcceptSuggestionsRole",
+    "Value": "988169179528069130/988169179658076167"
+  },
+  {
+    "Name": "BackendServer",
+    "Value": "994567087630585956"
+  }
+]

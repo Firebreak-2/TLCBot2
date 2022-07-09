@@ -90,7 +90,7 @@ public static partial class ChannelTerminal
                 }
             }
 
-            await Task.Run(() => (Task) correctCommand.Method.Invoke(null, providedParameters)!);
+            await Task.Run(() => correctCommand.Method.Invoke(null, providedParameters)!);
         }
         catch (Exception e)
         {

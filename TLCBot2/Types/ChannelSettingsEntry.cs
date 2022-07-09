@@ -9,6 +9,11 @@ public record ChannelSettingsEntry
     public bool DeleteMessagesWithNoAttachments { get; set; } = false;
     public bool AutoThread { get; set; } = false;
     /// <summary>
+    /// A json string of a <see cref="List{T}"/> of <see cref="String"/> where each
+    /// item is an emoji to react with
+    /// </summary>
+    public string AutoReact { get; set; } = "[]";
+    /// <summary>
     /// A json string of a <see cref="List{T}"/> of <see cref="MessageReminder"/>
     /// </summary>
     public string MessageReminders { get; set; } = "[]";

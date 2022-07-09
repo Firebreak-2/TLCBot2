@@ -28,20 +28,22 @@ public static partial class RuntimeConfig
         return Task.CompletedTask;
     }
     
-    [PreInitialize]
+    [Initialize(Priority = 997)]
     public static async Task LoadConfig()
     {
         if (!File.Exists(Path))
             await Task.Run(SaveConfig);
-        foreach ((string name, object? fetchedValue) in (await Task.Run(() => File.ReadAllText(Path))).FromJson<RuntimeConfigFieldEntry[]>()!)
+        foreach ((string name, string? fetchedValue) in (await Task.Run(() => File.ReadAllText(Path))).FromJson<RuntimeConfigFieldEntry[]>()!)
         {
             if (typeof(RuntimeConfig).GetField(name) is not { } field)
                 continue;
             
-            object? convertedValue = Convert.ChangeType(fetchedValue, field.FieldType);
+            object? convertedValue = Deserialize(fetchedValue, field.FieldType);
             
             field.SetValue(null, convertedValue);
         }
+
+        await Task.Run(SaveConfig);
     }
 
     // runs every minute
@@ -49,12 +51,18 @@ public static partial class RuntimeConfig
     public static Task SaveConfig()
     {
         RuntimeConfigFieldEntry[] fields = Fields
-            .Select(x => new RuntimeConfigFieldEntry(x.Field.Name, x.Field.GetValue(null)))
+            .Select(x => new RuntimeConfigFieldEntry(x.Field.Name, Serialize(x.Field.GetValue(null))))
             .ToArray();
         File.WriteAllText(Path, fields.ToJson());
 
         return Task.CompletedTask;
     }
+    
+    private static string? Serialize(object? obj) => 
+        Helper.ConvertToString(obj);
+
+    private static object? Deserialize(string? strVal, Type type) => 
+        Helper.ConvertFromString(strVal, type);
 
     public static ulong TerminalChannelId { get; } = ulong.Parse(Environment.GetEnvironmentVariable("TERMINAL") 
                                                                  ?? throw new Exception("Terminal channel id not provided"));

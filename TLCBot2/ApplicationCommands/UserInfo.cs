@@ -9,8 +9,11 @@ public partial class InteractionCommands
 {
     [SlashCommand("user-info", "Shows general information about the selected user")]
     [UserCommand("User Info")]
-    public async Task UserInfo(SocketGuildUser user)
+    [EnabledInDm(false)]
+    public async Task UserInfo(SocketGuildUser? user = null)
     {
+        user ??= (SocketGuildUser) Context.User;
+        
         await using var db = new TlcDbContext();
 
         int cookies = 0;
@@ -23,7 +26,10 @@ public partial class InteractionCommands
             .AddField("Server Join Date", $"<t:{user.JoinedAt!.Value.ToUnixTimeSeconds()}>")
             .AddField("Account Creation Date", $"<t:{user.CreatedAt.ToUnixTimeSeconds()}>")
             .AddField("Cookies", cookies)
-            .AddField("User ID", user.Id);
+            .AddField("User ID", user.Id)
+            .AddField("Active Clients", string.Join('\n', user.ActiveClients.Select(x => $"{x} Client"))
+                                        is {Length: > 0} t1 ? t1 : "None")
+            .AddField("Status", user.Status);
         
         await RespondAsync(embed: embed.Build(), ephemeral: true);
     }

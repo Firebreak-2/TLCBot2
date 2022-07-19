@@ -14,8 +14,9 @@ public class TlcDbContext : DbContext
         optionsBuilder.UseSqlite($"Data Source={Program.FileAssetsPath}/TLC.db");
 
     public DbSet<ServerInviteEntry> ServerInvites { get; set; }
-    // public DbSet<LogEntry> Logs { get; set; }
+    public DbSet<LogEntry> Logs { get; set; }
     public DbSet<ProfileEntry> Users { get; set; }
+    public DbSet<ActiveUserEntry> ActiveUsers { get; set; }
     public DbSet<ChannelSettingsEntry> ChannelSettings { get; set; }
 
     [PreInitialize]

@@ -29,7 +29,7 @@ public static partial class RuntimeConfig
     [RuntimeConfigField]
     public static SocketRole? QotdRole;
 
-    [RuntimeConfigField] 
+    [RuntimeConfigField(ShortName = "cookiehelper")] 
     public static SocketRole? CanGiveCookiesRole;
 
     [RuntimeConfigField]
@@ -37,4 +37,25 @@ public static partial class RuntimeConfig
     
     [RuntimeConfigField(ShortName = "backend")]
     public static SocketGuild? BackendServer;
+
+    [RuntimeConfigField]
+    public static long MotdCycleEpochTime;
+
+    [RuntimeConfigField]
+    public static SocketRole? MotdRole;
+
+    [RuntimeConfigField]
+    public static SocketRole? CantParticipateInMotdRole;
+
+    [RuntimeConfigField]
+    public static SocketRole? FrequentInviterAwardRole;
+
+    [RuntimeConfigField]
+    public static int InvitesRequiredForAward = 5;
+
+    [RuntimeConfigField]
+    public static int InvitesCookieAmountAward = 3;
+
+    [RuntimeConfigField]
+    public static int StarboardReactionsRequired = 5;
 }

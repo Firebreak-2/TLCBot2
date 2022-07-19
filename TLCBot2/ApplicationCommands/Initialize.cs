@@ -9,7 +9,12 @@ namespace TLCBot2.ApplicationCommands;
 
 public partial class InteractionCommands : InteractionModuleBase<SocketInteractionContext>
 {
-    public static readonly InteractionService Service = new(Program.Client);
+    public static readonly InteractionService Service = new(Program.Client,
+        new InteractionServiceConfig
+        {
+            EnableAutocompleteHandlers = true,
+            // UseCompiledLambda = true,
+        });
 
     [PreInitialize]
     public static Task PreInitialize()

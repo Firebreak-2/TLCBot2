@@ -52,16 +52,15 @@ public partial class InteractionCommands
         }
         else
         {
-            await db.Users.AddAsync(new ProfileEntry
+            await db.Users.AddAsync(new ProfileEntry(user.Id)
             {
-                UserId = user.Id,
                 Balance = newBalance
             });
         }
 
         await db.SaveChangesAsync();
 
-        await Log.CookieTransaction(user, oldBalance, newBalance, 
+        await Log.CookieTransaction(Context.User, user, oldBalance, newBalance, 
             modal.Reason is null or { Length: 0 } ? null : modal.Reason);
 
         await RespondAsync($"{user.Mention}'s cookies have been updated. ({oldBalance} -> {newBalance})",

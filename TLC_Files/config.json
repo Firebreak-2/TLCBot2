@@ -1,46 +1,20 @@
-[
-  {
-    "Name": "FileDumpChannel",
-    "Value": "988169181230952513"
-  },
-  {
-    "Name": "JsonDataChannel",
-    "Value": "988169181230952513"
-  },
-  {
-    "Name": "ServerLogsChannel",
-    "Value": "988172367341690880"
-  },
-  {
-    "Name": "UserFeedbackChannel",
-    "Value": "988173654938509404"
-  },
-  {
-    "Name": "BotReportsChannel",
-    "Value": "988169181457436764"
-  },
-  {
-    "Name": "ServerSuggestionsChannel",
-    "Value": "988169180169764939"
-  },
-  {
-    "Name": "QotdChannel",
-    "Value": "988169180350148612"
-  },
-  {
-    "Name": "QotdRole",
-    "Value": "988169179528069130/988169179578368141"
-  },
-  {
-    "Name": "CanGiveCookiesRole",
-    "Value": "988169179528069130/988169179528069133"
-  },
-  {
-    "Name": "CanAcceptSuggestionsRole",
-    "Value": "988169179528069130/988169179658076167"
-  },
-  {
-    "Name": "BackendServer",
-    "Value": "994567087630585956"
-  }
-]
+{
+  "FileDumpChannel": "988169181230952513",
+  "JsonDataChannel": "988169181230952513",
+  "ServerLogsChannel": "988172367341690880",
+  "UserFeedbackChannel": "988173654938509404",
+  "BotReportsChannel": "988169181457436764",
+  "ServerSuggestionsChannel": "988169180169764939",
+  "QotdChannel": "988169180350148612",
+  "QotdRole": "988169179528069130/988169179578368141",
+  "CanGiveCookiesRole": "988169179528069130/988169179528069133",
+  "CanAcceptSuggestionsRole": "988169179528069130/988169179658076167",
+  "BackendServer": "994567087630585956",
+  "MotdCycleEpochTime": "1657724285",
+  "MotdRole": "988169179528069130/996792629691945031",
+  "CantParticipateInMotdRole": "988169179528069130/988169179658076167",
+  "FrequentInviterAwardRole": "988169179528069130/988169179528069138",
+  "InvitesRequiredForAward": "5",
+  "InvitesCookieAmountAward": "3",
+  "StarboardReactionsRequired": "5"
+}

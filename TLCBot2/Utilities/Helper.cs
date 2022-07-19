@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.CodeDom;
+using System.Collections;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -6,6 +7,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
+using Humanizer;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
@@ -68,13 +70,29 @@ public static partial class Helper
         return hue;
     }
 
-    public static string GetHyperLink(this string text, string link) => $"[{text}]({link})";
+    public static string GetHyperLink(this string text, string link) =>
+        $"[{text}]({link})";
+    public static string GetJumpHyperLink(this IMessage msg, string message = "Go To Message") =>
+        message.GetHyperLink(msg.GetJumpUrl());
     public static string GetFileNameFromPath(string path)
     {
         return Regex.Match(path, @"/[^/]+$").Value;
     }
 
+    public static string GetEmoteID(this IEmote emote)
+    {
+        return emote is GuildEmote guildEmote 
+            ? guildEmote.Id.ToString() 
+            : emote.Name;
+    }
+
+    public static string GetEmoteFullName(this IEmote emote)
+    {
+        throw new NotImplementedException();
+    }
+
     private static readonly string _ansiBlueBg = Ansi.Generate(null, Ansi.Background.Indigo);
+    private static readonly string _ansiOrangeBg = Ansi.Generate(null, Ansi.Background.Orange);
     private static readonly string _ansiYellowFg = Ansi.Generate(Ansi.Foreground.Yellow);
     private static readonly string _ansiGreenFg = Ansi.Generate(Ansi.Foreground.Green);
     private static readonly string _ansiBlueFg = Ansi.Generate(Ansi.Foreground.Blue);
@@ -97,24 +115,121 @@ public static partial class Helper
     public static string CleanAnsiFormatting(string str) => 
         AnsiFormattingRegex.Replace(str, "");
 
-    public static string GenerateRegexHighlightedCodeBlocks([RegexPattern] string pattern, string matchString)
+    public static string GenerateRegexHighlightedCodeBlocks([RegexPattern] string pattern, string matchString, bool showPattern = true)
     {
+        var paragraphRegex = new Regex($"(?:{pattern})+");
+        string finalParagraphString = paragraphRegex.Replace(matchString, $"{_ansiBlueBg}$&{Ansi.Reset}");
         string finalRegexString = pattern;
-        string finalParagraphString = Regex.Replace(matchString, $"(?:{pattern})+", match => $"{_ansiBlueBg}{match.Value}{Ansi.Reset}");
-        foreach ((Regex regex, string color) in _regexTokenizer)
+        
+        if (showPattern)
         {
-            finalRegexString = regex.Replace(finalRegexString, match => $"{color}{match.Value}{_ansiWhiteFg}");
+            foreach ((Regex regex, string color) in _regexTokenizer)
+            {
+                finalRegexString = regex.Replace(finalRegexString, match => $"{color}{match.Value}{_ansiWhiteFg}");
+            }
         }
 
-        return $"```ansi\n{_ansiWhiteFg}{finalRegexString}\x1B[0m\n```\n```ansi\n{finalParagraphString}\n```";
+        return $"{(showPattern ? $"```ansi\n{_ansiWhiteFg}{finalRegexString}\x1B[0m\n```\n" : "")}```ansi\n{finalParagraphString}\n```";
     }
-    public static string ToJson(this object obj, Formatting formatting = Formatting.Indented) =>
+
+    public static Dictionary<string, string> GetMessageDetails(this IMessage message)
+    {
+        return new Dictionary<string, object>
+        {
+            {"Author", message.Author.Id},
+            {"Content", message.Content},
+            {"Attachments", string.Join('\n', message.Attachments.Select(x => x.Url))},
+            {"Reactions", string.Join('\n', message.Reactions.Select(x => $"{x.Key.Name}={x.Value.ReactionCount}"))}
+        }.ToDictionary(x => x.Key, x => x.Value?.ToString() ?? "null");
+    }
+    public static Dictionary<string, string> GetChannelDetails(this IChannel channel, params string[] without)
+    {
+        var dict = new Dictionary<string, string>();
+
+        switch (channel)
+        {
+            case SocketCategoryChannel c:
+                dict.Add("Category Name", c.Name.ToUpper());
+                dict.Add("Channels", string.Join('\n', c.Channels.Select(x => x.Name)));
+                dict.Add("Created", c.CreatedAt.ToUnixTimeSeconds().ToString());
+                break;
+            case SocketThreadChannel c:
+                dict.Add("Thread Name", c.Name);
+                dict.Add("Parent Channel", c.ParentChannel.Name);
+                dict.Add("Is NSFW", c.IsNsfw.ToString());
+                dict.Add("Is Private", c.IsPrivateThread.ToString());
+                dict.Add("Auto Archive Diration", c.AutoArchiveDuration.ToString());
+                dict.Add("Created", c.CreatedAt.ToUnixTimeSeconds().ToString());
+                break;
+            case SocketVoiceChannel c:
+                dict.Add("Channel Name", c.Name);
+                dict.Add("Category", c.Category.Name.ToUpper());
+                dict.Add("User Limit", c.UserLimit?.ToString() ?? "∞");
+                dict.Add("Region", c.RTCRegion ?? "Auto");
+                dict.Add("Is NSFW", c.IsNsfw.ToString());
+                dict.Add("Created", c.CreatedAt.ToUnixTimeSeconds().ToString());
+                break;
+            case SocketTextChannel c:
+                dict.Add("Channel Name", c.Name);
+                dict.Add("Category", c.Category.Name.ToUpper());
+                dict.Add("Topic", c.Topic is null or {Length: 0} ? "No Topic" : c.Topic);
+                dict.Add("Is NSFW", c.IsNsfw.ToString());
+                dict.Add("Created", c.CreatedAt.ToUnixTimeSeconds().ToString());
+                break;
+        }
+
+        dict.Add("Type", channel.GetChannelType()?.ToString() ?? "null");
+        dict.Add("Channel ID", channel.Id.ToString());
+        
+        return dict.Where(x => !without.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value);
+    }
+
+    public static string ToCodeBlock(this string code, string language = "")
+    {
+        return $"```{language}\n{code}\n```";
+    }
+    public static string ToJson(this object? obj, Formatting formatting = Formatting.Indented) =>
         JsonConvert.SerializeObject(obj, formatting);
     public static T? FromJson<T>(this string str) =>
         JsonConvert.DeserializeObject<T>(str);
     public static bool CheckStringIsLink(string link) =>
         Regex.IsMatch(link,
             @"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
+
+    public static string SequentialFormat(this string str, params object[] arguments)
+    {
+        var regex = new Regex(@"(?<!\{)\{\}(?!\})");
+        for (int i = 0; regex.IsMatch(str); i++)
+        {
+            if (i == arguments.Length)
+                break;
+            str = regex.Replace(str, arguments[i].ToString() ?? "", 1);
+        }
+        str = str.Replace("{{", "{").Replace("}}", "}");
+        return str;
+    }
+    
+    public static string MappedFormat(this string str, params (string Key, object Replacement)[] arguments)
+    {
+        return arguments.Aggregate(str, (current, argument) => 
+            Regex.Replace(current, $@"(?<!\{{)\{{{argument.Key}\}}(?!\}})", 
+                argument.Replacement.ToString() ?? ""))
+            .Replace("{{", "{").Replace("}}", "}");
+    }
+    
+    public static string SequentialMappedFormat(this string str, params (string Key, Stack<object> Replacement)[] arguments)
+    {
+        foreach ((string key, Stack<object> replacement) in arguments)
+        {
+            if (!replacement.TryPop(out object? currentReplacement)) 
+                continue;
+            
+            str = Regex.Replace(str, $@"(?<!\{{)\{{{key}\}}(?!\}})", 
+                currentReplacement.ToString() ?? "");
+        }
+        return str.Replace("{{", "{").Replace("}}", "}");
+    }
+    
     public static async Task<string> GetFileUrl(Stream stream, SocketTextChannel? channel = null, string text = "text")
     {
         channel ??= RuntimeConfig.FileDumpChannel;
@@ -346,6 +461,24 @@ public static partial class Helper
 
         return (channelName, channelTypeName);
     }
+
+    public static TComponent GetSpecificComponent<TComponent>(this SocketUserMessage message, string customId) where TComponent : IMessageComponent
+    {
+        ComponentType type;
+
+        if (typeof(TComponent) == typeof(ButtonComponent))
+            type = ComponentType.Button;
+        else if (typeof(TComponent) == typeof(SelectMenuComponent))
+            type = ComponentType.SelectMenu;
+        else throw new Exception("invalid message component type");
+        
+        return (TComponent) message.Components
+            .First(x => x.Components
+                .Any(y => y.CustomId == customId))
+            .Components
+            .First(x => x.Type == type 
+                        && x.CustomId == customId);
+    }
     public static async Task<IEnumerable<IUserMessage>> GetLatestMessages(this SocketTextChannel channel, int limit = 100) => (await channel
         .GetMessagesAsync(limit)
         .ToArrayAsync()).SelectMany(x => x)
@@ -454,8 +587,16 @@ public static partial class Helper
         
         return (offset, format);
     }
+
+    public static string EnsureString(this string? str, string defaultValue = "_") =>
+        string.IsNullOrEmpty(str) 
+            ? defaultValue 
+            : str;
     public static Discord.Color Argb32ToDiscordColor(this Argb32 color) => new(color.R, color.G, color.B);
     public static Argb32 DiscordColorToArgb32(this Discord.Color color) => new(color.R, color.G, color.B, 255);
+
+    public static string GetJumpURL(this SocketGuildEvent guildEvent) =>
+        $"https://discord.com/events/{guildEvent.Guild.Id}/{guildEvent.Id}";
     
     public static IEnumerable<(TInfoType Member, IEnumerable<TAttribute> Attributes)>
         GetAllMembersWithAttribute<TInfoType, TAttribute>() where TInfoType  : MemberInfo 

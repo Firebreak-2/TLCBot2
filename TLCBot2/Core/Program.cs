@@ -16,9 +16,9 @@ public static class Program
     {
         Client = new DiscordSocketClient(new DiscordSocketConfig
         {
-            MessageCacheSize = 100,
+            MessageCacheSize = 12000,
             LogGatewayIntentWarnings = true,
-            GatewayIntents = GatewayIntents.All
+            GatewayIntents = GatewayIntents.All,
         });
         
         DeveloperMode = (Environment.GetEnvironmentVariable("DEV_MODE") ?? "").ToLower() == "true";

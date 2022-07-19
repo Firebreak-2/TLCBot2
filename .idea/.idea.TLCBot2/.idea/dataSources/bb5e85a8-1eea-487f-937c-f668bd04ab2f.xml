@@ -49,71 +49,71 @@
       <Deterministic>1</Deterministic>
       <Variadic>1</Variadic>
     </routine>
-    <routine id="23" parent="1" name="max">
-      <Deterministic>1</Deterministic>
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="24" parent="1" name="min">
-      <Deterministic>1</Deterministic>
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="25" parent="1" name="json_insert">
-      <Deterministic>1</Deterministic>
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="26" parent="1" name="bm25">
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="27" parent="1" name="highlight">
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="28" parent="1" name="rtreecheck">
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="29" parent="1" name="json_object">
-      <Deterministic>1</Deterministic>
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="30" parent="1" name="snippet">
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="31" parent="1" name="json_array">
-      <Deterministic>1</Deterministic>
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="32" parent="1" name="json_extract">
-      <Deterministic>1</Deterministic>
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="33" parent="1" name="regexp">
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="34" parent="1" name="json_remove">
-      <Deterministic>1</Deterministic>
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="35" parent="1" name="json_replace">
-      <Deterministic>1</Deterministic>
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="36" parent="1" name="json_set">
-      <Deterministic>1</Deterministic>
-      <Variadic>1</Variadic>
-    </routine>
-    <routine id="37" parent="1" name="lag">
+    <routine id="23" parent="1" name="lag">
       <FunctionType>window</FunctionType>
     </routine>
-    <routine id="38" parent="1" name="lead">
+    <routine id="24" parent="1" name="max">
+      <Deterministic>1</Deterministic>
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="25" parent="1" name="lead">
       <FunctionType>window</FunctionType>
     </routine>
-    <routine id="39" parent="1" name="charindex"/>
-    <routine id="40" parent="1" name="fts3_tokenizer"/>
-    <routine id="41" parent="1" name="matchinfo"/>
-    <routine id="42" parent="1" name="json_array_length">
+    <routine id="26" parent="1" name="min">
+      <Deterministic>1</Deterministic>
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="27" parent="1" name="charindex"/>
+    <routine id="28" parent="1" name="fts3_tokenizer"/>
+    <routine id="29" parent="1" name="json_insert">
+      <Deterministic>1</Deterministic>
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="30" parent="1" name="bm25">
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="31" parent="1" name="highlight">
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="32" parent="1" name="matchinfo"/>
+    <routine id="33" parent="1" name="rtreecheck">
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="34" parent="1" name="json_object">
+      <Deterministic>1</Deterministic>
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="35" parent="1" name="json_array_length">
       <Deterministic>1</Deterministic>
     </routine>
-    <routine id="43" parent="1" name="json_type">
+    <routine id="36" parent="1" name="snippet">
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="37" parent="1" name="json_array">
       <Deterministic>1</Deterministic>
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="38" parent="1" name="json_extract">
+      <Deterministic>1</Deterministic>
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="39" parent="1" name="json_type">
+      <Deterministic>1</Deterministic>
+    </routine>
+    <routine id="40" parent="1" name="regexp">
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="41" parent="1" name="json_remove">
+      <Deterministic>1</Deterministic>
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="42" parent="1" name="json_replace">
+      <Deterministic>1</Deterministic>
+      <Variadic>1</Variadic>
+    </routine>
+    <routine id="43" parent="1" name="json_set">
+      <Deterministic>1</Deterministic>
+      <Variadic>1</Variadic>
     </routine>
     <routine id="44" parent="1" name="group_concat">
       <FunctionType>window</FunctionType>
@@ -384,116 +384,116 @@
     <argument id="172" parent="23">
       <ArgumentDirection>R</ArgumentDirection>
     </argument>
-    <argument id="173" parent="24">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="174" parent="25">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="175" parent="26">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="176" parent="27">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="177" parent="28">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="178" parent="29">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="179" parent="30">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="180" parent="31">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="181" parent="32">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="182" parent="33">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="183" parent="34">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="184" parent="35">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="185" parent="36">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="186" parent="37">
-      <ArgumentDirection>R</ArgumentDirection>
-    </argument>
-    <argument id="187" parent="37">
+    <argument id="173" parent="23">
       <Position>1</Position>
     </argument>
-    <argument id="188" parent="37">
+    <argument id="174" parent="23">
       <Position>2</Position>
     </argument>
-    <argument id="189" parent="37">
+    <argument id="175" parent="23">
       <Position>3</Position>
     </argument>
-    <argument id="190" parent="38">
+    <argument id="176" parent="24">
       <ArgumentDirection>R</ArgumentDirection>
     </argument>
-    <argument id="191" parent="38">
+    <argument id="177" parent="25">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="178" parent="25">
       <Position>1</Position>
     </argument>
-    <argument id="192" parent="38">
+    <argument id="179" parent="25">
       <Position>2</Position>
     </argument>
-    <argument id="193" parent="38">
+    <argument id="180" parent="25">
       <Position>3</Position>
     </argument>
-    <argument id="194" parent="39">
+    <argument id="181" parent="26">
       <ArgumentDirection>R</ArgumentDirection>
     </argument>
-    <argument id="195" parent="39">
+    <argument id="182" parent="27">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="183" parent="27">
       <Position>1</Position>
     </argument>
-    <argument id="196" parent="39">
+    <argument id="184" parent="27">
       <Position>2</Position>
     </argument>
-    <argument id="197" parent="39">
+    <argument id="185" parent="27">
       <Position>3</Position>
     </argument>
-    <argument id="198" parent="40">
+    <argument id="186" parent="28">
       <ArgumentDirection>R</ArgumentDirection>
     </argument>
-    <argument id="199" parent="40">
+    <argument id="187" parent="28">
       <Position>1</Position>
     </argument>
-    <argument id="200" parent="40">
+    <argument id="188" parent="28">
       <Position>2</Position>
     </argument>
-    <argument id="201" parent="41">
+    <argument id="189" parent="29">
       <ArgumentDirection>R</ArgumentDirection>
     </argument>
-    <argument id="202" parent="41">
+    <argument id="190" parent="30">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="191" parent="31">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="192" parent="32">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="193" parent="32">
       <Position>1</Position>
     </argument>
-    <argument id="203" parent="41">
+    <argument id="194" parent="32">
       <Position>2</Position>
     </argument>
-    <argument id="204" parent="42">
+    <argument id="195" parent="33">
       <ArgumentDirection>R</ArgumentDirection>
     </argument>
-    <argument id="205" parent="42">
+    <argument id="196" parent="34">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="197" parent="35">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="198" parent="35">
       <Position>1</Position>
     </argument>
-    <argument id="206" parent="42">
+    <argument id="199" parent="35">
       <Position>2</Position>
     </argument>
-    <argument id="207" parent="43">
+    <argument id="200" parent="36">
       <ArgumentDirection>R</ArgumentDirection>
     </argument>
-    <argument id="208" parent="43">
+    <argument id="201" parent="37">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="202" parent="38">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="203" parent="39">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="204" parent="39">
       <Position>1</Position>
+    </argument>
+    <argument id="205" parent="39">
+      <Position>2</Position>
+    </argument>
+    <argument id="206" parent="40">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="207" parent="41">
+      <ArgumentDirection>R</ArgumentDirection>
+    </argument>
+    <argument id="208" parent="42">
+      <ArgumentDirection>R</ArgumentDirection>
     </argument>
     <argument id="209" parent="43">
-      <Position>2</Position>
+      <ArgumentDirection>R</ArgumentDirection>
     </argument>
     <argument id="210" parent="44">
       <ArgumentDirection>R</ArgumentDirection>
@@ -1284,126 +1284,185 @@
     <argument id="472" parent="162">
       <Position>1</Position>
     </argument>
-    <table id="473" parent="163" name="ChannelSettings"/>
-    <table id="474" parent="163" name="Logs"/>
-    <table id="475" parent="163" name="ServerInvites"/>
-    <table id="476" parent="163" name="Users"/>
-    <table id="477" parent="163" name="sqlite_master">
+    <table id="473" parent="163" name="ActiveUsers"/>
+    <table id="474" parent="163" name="ChannelSettings"/>
+    <table id="475" parent="163" name="Logs"/>
+    <table id="476" parent="163" name="ServerInvites"/>
+    <table id="477" parent="163" name="Users"/>
+    <table id="478" parent="163" name="sqlite_master">
       <System>1</System>
     </table>
-    <table id="478" parent="163" name="sqlite_sequence">
+    <table id="479" parent="163" name="sqlite_sequence">
       <System>1</System>
     </table>
-    <column id="479" parent="473" name="ChannelId">
+    <column id="480" parent="473" name="UserId">
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <SequenceIdentity>null</SequenceIdentity>
     </column>
-    <column id="480" parent="473" name="DeleteMessagesWithNoAttachments">
+    <column id="481" parent="473" name="LatestMessageCount">
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="481" parent="473" name="AutoThread">
+    <key id="482" parent="473" name="PK_ActiveUsers">
+      <ColNames>UserId</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <column id="483" parent="474" name="ChannelId">
+      <DataType>INTEGER|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <SequenceIdentity>null</SequenceIdentity>
+    </column>
+    <column id="484" parent="474" name="DeleteMessagesWithNoAttachments">
+      <DataType>INTEGER|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="485" parent="474" name="AutoThread">
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <column id="482" parent="473" name="MessageReminders">
+    <column id="486" parent="474" name="AutoReact">
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
-    <key id="483" parent="473" name="PK_ChannelSettings">
+    <column id="487" parent="474" name="MessagesMustMatchPattern">
+      <DataType>TEXT|0s</DataType>
+      <Position>5</Position>
+    </column>
+    <column id="488" parent="474" name="MessageReminders">
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+    </column>
+    <key id="489" parent="474" name="PK_ChannelSettings">
       <ColNames>ChannelId</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="484" parent="474" name="ID">
+    <column id="490" parent="475" name="ID">
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <SequenceIdentity>null</SequenceIdentity>
     </column>
-    <key id="485" parent="474" name="PK_Logs">
-      <ColNames>ID</ColNames>
-      <Primary>1</Primary>
-    </key>
-    <column id="486" parent="475" name="InviteId">
-      <DataType>TEXT|0s</DataType>
-      <NotNull>1</NotNull>
-      <Position>1</Position>
-    </column>
-    <column id="487" parent="475" name="Uses">
+    <column id="491" parent="475" name="TimeStamp">
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <index id="488" parent="475" name="sqlite_autoindex_ServerInvites_1">
+    <column id="492" parent="475" name="Importance">
+      <DataType>INTEGER|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="493" parent="475" name="EventName">
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <column id="494" parent="475" name="Message">
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+    </column>
+    <column id="495" parent="475" name="Tags">
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+    </column>
+    <column id="496" parent="475" name="Data">
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>7</Position>
+    </column>
+    <key id="497" parent="475" name="PK_Logs">
+      <ColNames>ID</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <column id="498" parent="476" name="InviteId">
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="499" parent="476" name="Uses">
+      <DataType>INTEGER|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <index id="500" parent="476" name="sqlite_autoindex_ServerInvites_1">
       <ColNames>InviteId</ColNames>
       <ColumnCollations></ColumnCollations>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="489" parent="475" name="PK_ServerInvites">
+    <key id="501" parent="476" name="PK_ServerInvites">
       <ColNames>InviteId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_ServerInvites_1</UnderlyingIndexName>
     </key>
-    <column id="490" parent="476" name="UserId">
+    <column id="502" parent="477" name="UserId">
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <SequenceIdentity>null</SequenceIdentity>
     </column>
-    <column id="491" parent="476" name="Balance">
+    <column id="503" parent="477" name="Balance">
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="492" parent="476" name="SocialCreditScore">
+    <column id="504" parent="477" name="SocialCreditScore">
       <DataType>REAL|0s</DataType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <column id="493" parent="476" name="SocialMedia">
+    <column id="505" parent="477" name="SocialMedia">
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
-    <column id="494" parent="476" name="BannedRoles">
+    <column id="506" parent="477" name="BannedRoles">
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <Position>5</Position>
     </column>
-    <key id="495" parent="476" name="PK_Users">
+    <column id="507" parent="477" name="ModNote">
+      <DataType>TEXT|0s</DataType>
+      <Position>6</Position>
+    </column>
+    <key id="508" parent="477" name="PK_Users">
       <ColNames>UserId</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="496" parent="477" name="type">
+    <column id="509" parent="478" name="type">
       <DataType>text|0s</DataType>
       <Position>1</Position>
     </column>
-    <column id="497" parent="477" name="name">
+    <column id="510" parent="478" name="name">
       <DataType>text|0s</DataType>
       <Position>2</Position>
     </column>
-    <column id="498" parent="477" name="tbl_name">
+    <column id="511" parent="478" name="tbl_name">
       <DataType>text|0s</DataType>
       <Position>3</Position>
     </column>
-    <column id="499" parent="477" name="rootpage">
+    <column id="512" parent="478" name="rootpage">
       <DataType>int|0s</DataType>
       <Position>4</Position>
     </column>
-    <column id="500" parent="477" name="sql">
+    <column id="513" parent="478" name="sql">
       <DataType>text|0s</DataType>
       <Position>5</Position>
     </column>
-    <column id="501" parent="478" name="name">
+    <column id="514" parent="479" name="name">
       <Position>1</Position>
     </column>
-    <column id="502" parent="478" name="seq">
+    <column id="515" parent="479" name="seq">
       <Position>2</Position>
     </column>
   </database-model>

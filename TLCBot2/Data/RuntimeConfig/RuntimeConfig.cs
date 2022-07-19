@@ -33,7 +33,7 @@ public static partial class RuntimeConfig
     {
         if (!File.Exists(Path))
             await Task.Run(SaveConfig);
-        foreach ((string name, string? fetchedValue) in (await Task.Run(() => File.ReadAllText(Path))).FromJson<RuntimeConfigFieldEntry[]>()!)
+        foreach ((string name, string? fetchedValue) in (await Task.Run(() => File.ReadAllText(Path))).FromJson<Dictionary<string, string?>>()!)
         {
             if (typeof(RuntimeConfig).GetField(name) is not { } field)
                 continue;
@@ -50,9 +50,8 @@ public static partial class RuntimeConfig
     [TimedEvent(1000 * 60)]
     public static Task SaveConfig()
     {
-        RuntimeConfigFieldEntry[] fields = Fields
-            .Select(x => new RuntimeConfigFieldEntry(x.Field.Name, Serialize(x.Field.GetValue(null))))
-            .ToArray();
+        Dictionary<string, string?> fields = Fields
+            .ToDictionary(x => x.Field.Name, x => Serialize(x.Field.GetValue(null)));
         File.WriteAllText(Path, fields.ToJson());
 
         return Task.CompletedTask;

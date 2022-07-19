@@ -40,4 +40,7 @@ public static partial class StringPrompts
 
     [StringPromptField]
     public static string ServerSuggestionsHiddenVoteReason;
+
+    [StringPromptField]
+    public static string InviteCookieAwardMessage;
 }

@@ -1,5 +1,4 @@
 ﻿using TLCBot2.Attributes;
-using TLCBot2.Data;
 using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Utilities;
 

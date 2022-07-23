@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Data.StringPrompts;
 using TLCBot2.Types;
@@ -11,7 +10,7 @@ namespace TLCBot2.ApplicationCommands;
 public partial class InteractionCommands
 {
     [ComponentInteraction("feedback-button;*")]
-    public async Task DashboardFeedbackSelectMenuResponse(string selectedOption)
+    public async Task FeedbackSelectMenuResponse(string selectedOption)
     {
         switch (selectedOption)
         {

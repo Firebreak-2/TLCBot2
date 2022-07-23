@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using System.Text.RegularExpressions;
 using TLCBot2.Attributes;
-using TLCBot2.CommandLine.Commands;
 using TLCBot2.Core;
 using TLCBot2.Utilities;
 
@@ -32,17 +31,19 @@ public static partial class StringPrompts
     {
         foreach ((FieldInfo field, var _) in Prompts)
         {
-            const string noValue = "No value provided";
+            string noValue = Helper.Rando.Paragraph();
             string filePath = $"{DirPath}/{field.Name}.quack";
             
-            if (!File.Exists(filePath))
+            if (!File.Exists(filePath) 
+                || await Task.Run(() => File.ReadAllText(filePath))
+                    is var text && text.Length == 0)
             {
                 field.SetValue(null, noValue);
-                await Task.Run(() => File.WriteAllText(filePath, noValue));
+                await Task.Run(() => File.WriteAllText(filePath, ""));
                 continue;
             }
             
-            field.SetValue(null, await Task.Run(() => File.ReadAllText(filePath)));
+            field.SetValue(null, text);
         }
     }
 

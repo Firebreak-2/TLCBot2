@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
 using TLCBot2.Attributes;
@@ -15,6 +14,40 @@ public static partial class TerminalCommands
     [TerminalCommand]
     public static async Task Dashboard(DashboardAction action, SocketTextChannel channel)
     {
+        await HandleDashboardShenanigans(action, channel,
+            (StringPrompts.DashboardDirectory, new ComponentBuilder()
+                .WithSelectMenu("dashboard-directory-select-menu", new List<SelectMenuOptionBuilder>
+                {
+                    new("Hangout", "h"),
+                    new("Share", "s"),
+                    new("Improve & Support", "i"),
+                }, "Server Directory")
+            ),
+            (StringPrompts.DashboardRoleMenu, new ComponentBuilder()
+                .WithSelectMenu("rolemenu-select-menu",
+                    GetCategoricalRoles()
+                        .Where(x => x.Key != "")
+                        .Select(x => new SelectMenuOptionBuilder()
+                            .WithLabel(x.Key + " Category")
+                            .WithValue(x.Key))
+                        .ToList(), "Role Menu")
+            ),
+            (StringPrompts.DashboardFeedback, new ComponentBuilder()
+                .WithButton("Server Suggestion", "feedback-button;s", ButtonStyle.Secondary)
+                .WithButton("QOTD Suggestion", "feedback-button;q", ButtonStyle.Secondary)
+                .WithButton("Bot Bug Report", "feedback-button;b", ButtonStyle.Secondary)
+            ),
+            (StringPrompts.DashboardModApp, new ComponentBuilder()
+                .WithButton("Apply For Moderator", url: "https://forms.gle/aZGLuV2UDB11YDTv7", style: ButtonStyle.Link)
+                .WithButton("Apply For Council", url: "https://example.com", style: ButtonStyle.Link)
+                .WithButton("Apply For Cookie Helper", url: "https://example.com", style: ButtonStyle.Link)
+            )
+        );
+    }
+
+    public static async Task HandleDashboardShenanigans(DashboardAction action, SocketTextChannel channel,
+        params (string text, ComponentBuilder components)[] items)
+    {
         async Task PostMessage(string text, ComponentBuilder components, IUserMessage? editMessage = null)
         {
             if (editMessage is { })
@@ -26,43 +59,7 @@ public static partial class TerminalCommands
             else
                 await channel.SendMessageAsync(text, components: components.Build());
         }
-
-        List<(string text, ComponentBuilder components)> items = new()
-        {
-            (StringPrompts.DashboardDirectory, new ComponentBuilder()
-                    .WithSelectMenu("dashboard-directory-select-menu", new List<SelectMenuOptionBuilder>
-                    {
-                        new("Hangout", "h"),
-                        new("Share", "s"),
-                        new("Improve & Support", "i"),
-                    }, "Server Directory")
-            ),
-            (StringPrompts.DashboardRoleMenu, new ComponentBuilder()
-                    .WithSelectMenu("rolemenu-select-menu",
-                        GetCategoricalRoles()
-                            .Where(x => x.Key != "")
-                            .Select(x => new SelectMenuOptionBuilder()
-                                .WithLabel(x.Key + " Category")
-                                .WithValue(x.Key))
-                            .ToList(), "Role Menu")
-            ),
-            (StringPrompts.DashboardFeedback, new ComponentBuilder()
-                    // .WithSelectMenu("feedback-select-menu", new List<SelectMenuOptionBuilder>
-                    // {
-                    //     new("Server Suggestion", "s", StringPrompts.DashboardFeedbackSuggestion),
-                    //     new("QOTD Suggestion", "q", StringPrompts.DashboardFeedbackQOTD),
-                    //     new("Bug Report", "b", StringPrompts.DashboardFeedbackBug),
-                    // }, "Feedback")
-                    .WithButton("Server Suggestion", "feedback-button;s", ButtonStyle.Secondary)
-                    .WithButton("QOTD Suggestion", "feedback-button;q", ButtonStyle.Secondary)
-                    .WithButton("Bot Bug Report", "feedback-button;b", ButtonStyle.Secondary)
-            ),
-            (StringPrompts.DashboardModApp, new ComponentBuilder()
-                    .WithButton("Apply For Moderator", url: "https://forms.gle/aZGLuV2UDB11YDTv7", style: ButtonStyle.Link)
-                    .WithButton("Apply For Council", url: "https://example.com", style: ButtonStyle.Link)
-                    .WithButton("Apply For Cookie Helper", url: "https://example.com", style: ButtonStyle.Link)
-            )
-        };
+        
         switch (action)
         {
             case DashboardAction.Create:

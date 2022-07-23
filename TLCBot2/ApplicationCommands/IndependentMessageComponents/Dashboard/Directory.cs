@@ -6,7 +6,7 @@ namespace TLCBot2.ApplicationCommands;
 public partial class InteractionCommands
 {
     [ComponentInteraction("dashboard-directory-select-menu")]
-    public async Task DashboardDirectorySelectMenuResponse(string[] selectedOptions)
+    public async Task DirectorySelectMenuResponse(string[] selectedOptions)
     {
         switch (selectedOptions[0])
         {

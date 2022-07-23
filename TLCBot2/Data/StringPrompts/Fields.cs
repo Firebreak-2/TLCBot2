@@ -1,5 +1,4 @@
-﻿using Discord;
-using TLCBot2.Attributes;
+﻿using TLCBot2.Attributes;
 
 namespace TLCBot2.Data.StringPrompts;
 
@@ -43,4 +42,7 @@ public static partial class StringPrompts
 
     [StringPromptField]
     public static string InviteCookieAwardMessage;
+
+    [StringPromptField]
+    public static string ModboardLogChannelConfig;
 }

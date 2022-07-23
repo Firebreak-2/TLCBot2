@@ -1,5 +1,4 @@
-﻿using Discord.WebSocket;
-using Humanizer;
+﻿using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using TLCBot2.Attributes;
 using TLCBot2.Core;

@@ -1,7 +1,4 @@
-﻿using Discord;
-using Discord.Rest;
-using Discord.WebSocket;
-using Humanizer;
+﻿using Discord.WebSocket;
 using TLCBot2.Attributes;
 using TLCBot2.Core;
 using TLCBot2.Data.RuntimeConfig;
@@ -16,11 +13,14 @@ public static partial class Log
     public static async Task MessageReceived() =>
         Program.Client.MessageReceived += async message =>
         {
+            if (message.Channel.Id == RuntimeConfig.ServerLogsChannel?.Id)
+                return;
+            
             const string name = nameof(DiscordSocketClient.MessageReceived);
             (Importance importance, string[] tags) = LoggingEventData.All[name];
             
             var logEntry = new LogEntry(name, importance, 
-                $"[{message.Author.Username}] sent a message in {message.Channel.Id}",
+                $"[{message.Author.Username}] sent a message in channel [{message.Channel.Id}]",
                 tags.Select(x => x.MappedFormat(
                     ("user", message.Author.Id),
                     ("channel", message.Channel.Id),

@@ -1,8 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.Rest;
 using Discord.WebSocket;
-using MoreLinq;
 using TLCBot2.Core;
 using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Utilities;

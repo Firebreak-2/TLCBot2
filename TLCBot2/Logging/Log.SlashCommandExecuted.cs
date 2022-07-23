@@ -1,10 +1,7 @@
-﻿using Discord;
-using Discord.Rest;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Humanizer;
 using TLCBot2.Attributes;
 using TLCBot2.Core;
-using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Types;
 using TLCBot2.Utilities;
 
@@ -27,8 +24,8 @@ public static partial class Log
                         x => x.Name,
                         x => new
                         {
-                            Value = x.Value.ToString(), 
-                            Type = x.Type.ToString()
+                            Value = x.Value?.ToString().EnsureString(), 
+                            Type = x.Type.Humanize().EnsureString()
                         })}
             };
 

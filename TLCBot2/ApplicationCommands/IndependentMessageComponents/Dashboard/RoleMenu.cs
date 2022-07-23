@@ -2,7 +2,6 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using TLCBot2.CommandLine.Commands;
-using TLCBot2.Data.StringPrompts;
 
 namespace TLCBot2.ApplicationCommands;
 

@@ -1,10 +1,6 @@
-﻿using Discord;
-using Discord.Rest;
-using Discord.WebSocket;
-using Humanizer;
+﻿using Discord.WebSocket;
 using TLCBot2.Attributes;
 using TLCBot2.Core;
-using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Types;
 using TLCBot2.Utilities;
 
@@ -26,7 +22,7 @@ public static partial class Log
             (Importance importance, string[] tags) = LoggingEventData.All[name];
             
             var logEntry = new LogEntry(name, importance, 
-                $"[{user.Username}] is typing in {channel.Id}",
+                $"[{user.Username}] is typing in channel [{channel.Id}]",
                 tags.Select(x => x.MappedFormat(
                     ("user", user.Id),
                     ("channel", channel.Id)

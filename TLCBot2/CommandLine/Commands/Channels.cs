@@ -1,8 +1,5 @@
 ﻿using System.Text;
-using Discord;
 using Discord.WebSocket;
-using JetBrains.Annotations;
-using TLCBot2.Attributes;
 using TLCBot2.Core;
 using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Utilities;

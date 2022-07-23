@@ -1,10 +1,6 @@
-﻿using Discord.Rest;
-using Discord.WebSocket;
-using SixLabors.ImageSharp;
+﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using TLCBot2.Attributes;
 using TLCBot2.CommandLine.Commands;
-using TLCBot2.Core;
 using TLCBot2.Utilities;
 using Image = Discord.Image;
 

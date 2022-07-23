@@ -1,10 +1,7 @@
 ﻿using Discord;
-using Discord.Rest;
 using Discord.WebSocket;
-using Humanizer;
 using TLCBot2.Attributes;
 using TLCBot2.Core;
-using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Types;
 using TLCBot2.Utilities;
 
@@ -22,12 +19,12 @@ public static partial class Log
             var oldFields = new Dictionary<string, object>
             {
                 {"Status", oldPresence.Status.ToString()},
-                {"Active Clients", oldPresence.ActiveClients.Select(x => x.ToString())},
+                {"Active Clients", oldPresence.ActiveClients?.Select(x => x.ToString()).ToArray() ?? Array.Empty<string>()},
             };
             var newFields = new Dictionary<string, object>
             {
                 {"Status", newPresence.Status.ToString()},
-                {"Active Clients", newPresence.ActiveClients.Select(x => x.ToString())},
+                {"Active Clients", newPresence.ActiveClients?.Select(x => x.ToString()).ToArray() ?? Array.Empty<string>()},
             };
             
             var fields = oldFields.Keys

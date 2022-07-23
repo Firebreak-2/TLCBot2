@@ -1,8 +1,6 @@
 ﻿using Discord;
-using TLCBot2.Core;
 using TLCBot2.Data;
 using TLCBot2.Data.RuntimeConfig;
-using TLCBot2.Logging.LogConfig;
 using TLCBot2.Types;
 
 namespace TLCBot2.Logging;
@@ -11,7 +9,7 @@ public static partial class Log
 {
     private static async Task ToFile(LogEntry entry)
     {
-        OnEventLog(entry.EventName, entry);
+        await OnEventLog(entry.EventName, entry);
         
         await using var db = new TlcDbContext();
         await db.Logs.AddAsync(entry);
@@ -20,7 +18,7 @@ public static partial class Log
 
     private static async Task ToChannel(LogEntry entry, Func<EmbedBuilder, EmbedBuilder> embed)
     {
-        if (!ChannelLogFilter.ShouldLog(entry))
+        if (!RuntimeLogConfig.ShouldLog(entry))
             return;
             
         if (RuntimeConfig.ServerLogsChannel is { } channel)
@@ -32,7 +30,7 @@ public static partial class Log
         }
     }
 
-    public static event EventHandler<LogEntry> OnEventLog;
+    public static event Func<string, LogEntry, Task> OnEventLog;
 
     public enum Importance
     {

@@ -1,7 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
-using TLCBot2.Attributes;
 using TLCBot2.CommandLine.Commands;
 
 namespace TLCBot2.ApplicationCommands;

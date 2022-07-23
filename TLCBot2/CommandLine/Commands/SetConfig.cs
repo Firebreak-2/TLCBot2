@@ -1,5 +1,4 @@
 ﻿using TLCBot2.Attributes;
-using TLCBot2.Data;
 using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Utilities;
 
@@ -23,7 +22,7 @@ public static partial class TerminalCommands
             ? f.Field
             : throw new Exception($"No config with the name [{field}] found");
         
-        object val = Helper.ConvertFromString(newValue, fieldInfo.FieldType);
+        object? val = Helper.ConvertFromString(newValue, fieldInfo.FieldType);
 
         string oldVal = fieldInfo.GetValue(null)?.ToString() ?? "null";
         fieldInfo.SetValue(null, val);

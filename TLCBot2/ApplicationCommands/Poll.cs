@@ -1,9 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Newtonsoft.Json;
 using TLCBot2.Core;
-using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Types;
 using TLCBot2.Utilities;
 

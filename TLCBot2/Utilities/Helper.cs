@@ -1,5 +1,4 @@
-﻿using System.CodeDom;
-using System.Collections;
+﻿using System.Collections;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -7,7 +6,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
-using Humanizer;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
@@ -15,7 +13,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TLCBot2.Attributes;
 using TLCBot2.Core;
-using TLCBot2.Data;
 using TLCBot2.Data.RuntimeConfig;
 using Image = SixLabors.ImageSharp.Image;
 
@@ -34,6 +31,9 @@ public static partial class Helper
 
         return Task.CompletedTask;
     }
+
+    public static bool CaselessEquals(this string str, string str2) => 
+        string.Equals(str, str2, StringComparison.CurrentCultureIgnoreCase);
 
     public static readonly Regex MentionDeFormatRegex = new(@"<(#|@[!&]?)(\d+)>", RegexOptions.Compiled);
     private static Random _rand = new();

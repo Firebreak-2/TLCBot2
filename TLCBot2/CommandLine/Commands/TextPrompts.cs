@@ -1,10 +1,7 @@
 ﻿using System.Reflection;
 using System.Text;
-using Discord.WebSocket;
 using TLCBot2.Attributes;
-using TLCBot2.Data.RuntimeConfig;
 using TLCBot2.Data.StringPrompts;
-using TLCBot2.Utilities;
 
 namespace TLCBot2.CommandLine.Commands;
 

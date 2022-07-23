@@ -1,6 +1,4 @@
 ﻿using Discord;
-using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
 using TLCBot2.Attributes;
 using TLCBot2.Core;
@@ -72,7 +70,7 @@ public static partial class Log
 
                 return embed
                     .AddField("In Channel", $"<#{channel?.Id ?? 0}>")
-                    .AddField("[uncertain] Deleted By", $"{user?.Mention.EnsureString()}");
+                    .AddField("[uncertain] Deleted By", $"{(user?.Mention).EnsureString()}");
             });
         };
 }

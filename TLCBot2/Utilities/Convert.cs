@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Text.RegularExpressions;
 using Discord;
 using TLCBot2.Core;
 using TLCBot2.Data.RuntimeConfig;
@@ -103,5 +102,5 @@ public static partial class Helper
             _ => obj?.ToJson()
         };
 
-    public static T ConvertFromString<T>(string strVal) => (T) ConvertFromString(strVal, typeof(T));
+    public static T? ConvertFromString<T>(string strVal) => (T?) ConvertFromString(strVal, typeof(T));
 }

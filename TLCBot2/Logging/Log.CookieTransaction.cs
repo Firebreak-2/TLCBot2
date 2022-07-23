@@ -1,7 +1,6 @@
 ﻿using Discord.WebSocket;
 using TLCBot2.Types;
 using TLCBot2.Utilities;
-using TLCBot2.Core;
 
 namespace TLCBot2.Logging;
 

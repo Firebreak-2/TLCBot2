@@ -1,0 +1,46 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "title": "Event Data Schema",
+    "type": "object",
+    "description": "A dictionary of events (key: name, value: event)",
+    "additionalProperties": {
+        "properties": {
+            "Importance": {
+                "description": "The importance of an event",
+                "type": "string",
+                "enum": ["Useless", "Neutral", "Warning", "Dangerous"]
+            },
+            "Tags": {
+                "description": "The associated tags of the event",
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "SERVERS",                        // has something to do with a server directly
+                        "USERS",                          // has something to do with a user directly
+                        "ROLES",                          // has something to do with a role directly
+                        "CHANNELS",                       // has something to do with a channel directly
+                        "THREADS",                        // has something to do with a thread directly
+                        "MESSAGES",                       // has something to do with a message directly
+                        "COOKIES",                        // has something to do with the economy
+                        "REACTIONS",                      // has something to do with reactions
+                        "BOT",                            // has something to do with the bot. i.e commands, buttons, etc
+                        "MESSAGE_COMPONENTS",             // a message component type (buttons, select menus, ..)
+                        //! "EVENTS",                     // has something to do with server events
+                        //! "MODERATION",                 // has something to do with moderation
+                        "USER={user}",                    // the specific user that triggered the event
+                        "TARGET_USER={targetUser}",       // the specific user that the event is targetting
+                        "TARGET_MESSAGE={targetMessage}", // the specific message that the event is targetting
+                        "ROLE={role}",                    // the specific role that triggered the event
+                        "REACTION_EMOTE={emote}",         // the specific reaction that triggered the event
+                        "CHANNEL={channel}",              // the specific channel that triggered the event
+                        "THREAD={thread}",                // the specific channel that triggered the event
+                        "MESSAGE={message}",              // the specific message that triggered the event
+                        "COMPONENT_ID={customId}",        // the Custom ID of the message component
+                        "COMPONENT_TYPE={cType}"          // the Type of the message component
+                    ]
+                }
+            }
+        }
+    }
+}

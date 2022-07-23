@@ -1,0 +1,235 @@
+{
+    "$schema": "eventData.schema.json",
+    "ChannelCreated": {
+        "Importance": "Neutral",
+        "Tags": ["CHANNELS", "CHANNEL={channel}", "USER={user}"]
+    },
+    "ChannelDestroyed": {
+        "Importance": "Dangerous",
+        "Tags": ["CHANNELS", "CHANNEL={channel}", "USER={user}"]
+    },
+    "ChannelUpdated": {
+        "Importance": "Neutral",
+        "Tags": ["CHANNELS", "CHANNEL={channel}", "USER={user}"]
+    },
+    "MessageReceived": {
+        "Importance": "Useless",
+        "Tags": ["MESSAGES", "CHANNEL={channel}", "MESSAGE={message}", "USER={user}"]
+    },
+    "MessageDeleted": {
+        "Importance": "Neutral",
+        "Tags": ["MESSAGES", "CHANNEL={channel}", "MESSAGE={message}", "USER={user}", "TARGET_USER={targetUser}"]
+    },
+    "MessagesBulkDeleted": {
+        "Importance": "Warning",
+        "Tags": ["MESSAGES", "CHANNEL={channel}", "USER={user}"]
+    },
+    "MessageUpdated": {
+        "Importance": "Neutral",
+        "Tags": ["MESSAGES", "REACTIONS", "CHANNEL={channel}", "MESSAGE={message}", "USER={user}", "REACTION_EMOTE={emote}"]
+    },
+    "ReactionAdded": {
+        "Importance": "Useless",
+        "Tags": ["MESSAGES", "REACTIONS", "CHANNEL={channel}", "MESSAGE={message}", "USER={user}", "REACTION_EMOTE={emote}"]
+    },
+    "ReactionRemoved": {
+        "Importance": "Useless",
+        "Tags": ["MESSAGES", "REACTIONS", "CHANNEL={channel}", "MESSAGE={message}", "USER={user}", "REACTION_EMOTE={emote}"]
+    },
+    "ReactionsCleared": {
+        "Importance": "Warning",
+        "Tags": ["MESSAGES", "REACTIONS", "CHANNEL={channel}", "MESSAGE={message}"]
+    },
+    "ReactionsRemovedForEmote": {
+        "Importance": "Warning",
+        "Tags": ["MESSAGES", "CHANNEL={channel}", "MESSAGE={message}", "REACTION_EMOTE={emote}"]
+    },
+    "RoleCreated": {
+        "Importance": "Neutral",
+        "Tags": ["ROLES", "ROLE={role}", "USER={user}"]
+    },
+    "RoleDeleted": {
+        "Importance": "Warning",
+        "Tags": ["ROLES", "ROLE={role}", "USER={user}"]
+    },
+    "RoleUpdated": {
+        "Importance": "Neutral",
+        "Tags": ["ROLES", "ROLE={role}", "USER={user}"]
+    },
+    "GuildUpdated": {
+        "Importance": "Warning",
+        "Tags": ["SERVERS", "USER={user}"]
+    },
+    "GuildJoinRequestDeleted": {
+        "Importance": "Neutral",
+        "Tags": ["SERVERS", "USERS", "USER={user}"]
+    },
+    //! "GuildScheduledEventCreated": {
+    //!     "Importance": "Useless",
+    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}", "USER={user}"]
+    //! },
+    //! "GuildScheduledEventUpdated": {
+    //!     "Importance": "Useless",
+    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
+    //! },
+    //! "GuildScheduledEventCancelled": {
+    //!     "Importance": "Useless",
+    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
+    //! },
+    //! "GuildScheduledEventCompleted": {
+    //!     "Importance": "Useless",
+    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
+    //! },
+    //! "GuildScheduledEventStarted": {
+    //!     "Importance": "Useless",
+    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
+    //! },
+    //! "GuildScheduledEventUserAdd": {
+    //!     "Importance": "Useless",
+    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
+    //! },
+    //! "GuildScheduledEventUserRemove": {
+    //!     "Importance": "Useless",
+    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
+    //! },
+    //! "IntegrationCreated": {
+    //!     "Importance": "Neutral",
+    //!     "Tags": ["SERVERS", "USER={user}"]
+    //! },
+    //! "IntegrationUpdated": {
+    //!     "Importance": "Neutral",
+    //!     "Tags": []
+    //! },
+    //! "IntegrationDeleted": {
+    //!     "Importance": "Warning",
+    //!     "Tags": []
+    //! },
+    "UserJoined": {
+        "Importance": "Neutral",
+        "Tags": ["USERS", "USER={user}", "TARGET_USER={targetUser}"]
+    },
+    "UserLeft": {
+        "Importance": "Neutral",
+        "Tags": ["USERS", "USER={user}", "TARGET_USER={targetUser}"]
+    },
+    "UserBanned": {
+        "Importance": "Warning",
+        "Tags": ["USERS", "USER={user}", "TARGET_USER={targetUser}"]
+    },
+    "UserUnbanned": {
+        "Importance": "Warning",
+        "Tags": ["USERS", "USER={user}", "TARGET_USER={targetUser}"]
+    },
+    "GuildMemberUpdated": {
+        "Importance": "Useless",
+        "Tags": ["USERS", "USER={user}"]
+    },
+    "UserVoiceStateUpdated": {
+        "Importance": "Useless",
+        "Tags": ["USERS", "USER={user}"]
+    },
+    "UserIsTyping": {
+        "Importance": "Useless",
+        "Tags": ["CHANNELS", "USERS", "USER={user}", "CHANNEL={channel}"]
+    },
+    "PresenceUpdated": {
+        "Importance": "Useless",
+        "Tags": ["USERS", "USER={user}"]
+    },
+    "InviteCreated": {
+        "Importance": "Neutral",
+        "Tags": ["SERVERS"]
+    },
+    "InviteDeleted": {
+        "Importance": "Neutral",
+        "Tags": ["SERVERS"]
+    },
+    "InteractionCreated": {
+        "Importance": "Useless",
+        "Tags": ["BOT", "CHANNEL={channel}", "USER={user}"]
+    },
+    "ButtonExecuted": {
+        "Importance": "Useless",
+        "Tags": ["BOT", "MESSAGE_COMPONENTS", "CHANNEL={channel}", "USER={user}", "MESSAGE={message}", "COMPONENT_ID={customId}", "COMPONENT_TYPE={cType}"]
+    },
+    "SelectMenuExecuted": {
+        "Importance": "Useless",
+        "Tags": ["BOT", "MESSAGE_COMPONENTS", "CHANNEL={channel}", "USER={user}", "MESSAGE={message}", "COMPONENT_ID={customId}", "COMPONENT_TYPE={cType}"]
+    },
+    "SlashCommandExecuted": {
+        "Importance": "Useless",
+        "Tags": ["BOT", "CHANNEL={channel}", "USER={user}"]
+    },
+    "UserCommandExecuted": {
+        "Importance": "Useless",
+        "Tags": ["BOT", "CHANNEL={channel}", "USER={user}", "TARGET_USER={targetUser}"]
+    },
+    "MessageCommandExecuted": {
+        "Importance": "Useless",
+        "Tags": ["BOT", "CHANNEL={channel}", "USER={user}", "MESSAGE={message}"]
+    },
+    "ModalSubmitted": {
+        "Importance": "Useless",
+        "Tags": ["BOT", "CHANNEL={channel}", "USER={user}"]
+    },
+    "ThreadCreated": {
+        "Importance": "Neutral",
+        "Tags": ["CHANNELS", "THREADS", "USER={user}", "THREAD={thread}", "CHANNEL={channel}"]
+    },
+    "ThreadUpdated": {
+        "Importance": "Neutral",
+        "Tags": ["CHANNELS", "THREADS", "USER={user}", "THREAD={thread}", "CHANNEL={channel}"]
+    },
+    "ThreadDeleted": {
+        "Importance": "Neutral",
+        "Tags": ["CHANNELS", "THREADS", "USER={user}", "THREAD={thread}", "CHANNEL={channel}"]
+    },
+    "ThreadMemberJoined": {
+        "Importance": "Useless",
+        "Tags": ["THREADS", "USERS", "USER={user}", "THREAD={thread}"]
+    },
+    "ThreadMemberLeft": {
+        "Importance": "Useless",
+        "Tags": ["THREADS", "USERS", "USER={user}", "THREAD={thread}"]
+    },
+    //! "StageStarted": {
+    //!     "Importance": "Useless",
+    //!     "Tags": []
+    //! },
+    //! "StageEnded": {
+    //!     "Importance": "Useless",
+    //!     "Tags": []
+    //! },
+    //! "StageUpdated": {
+    //!     "Importance": "Useless",
+    //!     "Tags": []
+    //! },
+    //! "RequestToSpeak": {
+    //!     "Importance": "Useless",
+    //!     "Tags": []
+    //! },
+    //! "SpeakerAdded": {
+    //!     "Importance": "Useless",
+    //!     "Tags": []
+    //! },
+    //! "SpeakerRemoved": {
+    //!     "Importance": "Useless",
+    //!     "Tags": []
+    //! },
+    "GuildStickerCreated": {
+        "Importance": "Neutral",
+        "Tags": ["SERVERS", "USER={user}"]
+    },
+    "GuildStickerUpdated": {
+        "Importance": "Neutral",
+        "Tags": ["SERVERS", "USER={user}"]
+    },
+    "GuildStickerDeleted": {
+        "Importance": "Warning",
+        "Tags": ["SERVERS", "USER={user}"]
+    },
+    "UserBalanceUpdated": {
+        "Importance": "Useless",
+        "Tags": ["COOKIES", "USERS", "USER={user}", "TARGET_USER={targetUser}"]
+    }
+}

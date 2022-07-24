@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "title": "Component Action Schema",
+    "description": "A schema that describes a Component Action data structure",
+    "type": "object",
+    "properties": {
+        "ActionId": {
+            "description": "The name of the action that will be executed",
+            "type": ["string", "null"]
+        },
+        "Parameters": {
+            "description": "The arguments that will be given to the action when executed",
+            "type": "object",
+            "additionalProperties": true
+        }
+    },
+    "required": ["ActionId"]
+}

@@ -27,15 +27,16 @@ public partial class InteractionCommands
                 var data = SearchQueryToData(query);
 
                 string results = "";
+                string devModeAddition = $"```\n" +
+                                         $"names  : {string.Join(" | ", data.FilteredNames)}\n" +
+                                         $"tags   : {string.Join(" | ", data.FilteredTags.Select(x => $"[{string.Join(" & ", x)}]"))}\n" +
+                                         $"times  : {string.Join(" | ", data.FilteredTimes)}\n" +
+                                         $"returns: {string.Join(", ", data.ReturnData)}\n" +
+                                         $"limit  : {data.ResultLimit}\n" +
+                                         $"```\n";
 
                 if (Program.DeveloperMode)
-                    results += $"```\n" +
-                               $"names  : {string.Join(" | ", data.FilteredNames)}\n" +
-                               $"tags   : {string.Join(" | ", data.FilteredTags.Select(x => $"[{string.Join(" & ", x)}]"))}\n" +
-                               $"times  : {string.Join(" | ", data.FilteredTimes)}\n" +
-                               $"returns: {string.Join(", ", data.ReturnData)}\n" +
-                               $"limit  : {data.ResultLimit}\n" +
-                               $"```\n";
+                    results += devModeAddition;
                     
                 results += $"```\n" +
                           $"{string.Join("```\n```\n", await data.Search())}\n" +
@@ -65,7 +66,9 @@ public partial class InteractionCommands
                     
                     await RespondWithFileAsync(
                         new FileAttachment(stream, "query.txt"),
-                        "Query Result",
+                        devModeAddition.Length == 0 
+                            ? "Query Result"
+                            : devModeAddition,
                         ephemeral: true);
                     
                     await writer.DisposeAsync();
@@ -357,7 +360,9 @@ public partial class InteractionCommands
                     .Where(x =>
                     {
                         {
-                            bool proceed = false;
+                            // true if no filter, false if some filter exists
+                            bool proceed = !FilteredImportances.Any();
+                            
                             foreach (string filteredImportance in FilteredImportances)
                             {
                                 (string expression, string importance) =

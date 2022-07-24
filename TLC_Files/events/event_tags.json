@@ -64,46 +64,6 @@
         "Importance": "Neutral",
         "Tags": ["SERVERS", "USERS", "USER={user}"]
     },
-    //! "GuildScheduledEventCreated": {
-    //!     "Importance": "Useless",
-    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}", "USER={user}"]
-    //! },
-    //! "GuildScheduledEventUpdated": {
-    //!     "Importance": "Useless",
-    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
-    //! },
-    //! "GuildScheduledEventCancelled": {
-    //!     "Importance": "Useless",
-    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
-    //! },
-    //! "GuildScheduledEventCompleted": {
-    //!     "Importance": "Useless",
-    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
-    //! },
-    //! "GuildScheduledEventStarted": {
-    //!     "Importance": "Useless",
-    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
-    //! },
-    //! "GuildScheduledEventUserAdd": {
-    //!     "Importance": "Useless",
-    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
-    //! },
-    //! "GuildScheduledEventUserRemove": {
-    //!     "Importance": "Useless",
-    //!     "Tags": ["SERVERS", "EVENTS", "CHANNEL={channel}"]
-    //! },
-    //! "IntegrationCreated": {
-    //!     "Importance": "Neutral",
-    //!     "Tags": ["SERVERS", "USER={user}"]
-    //! },
-    //! "IntegrationUpdated": {
-    //!     "Importance": "Neutral",
-    //!     "Tags": []
-    //! },
-    //! "IntegrationDeleted": {
-    //!     "Importance": "Warning",
-    //!     "Tags": []
-    //! },
     "UserJoined": {
         "Importance": "Neutral",
         "Tags": ["USERS", "USER={user}", "TARGET_USER={targetUser}"]
@@ -192,30 +152,6 @@
         "Importance": "Useless",
         "Tags": ["THREADS", "USERS", "USER={user}", "THREAD={thread}"]
     },
-    //! "StageStarted": {
-    //!     "Importance": "Useless",
-    //!     "Tags": []
-    //! },
-    //! "StageEnded": {
-    //!     "Importance": "Useless",
-    //!     "Tags": []
-    //! },
-    //! "StageUpdated": {
-    //!     "Importance": "Useless",
-    //!     "Tags": []
-    //! },
-    //! "RequestToSpeak": {
-    //!     "Importance": "Useless",
-    //!     "Tags": []
-    //! },
-    //! "SpeakerAdded": {
-    //!     "Importance": "Useless",
-    //!     "Tags": []
-    //! },
-    //! "SpeakerRemoved": {
-    //!     "Importance": "Useless",
-    //!     "Tags": []
-    //! },
     "GuildStickerCreated": {
         "Importance": "Neutral",
         "Tags": ["SERVERS", "USER={user}"]

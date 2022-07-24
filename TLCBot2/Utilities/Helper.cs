@@ -587,6 +587,35 @@ public static partial class Helper
         
         return (offset, format);
     }
+    
+    public static string GetJumpURL(this MessageReference reference)
+    {
+        return $"https://discord.com/channels/{reference.GuildId}/{reference.ChannelId}/{reference.MessageId}";
+    }
+    
+    private static readonly Regex _matchNumberRegex = new(@"\d+", RegexOptions.Compiled);
+    public static (ulong GuildId, ulong ChannelId, ulong MessageId) MessageInfoFromJumpUrl(string jumpUrl)
+    {
+        var matches = _matchNumberRegex.Matches(jumpUrl);
+        ulong guildId = ulong.Parse(matches[0].Value);
+        ulong channelId = ulong.Parse(matches[1].Value);
+        ulong messageId = ulong.Parse(matches[2].Value);
+        return (guildId, channelId, messageId);
+    }
+    public static async Task<IMessage> MessageFromJumpUrl(string jumpUrl)
+    {
+        (ulong guildId, ulong channelId, ulong messageId) = MessageInfoFromJumpUrl(jumpUrl);
+        return await ((SocketTextChannel) Program.Client.GetGuild(guildId).GetChannel(channelId))
+            .GetMessageAsync(messageId);
+    }
+    public static MessageReference MessageReferenceFromJumpUrl(string jumpUrl)
+    {
+        var matches = _matchNumberRegex.Matches(jumpUrl);
+        ulong guild = ulong.Parse(matches[0].Value);
+        ulong channel = ulong.Parse(matches[1].Value);
+        ulong message = ulong.Parse(matches[2].Value);
+        return new MessageReference(message, channel, guild);
+    }
 
     public static string EnsureString(this string? str, string defaultValue = "_") =>
         string.IsNullOrEmpty(str) 

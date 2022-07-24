@@ -1,0 +1,165 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "title": "Message Data Schema",
+    "description": "A json schema created to describe Message Data structures",
+    "type": "object",
+    "properties": {
+        "Text": {
+            "description": "The text to be sent in the discord message",
+            "type": ["string", "null"]
+        },
+        "ReferenceJumpUrl": {
+            "description": "The Jump URL of the message that this message will be replying to",
+            "type": ["string", "null"]
+        },
+        "ComponentRows": {
+            "description": "A list of rows of components that the message will contain",
+            "type": ["array", "null"],
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["ComponentType"],
+                    "properties": {
+                        //* Global Properties
+                        "ComponentType": {
+                            "description": "The type of the message component",
+                            "type": "string",
+                            "enum": ["Button", "SelectMenu"]
+                        },
+                        "ActionLink": {
+                            "description": "The Jump URL that contains the JSON instructions on what to do when the component is executed",
+                            "type": ["string", "null"]
+                        },
+                        
+                        //* Button Properties
+                        "ButtonLabel": {
+                            "description": "The label of the button",
+                            "type": ["string", "null"]
+                        },
+                        "ButtonColor": {
+                            "description": "The color of the button",
+                            "type": ["string", "null"],
+                            "enum": ["Green", "Blue", "Red", "Gray"]
+                        },
+
+                        //* Select Menu Properties
+                        "SelectMenuPlaceholder": {
+                            "type": ["string", "null"],
+                            "description": "The placeholder selection for the select menu"
+                        },
+                        "SelectMenuMinValues": {
+                            "type": ["integer", "null"],
+                            "description": "The minimum amount of values a user can select in this select menu",
+                            "minimum": 0,
+                            "maximum": 25
+                        },
+                        "SelectMenuMaxValues": {
+                            "type": ["integer", "null"],
+                            "description": "The maximum amount of values a user can select in this select menu",
+                            "minimum": 0,
+                            "maximum": 25
+                        },
+                        "SelectMenuOptions": {
+                            "type": "array",
+                            "description": "The values in the select menu",
+                            "minimum": 1,
+                            "maximum": 25,
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "Label": {
+                                        "type": "string",
+                                        "description": "The name/value of this option"
+                                    },
+                                    "Description": {
+                                        "type": ["string", "null"],
+                                        "description": "A description of what this value will do"
+                                    },
+                                    "IsDefault": {
+                                        "type": ["boolean", "null"],
+                                        "description": "Whether or not this is the default selected value in the select menu"
+                                    }
+                                },
+                                "required": ["Label"]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "Embed": {
+            "description": "The bot embed to be sent in the message",
+            "type": ["object", "null"],
+            "properties": {
+                "Color": {
+                    "description": "The color on the left of the embed",
+                    "type": ["object", "null"],
+                    "properties": {
+                        "Red": {
+                            "description": "The red value in the RGB of the color",
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 255
+                        },
+                        "Blue": {
+                            "description": "The blue value in the RGB of the color",
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 255
+                        },
+                        "Green": {
+                            "description": "The green value in the RGB of the color",
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 255
+                        }
+                    },
+                    "required": ["Red", "Green", "Blue"]
+                },
+                "Author": {
+                    "description": "The User ID of the person to be attached on the embed",
+                    "type": ["integer", "null"]
+                },
+                "Description": {
+                    "type": ["string", "null"],
+                    "description": "The description attached to the embed"
+                },
+                "Fields": {
+                    "type": ["array", "null"],
+                    "description": "The fields to be included in the embed",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "Name": {
+                                "type": "string",
+                                "description": "The title of the field"
+                            },
+                            "Value": {
+                                "type": "string",
+                                "description": "The value of the field, under the title"
+                            }
+                        },
+                        "required": ["Name", "Value"]
+                    }
+                },
+                "Footer": {
+                    "type": ["string", "null"],
+                    "description": "The small text attached at the bottom of the embed"
+                },
+                "ImageUrl": {
+                    "type": ["string", "null"],
+                    "description": "The URL of the image that will be displayed on the embed"
+                },
+                "UnixTimestamp": {
+                    "type": ["integer", "null"],
+                    "description": "The UNIX timestamp that will be displayed at the bottom of the embed"
+                },
+                "Title": {
+                    "description": "The title of the embed that will be displayed at the top",
+                    "type": ["string", "null"]
+                }
+            }
+        }
+    }
+}

@@ -29,6 +29,11 @@ public static partial class TerminalCommands
                     .WithCustomId("logfig-button;rf")
                     .WithStyle(ButtonStyle.Danger)
                 )
+                .WithButton(new ButtonBuilder()
+                    .WithLabel("Documentation")
+                    .WithUrl("https://github.com/Firebreak-2/TLCBot2/wiki/How-To-Use-Log-Queries")
+                    .WithStyle(ButtonStyle.Link)
+                )
             )
         );
     }

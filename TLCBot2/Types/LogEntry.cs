@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.AccessControl;
+using Microsoft.EntityFrameworkCore;
+using MoreLinq;
 using TLCBot2.Logging;
 using TLCBot2.Utilities;
 
@@ -33,4 +35,30 @@ public class LogEntry
     public LogEntry(long timeStamp, Log.Importance importance, string message, string eventName, IEnumerable<string> tags, string data)
         : this(timeStamp, (int) importance, message, eventName, tags.Select(x => x.ToUpper().Replace(' ', '_')).ToArray().ToJson(), data)
     { }
+
+    public UsableLogEntry ToUsable() => new()
+    {
+        OccurrenceTimeEpoch = TimeStamp,
+        EventName = EventName,
+        Importance = (Log.Importance) Importance,
+        Message = Message,
+        Tags = Tags.FromJson<string[]>()!,
+        Data = Data.FromJson<Dictionary<string, object>>()!
+    };
+    
+    public record UsableLogEntry
+    {
+        public long OccurrenceTimeEpoch { get; init; }
+        public string EventName { get; init; }
+        public Log.Importance Importance { get; init; }
+        public int ImportanceValue => (int) this.Importance;
+        public string Message { get; init; }
+        public string[] Tags { get; init; }
+
+        public Dictionary<string, string> VariableTags =>
+            Tags.Where(x => x.Contains('='))
+                .Select(x => x.Split('='))
+                .ToDictionary(x => x[0], x => x[1]);
+        public Dictionary<string, object> Data { get; init; }
+    }
 }

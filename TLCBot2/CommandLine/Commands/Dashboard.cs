@@ -48,7 +48,7 @@ public static partial class TerminalCommands
     public static async Task HandleDashboardShenanigans(DashboardAction action, SocketTextChannel channel,
         params (string text, ComponentBuilder components)[] items)
     {
-        async Task PostMessage(string text, ComponentBuilder components, IUserMessage? editMessage = null)
+        async Task postMessage(string text, ComponentBuilder components, IUserMessage? editMessage = null)
         {
             if (editMessage is { })
                 await editMessage.ModifyAsync(props =>
@@ -66,7 +66,7 @@ public static partial class TerminalCommands
             {
                 foreach ((string text, ComponentBuilder components) in items)
                 {
-                    await PostMessage(text, components);
+                    await postMessage(text, components);
                 }
                 break;
             }
@@ -79,7 +79,7 @@ public static partial class TerminalCommands
                 int i = messages.Length;
                 foreach ((string text, ComponentBuilder components) in items)
                 {
-                    await PostMessage(text, components, messages[--i]);
+                    await postMessage(text, components, messages[--i]);
                 }
 
                 break;
@@ -103,7 +103,7 @@ public static partial class TerminalCommands
 
     public static readonly Regex RoleTagRegex = new(@"\[(.*)\]\s*(.+)", RegexOptions.Compiled);
     private static Dictionary<string, List<(string CleanName, SocketRole Role)>>? _categoricalRoles;
-    public static Dictionary<string, List<(string CleanName, SocketRole Role)>> GetCategoricalRoles()
+    public static Dictionary<string, List<(string CleanName, SocketRole Role)>> GetCategoricalRoles(params string[] blacklistedTags)
     {
         if (_categoricalRoles is not null)
             return _categoricalRoles;
@@ -119,6 +119,11 @@ public static partial class TerminalCommands
             string tag = match.Groups[1].Value;
             string cleanName = match.Groups[2].Value;
             
+            if (blacklistedTags.Any() 
+                    ? blacklistedTags.Contains(tag)
+                    : RuntimeConfig.BlacklistedRoleMenuTags.Contains(tag))
+                continue;
+
             Check:
             if (roles.ContainsKey(tag))
             {

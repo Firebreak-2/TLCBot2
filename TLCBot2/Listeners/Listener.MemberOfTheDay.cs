@@ -62,5 +62,6 @@ public static partial class Listener
                 entry.LatestMessageCount++;
             else 
                 await db.ActiveUsers.AddAsync(new ActiveUserEntry(message.Author.Id));
+            await db.SaveChangesAsync();
         };
 }

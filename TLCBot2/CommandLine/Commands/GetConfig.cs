@@ -22,7 +22,7 @@ public static partial class TerminalCommands
                 out var f)
                 ? f.Attribute.DisplayValue is null 
                     ? $"{f.Field.Name} = {f.Field.GetValue(null)}"
-                    : $"{f.Field.Name} = " + f.Attribute.DisplayValue.Replace(RuntimeConfigFieldAttribute.ReplacementString, 
+                    : $"{f.Field.Name} = " + f.Attribute.DisplayValue.Replace(RuntimeConfigFieldAttribute.REPLACEMENT_STRING, 
                         f.Field.GetValue(null)?.ToString() ?? "null") 
                 : throw new Exception($"No config with the name [{field}] found");
 
@@ -37,7 +37,7 @@ public static partial class TerminalCommands
             await ChannelTerminal.Channel.SendMessageAsync(string.Join('\n', RuntimeConfig.Fields
                 .Select(x => x.Attribute.DisplayValue is null 
                     ? $"{x.Field.Name} = {x.Field.GetValue(null) ?? "`null`"}"
-                    : $"{x.Field.Name} = " + x.Attribute.DisplayValue.Replace(RuntimeConfigFieldAttribute.ReplacementString,
+                    : $"{x.Field.Name} = " + x.Attribute.DisplayValue.Replace(RuntimeConfigFieldAttribute.REPLACEMENT_STRING,
                         x.Field.GetValue(null)?.ToString() ?? "null"))));
         }
     }

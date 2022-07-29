@@ -2,6 +2,8 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using TLCBot2.CommandLine.Commands;
+using TLCBot2.Data.RuntimeConfig;
+using TLCBot2.Utilities;
 
 namespace TLCBot2.ApplicationCommands;
 
@@ -25,8 +27,17 @@ public partial class InteractionCommands
                     .WithCustomId($"rolemenu-category-select-menu;true,{selected}")
                     .WithPlaceholder($"{selected} Roles")
                     .WithOptions(selectedRoles
-                        .Select(x => 
-                            new SelectMenuOptionBuilder(x.CleanName, $"{x.Role.Id}"))
+                        .Select(x =>
+                        {
+                            var optionBuilder = new SelectMenuOptionBuilder(x.CleanName, $"{x.Role.Id}");
+
+                            if (RuntimeConfig.BackendServer is { } guild
+                                && guild.Emotes.TryFirst(e => e.Name == $"e_{x.Role.Color.ToString()[1..]}",
+                                    out var emote))
+                                optionBuilder.WithEmote(emote);
+                            
+                            return optionBuilder;
+                        })
                         .ToList()))
                 .WithButton("Clear", $"rolemenu-category-clear-button;{selected}")
                 .Build(),

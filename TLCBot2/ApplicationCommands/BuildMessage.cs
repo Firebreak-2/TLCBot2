@@ -63,7 +63,7 @@ public partial class InteractionCommands
         }
         catch (Exception e)
         {
-            await RespondAsync(e.ToString(), ephemeral: true);
+            await RespondAsync(e.Message, ephemeral: true);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace TLCBot2.MessageBuilder.DiscordActions;
 
 public static partial class DiscordMethods
 {
-    public static Dictionary<string, FastMethodInfo> AllActions = new();
+    public static Dictionary<string, (FastMethodInfo method, DiscordActionAttribute attribute)> AllActions = new();
 
     /// <summary>
     /// Fetch all the methods in <see cref="DiscordMethods"/> and add
@@ -19,15 +19,21 @@ public static partial class DiscordMethods
     /// </summary>
     static DiscordMethods()
     {
-        foreach (var method in typeof(DiscordMethods)
-                                    .GetMethods()
-                                    .Where(x => x.GetCustomAttribute<DiscordActionAttribute>() is {}))
+        foreach (var (method, attributes) in Helper.GetAllMembersWithAttribute<MethodInfo, DiscordActionAttribute>())
         {
-            AllActions[method.Name] = new FastMethodInfo(method.Name,
-                method.GetParameters()
+            var attribute = attributes.First();
+
+            var parameters = method.GetParameters();
+            
+            AllActions[method.Name] = (new FastMethodInfo(method.Name,
+                parameters
                     .Select(x => new FastParameterInfo(x.ParameterType, x.Name!))
                     .ToArray(),
-                args => method.Invoke(null, args));
+                args => method.Invoke(null, args?
+                    .Select((x, i) => parameters[i].ParameterType == typeof(string) 
+                        ? x?.ToString() 
+                        : x)
+                    .ToArray())), attribute);
         }
     }
 
@@ -36,14 +42,22 @@ public static partial class DiscordMethods
     [PreInitialize]
     public static async Task Initialize()
     {
-        Program.Client.ButtonExecuted += async component =>
+        Program.Client.ButtonExecuted += onComponentExecuted;
+        Program.Client.SelectMenuExecuted += onComponentExecuted;
+
+        async Task onComponentExecuted(SocketMessageComponent component)
         {
             var match = ComponentIdFetcherRegex.Match(component.Data.CustomId);
 
             if (!match.Success)
                 return;
 
-            if (match.Groups[1].Value != MessageData.MessageComponentsData.ComponentData.ButtonComponentType)
+            if ((component.Data.Type == ComponentType.Button 
+                    && match.Groups[1].Value != 
+                        MessageData.MessageComponentsData.ComponentData.ButtonComponentType)
+                || (component.Data.Type == ComponentType.SelectMenu
+                    && match.Groups[1].Value !=
+                        MessageData.MessageComponentsData.ComponentData.SelectMenuComponentType))
             {
                 await component.DeferAsync();
                 return;
@@ -66,14 +80,19 @@ public static partial class DiscordMethods
             var channel = Program.Client.GetChannel(ulong.Parse(split[0]));
             var message = ((SocketTextChannel) channel).GetMessageAsync(ulong.Parse(split[1])).Result;
 
-            var msg = Helper.MessageFromJumpUrl(message.GetJumpUrl()).Result;
+            string[] args = Array.Empty<string>();
+            
+            var msg = await Helper.MessageFromJumpUrl(message.GetJumpUrl());
             if (Helper.ExtractCodeFromCodeBlock(msg.Content) is var (_, code)
                 && code.FromJson<MessageComponentAction>() is { } action)
             {
-                action.Execute();
+                args = (component.Data.Values is {Count: > 0}
+                    ? action.Execute<object>(component, ("$%selectedOptions%", component.Data.Values.ToArray()))
+                    : action.Execute<object>(component)).Arguments;
             }
 
-            await component.DeferAsync();
-        };
+            if (!args.Contains("nodefer"))
+                await component.DeferAsync();
+        }
     }
 }

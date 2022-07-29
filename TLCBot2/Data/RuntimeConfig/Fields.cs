@@ -1,5 +1,6 @@
 ﻿using Discord.WebSocket;
 using TLCBot2.Attributes;
+using TLCBot2.Types;
 
 namespace TLCBot2.Data.RuntimeConfig;
 
@@ -58,4 +59,10 @@ public static partial class RuntimeConfig
 
     [RuntimeConfigField]
     public static int StarboardReactionsRequired = 5;
+
+    [RuntimeConfigField(Json = true)] 
+    public static string[] BlacklistedRoleMenuTags = Array.Empty<string>();
+
+    [RuntimeConfigField(Json = true)] 
+    public static RoleDescriptionPair[] ModProfessionRoles = Array.Empty<RoleDescriptionPair>();
 }

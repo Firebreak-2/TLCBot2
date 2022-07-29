@@ -78,6 +78,10 @@ public static partial class Helper
         {
             return Program.Client.GetGuild(ulong.Parse(strVal));
         }
+        else if (type.IsAssignableTo(typeof(IMessage)))
+        {
+            return Task.Run(async () => await MessageFromJumpUrl(strVal)).Result;
+        }
 
         try
         {

@@ -66,29 +66,7 @@ public static partial class ChannelTerminal
                 }
             }
 
-            ParameterInfo[] correctParameters = correctCommand.Method.GetParameters();
-            if (correctParameters.Length == 0)
-            {
-                correctCommand.Method.Invoke(null, null);
-                return "";
-            }
-
-            object?[] providedParameters = correctParameters.Select(x => x.DefaultValue).ToArray();
-            for (int i = 0; i < providedParameters.Length; i++)
-            {
-                if ((command.Arguments?.Length ?? 0) <= i)
-                    continue;
-
-                if (i != correctParameters.Length - 1 
-                    || correctParameters.Last().ParameterType != typeof(string))
-                    providedParameters[i] =
-                        Helper.ConvertFromString(command.Arguments![i], correctParameters[i].ParameterType);
-                else
-                {
-                    providedParameters[i] = string.Join(" ", command.Arguments![i..]);
-                    break;
-                }
-            }
+            object?[]? providedParameters = GetParametersFromArguments(correctCommand.Method, command.Arguments);
 
             await Task.Run(() => correctCommand.Method.Invoke(null, providedParameters)!);
         }
@@ -98,5 +76,32 @@ public static partial class ChannelTerminal
         }
 
         return "";
+    }
+
+    public static object?[]? GetParametersFromArguments(MethodInfo correctMethod, string?[]? arguments)
+    {
+        ParameterInfo[] correctParameters = correctMethod.GetParameters();
+        
+        if (correctParameters.Length == 0)
+            return null;
+
+        object?[] providedParameters = correctParameters.Select(x => x.DefaultValue).ToArray();
+        for (int i = 0; i < providedParameters.Length; i++)
+        {
+            if ((arguments?.Length ?? 0) <= i)
+                continue;
+
+            if (i != correctParameters.Length - 1 
+                || correctParameters.Last().ParameterType != typeof(string))
+                providedParameters[i] =
+                    Helper.ConvertFromString(arguments![i], correctParameters[i].ParameterType);
+            else
+            {
+                providedParameters[i] = string.Join(" ", arguments![i..]);
+                break;
+            }
+        }
+
+        return providedParameters;
     }
 }

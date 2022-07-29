@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Collections;
+using Discord;
 using Discord.WebSocket;
 using TLCBot2.Attributes;
 using TLCBot2.Utilities;

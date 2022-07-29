@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Discord.WebSocket;
+using Newtonsoft.Json;
 using TLCBot2.Attributes;
 using TLCBot2.CommandLine;
 using TLCBot2.Core;
@@ -37,7 +38,7 @@ public static partial class RuntimeConfig
             if (typeof(RuntimeConfig).GetField(name) is not { } field)
                 continue;
             
-            object? convertedValue = Deserialize(fetchedValue, field.FieldType);
+            object? convertedValue = Deserialize(fetchedValue, field);
             
             field.SetValue(null, convertedValue);
         }
@@ -50,17 +51,31 @@ public static partial class RuntimeConfig
     public static Task SaveConfig()
     {
         Dictionary<string, string?> fields = Fields
-            .ToDictionary(x => x.Field.Name, x => Serialize(x.Field.GetValue(null)));
+            .ToDictionary(x => x.Field.Name, x => Serialize(x.Field));
         File.WriteAllText(Path, fields.ToJson());
 
         return Task.CompletedTask;
     }
     
-    private static string? Serialize(object? obj) => 
-        Helper.ConvertToString(obj);
+    public static string? Serialize(FieldInfo field)
+    {
+        object? obj = field.GetValue(null);
+        bool json = field.GetCustomAttribute<RuntimeConfigFieldAttribute>()!.Json;
+        
+        return json 
+            ? JsonConvert.SerializeObject(obj) 
+            : Helper.ConvertToString(obj);
+    }
 
-    private static object? Deserialize(string? strVal, Type type) => 
-        Helper.ConvertFromString(strVal, type);
+    public static object? Deserialize(string? strVal, FieldInfo field)
+    {
+        bool json = field.GetCustomAttribute<RuntimeConfigFieldAttribute>()!.Json;
+        return json
+            ? strVal is null
+                ? null
+                : JsonConvert.DeserializeObject(strVal, field.FieldType)
+            : Helper.ConvertFromString(strVal, field.FieldType);
+    }
 
     public static ulong TerminalChannelId { get; } = ulong.Parse(Environment.GetEnvironmentVariable("TERMINAL") 
                                                                  ?? throw new Exception("Terminal channel id not provided"));

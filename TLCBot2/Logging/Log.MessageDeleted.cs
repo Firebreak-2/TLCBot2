@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using TLCBot2.Attributes;
 using TLCBot2.Core;
@@ -22,11 +23,13 @@ public static partial class Log
                 .ToArrayAsync();
 
             var firstLog = auditLogs[0].First();
+            var logData = (MessageDeleteAuditLogData) firstLog.Data;
+            
             var now = DateTimeOffset.Now;
             const int leeway = 5;
             IUser? user = firstLog.CreatedAt.Second + leeway >= now.Second
                 ? firstLog.User 
-                : message?.Author;
+                : message?.Author ?? logData.Target;
             
             (Importance importance, string[] tags) = LoggingEventData.All[name];
 

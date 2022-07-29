@@ -1,7 +1,15 @@
-﻿namespace TLCBot2.Attributes;
+﻿using TLCBot2.MessageBuilder.DiscordActions;
+
+namespace TLCBot2.Attributes;
 
 /// <summary>
 /// Marks a method as a Discord Action when declared
-/// in the <see cref="DiscordActions"/> partial class
+/// in the <see cref="DiscordMethods"/> partial class
 /// </summary>
-public class DiscordActionAttribute : Attribute { }
+[AttributeUsage(AttributeTargets.Method)]
+public class DiscordActionAttribute : Attribute
+{
+    public string[] ExternalParameterNames { get; set; } = Array.Empty<string>();
+
+    public bool NoDefer { get; set; } = false;
+}

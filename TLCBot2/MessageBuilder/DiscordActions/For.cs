@@ -10,7 +10,7 @@ public static partial class DiscordMethods
     {
         for (int i = 0; i < cycles; i++)
         {
-            action.Execute(("i", i));
+            action.Execute<object>(null, ("$%i%", i));
         }
     }
 }

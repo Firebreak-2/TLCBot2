@@ -52,7 +52,7 @@ public static partial class ChannelTerminal
         string str = $"{obj ?? "null"}";
         caller ??= TerminalCommands.LastCommandUser;
 
-        if (caller is null || caller.ActiveClients.Any(x => x == ClientType.Mobile))
+        if (caller is null || caller.OnMobile())
             await PrintAsync(Helper.CleanAnsiFormatting(str), "", title, footnote ?? "ANSI formatting disabled due to mobile client visibility");
         else
             await PrintAsync($"{colorPrefix}{str}", "ansi", title, footnote);

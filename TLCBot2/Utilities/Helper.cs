@@ -86,9 +86,25 @@ public static partial class Helper
             : emote.Name;
     }
 
-    public static string GetEmoteFullName(this IEmote emote)
+    public static int GetEmoteLimit(this IGuild guild)
     {
-        throw new NotImplementedException();
+        int limit = 50;
+
+        if ((int) guild.PremiumTier > 0)
+            limit += 50;
+        if ((int) guild.PremiumTier > 1)
+            limit += 50;
+        if ((int) guild.PremiumTier > 2)
+            limit += 100;
+
+        return limit;
+    }
+
+    public static string Mention(this IEmote emote)
+    {
+        return emote is not GuildEmote ge 
+            ? emote.Name 
+            : $"<{(ge.Animated ? "a" : "")}:{ge.Name}:{ge.Id}>";
     }
 
     private static readonly string _ansiBlueBg = Ansi.Generate(null, Ansi.Background.Indigo);
@@ -492,6 +508,28 @@ public static partial class Helper
         first = collection.First(condition);
         return true;
     }
+
+    public static bool OnMobile(this IUser user)
+    {
+        return user.ActiveClients is {Count: > 0} clients
+            && clients.Any(x => x == ClientType.Mobile);
+    }
+    public static async Task UsingStreamFromText(string text, Func<MemoryStream, Task> action)
+    {
+        var stream = new MemoryStream();
+        var writer = new StreamWriter(stream)
+        {
+            AutoFlush = true
+        };
+        await writer.WriteAsync(text);
+
+        await action(stream);
+
+        await writer.DisposeAsync();
+        writer.Close();
+        await stream.DisposeAsync();
+        stream.Close();
+    }
     public static void FillColor(this Image<Argb32> img, Argb32 color) => img.FillColor((_,_)=>color);
     public static void FillColor(this Image<Argb32> img, Func<int, int, Argb32> color) => img.FillColor((x, y, _) => color(x, y));
     public static void FillColor(this Image<Argb32> img, Func<int, int, Argb32, Argb32> color)
@@ -594,19 +632,31 @@ public static partial class Helper
     }
     
     private static readonly Regex _matchNumberRegex = new(@"\d+", RegexOptions.Compiled);
+
     public static (ulong GuildId, ulong ChannelId, ulong MessageId) MessageInfoFromJumpUrl(string jumpUrl)
     {
-        var matches = _matchNumberRegex.Matches(jumpUrl);
-        ulong guildId = ulong.Parse(matches[0].Value);
-        ulong channelId = ulong.Parse(matches[1].Value);
-        ulong messageId = ulong.Parse(matches[2].Value);
-        return (guildId, channelId, messageId);
+        try
+        {
+            var matches = _matchNumberRegex.Matches(jumpUrl);
+            ulong channelId = ulong.Parse(matches[1].Value);
+            ulong guildId = ulong.TryParse(matches[0].Value, out ulong providedGuildId)
+                ? providedGuildId
+                : ((IGuildChannel) Program.Client.GetChannel(channelId)).GuildId;
+            ulong messageId = ulong.Parse(matches[2].Value);
+            return (guildId, channelId, messageId);
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Invalid jump URL: {jumpUrl}", e);
+        }
     }
+
     public static async Task<IMessage> MessageFromJumpUrl(string jumpUrl)
     {
         (ulong guildId, ulong channelId, ulong messageId) = MessageInfoFromJumpUrl(jumpUrl);
-        return await ((SocketTextChannel) Program.Client.GetGuild(guildId).GetChannel(channelId))
+        var message = await ((SocketTextChannel) Program.Client.GetGuild(guildId).GetChannel(channelId))
             .GetMessageAsync(messageId);
+        return message;
     }
     public static MessageReference MessageReferenceFromJumpUrl(string jumpUrl)
     {

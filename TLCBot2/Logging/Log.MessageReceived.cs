@@ -13,7 +13,7 @@ public static partial class Log
     public static async Task MessageReceived() =>
         Program.Client.MessageReceived += async message =>
         {
-            if (message.Channel.Id == RuntimeConfig.ServerLogsChannel?.Id)
+            if (message.Author.IsBot)
                 return;
             
             const string name = nameof(DiscordSocketClient.MessageReceived);
@@ -26,7 +26,7 @@ public static partial class Log
                     ("channel", message.Channel.Id),
                     ("message", message.Id)
                 )),
-                "{}");
+                $"{{ \"Content\": \"{message.Content}\" }}");
 
             await ToFile(logEntry);
 

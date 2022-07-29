@@ -55,7 +55,7 @@ public partial class InteractionCommands
                                 Helper.Rando.Int(0, 255));
         }
 
-        private static Task<Image<Argb32>> GenerateColorPicture(Color color)
+        public static Task<Image<Argb32>> GenerateColorPicture(Color color)
         {
             var image = new Image<Argb32>(200, 200);
             image.FillColor(color.DiscordColorToArgb32());
@@ -73,7 +73,7 @@ public partial class InteractionCommands
             return Task.FromResult(image);
         }
 
-        private async Task PostImage(Image image, Color color)
+        public async Task PostImage(Image image, Color color)
         {
             await RespondAsync(embed: new EmbedBuilder()
                 .WithImageUrl(await Helper.GetFileUrl(image.ToStream()))

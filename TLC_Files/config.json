@@ -16,5 +16,7 @@
   "FrequentInviterAwardRole": "988169179528069130/988169179528069138",
   "InvitesRequiredForAward": "5",
   "InvitesCookieAmountAward": "3",
-  "StarboardReactionsRequired": "5"
+  "StarboardReactionsRequired": "5",
+  "BlacklistedRoleMenuTags": "[]",
+  "ModProfessionRoles": "[{\"RoleId\":988169179528069139,\"Description\":\"A TLC bot developer. Gains access to bot-related channels\"},{\"RoleId\":989514727493353502,\"Description\":\"For when you need a lil more power ;)\"}]"
 }

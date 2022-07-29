@@ -1,8 +1,5 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+﻿using TLCBot2.Attributes;
 using TLCBot2.CommandLine.Commands;
-using TLCBot2.Utilities;
-using Image = Discord.Image;
 
 namespace TLCBot2.Data;
 
@@ -14,26 +11,22 @@ public static class BackendServer
         if (RuntimeConfig.RuntimeConfig.BackendServer is not { } guild)
             return;
         
-        var roles = RuntimeConfig.RuntimeConfig.FocusServer!.Roles.ToList();
-        var currentEmotes = guild.Emotes.ToList();
-            
-        foreach (var emote in currentEmotes)
+        var list = TerminalCommands.GetCategoricalRoles()
+            .SelectMany(role => role.Value)
+            .Select(x => x.Role)
+            .Concat(RuntimeConfig.RuntimeConfig.ModProfessionRoles.Select(x => x.GetRole()))
+            .Where(x => x.Color.RawValue > 0)
+            .ToList();
+        
+        foreach (var role in list)
         {
-            roles.RemoveAll(x => x.Color.RawValue == emote.Name.To<uint>()
-                                 || !TerminalCommands.RoleTagRegex.IsMatch(x.Name));
-
-            await guild.DeleteEmoteAsync(emote);
+            await TerminalCommands.GenerateEmoji(role.Color.ToString(), false, true);
         }
 
-        foreach (var role in roles)
+        foreach (var emote in guild.Emotes)
         {
-            if (guild.Emotes.Count >= 50)
-                throw new Exception("Backend server's emote capacity exceeded");
-            
-            using var image = new Image<Argb32>(100, 100);
-            image.FillColor(role.Color.DiscordColorToArgb32());
-            
-            await guild.CreateEmoteAsync($"{role.Color.RawValue}".PadLeft(6, '0'), new Image(image.ToStream()));
+            if (list.All(x => $"e_{x.Color.ToString()[1..]}" != emote.Name))
+                await guild.DeleteEmoteAsync(emote);
         }
     }
 }

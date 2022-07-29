@@ -17,7 +17,7 @@ public record MessageData
             return false;
 
         await channel.SendMessageAsync(
-            text: this.Text,
+            text: this.Text ?? "",
             embed: this.Embed?.ToEmbed(),
             messageReference: this.ReferenceJumpUrl is { }
                 ? Helper.MessageReferenceFromJumpUrl(this.ReferenceJumpUrl)
@@ -108,6 +108,7 @@ public record MessageData
             public record SelectMenuOptionData
             {
                 public string? Label = null;
+                public string? Value = null;
                 public string? Description = null;
                 public bool? IsDefault = null;
 
@@ -118,7 +119,7 @@ public record MessageData
                     if (Label is not null)
                     {
                         builder.WithLabel(Label);
-                        builder.WithValue(Label.ToLower().Replace(" ", ""));
+                        builder.WithValue(Value ?? Label.ToLower().Replace(" ", ""));
                     }
 
                     if (Description is not null)
